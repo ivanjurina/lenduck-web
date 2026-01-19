@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finro | SME Financing Marketplace</title>
+    <title>Lenduck | SME Financing Marketplace</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -576,7 +576,7 @@
             opacity: 0.7;
         }
 
-        .time-card.finro {
+        .time-card.lenduck {
             border-color: var(--color-primary);
             box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
         }
@@ -598,7 +598,7 @@
             margin-bottom: 8px;
         }
 
-        .time-card.finro .time {
+        .time-card.lenduck .time {
             color: var(--color-primary);
         }
 
@@ -710,7 +710,7 @@
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), transparent);
         }
 
-        .diagram-node.finro-hub {
+        .diagram-node.lenduck-hub {
             background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
             border: none;
             color: white;
@@ -734,7 +734,7 @@
             justify-content: center;
         }
 
-        .diagram-node.finro-hub .diagram-node-icon {
+        .diagram-node.lenduck-hub .diagram-node-icon {
             background: rgba(255,255,255,0.2);
         }
 
@@ -750,7 +750,7 @@
             color: var(--color-text-light);
         }
 
-        .diagram-node.finro-hub p {
+        .diagram-node.lenduck-hub p {
             color: rgba(255,255,255,0.8);
         }
 
@@ -776,14 +776,14 @@
             max-width: 80px;
         }
 
-        .finro-features {
+        .lenduck-features {
             display: flex;
             flex-direction: column;
             gap: 8px;
             margin-top: 16px;
         }
 
-        .finro-feature {
+        .lenduck-feature {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -791,7 +791,7 @@
             color: rgba(255,255,255,0.9);
         }
 
-        .finro-feature svg {
+        .lenduck-feature svg {
             width: 14px;
             height: 14px;
         }
@@ -1317,9 +1317,16 @@
             <a href="#" class="logo">
                 <svg class="logo-icon" viewBox="0 0 36 36" fill="none">
                     <rect width="36" height="36" rx="8" fill="url(#logo-gradient)"/>
-                    <path d="M10 18h16M18 10v16M12 12l12 12M24 12l-12 12" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
-                    <circle cx="18" cy="18" r="6" fill="white"/>
-                    <circle cx="18" cy="18" r="3" fill="url(#logo-gradient)"/>
+                    <!-- Duck body -->
+                    <ellipse cx="18" cy="21" rx="10" ry="8" fill="white"/>
+                    <!-- Duck head -->
+                    <circle cx="24" cy="13" r="6" fill="white"/>
+                    <!-- Duck eye -->
+                    <circle cx="26" cy="12" r="1.5" fill="#0d9488"/>
+                    <!-- Duck beak -->
+                    <path d="M29 14 L35 15 L29 17 Z" fill="#f59e0b"/>
+                    <!-- Duck wing -->
+                    <ellipse cx="15" cy="21" rx="5" ry="4" fill="#e2e8f0"/>
                     <defs>
                         <linearGradient id="logo-gradient" x1="0" y1="0" x2="36" y2="36">
                             <stop stop-color="#0d9488"/>
@@ -1327,7 +1334,7 @@
                         </linearGradient>
                     </defs>
                 </svg>
-                <span class="logo-text">Finro</span>
+                <span class="logo-text">Lenduck</span>
             </a>
             <div class="nav-links">
                 <a href="#how-it-works">How It Works</a>
@@ -1528,8 +1535,8 @@
                                     <div class="time">14+</div>
                                     <div class="unit">days to get offers</div>
                                 </div>
-                                <div class="time-card finro">
-                                    <h4>With Finro</h4>
+                                <div class="time-card lenduck">
+                                    <h4>With Lenduck</h4>
                                     <div class="time">24</div>
                                     <div class="unit">hours to get offers</div>
                                 </div>
@@ -1554,11 +1561,11 @@
                 <div class="how-header">
                     <p class="section-label">How It Works</p>
                     <h2 class="section-title">Your accounting data unlocks better financing</h2>
-                    <p class="section-text">Finro connects to your existing accounting software, analyzes your financial health, and matches you with lenders who are most likely to approve you—at the best rates.</p>
+                    <p class="section-text">Lenduck connects to your existing accounting software, analyzes your financial health, and matches you with lenders who are most likely to approve you—at the best rates.</p>
                 </div>
 
                 <div class="diagram-container">
-                    <p class="diagram-title">The Finro Data Flow</p>
+                    <p class="diagram-title">The Lenduck Data Flow</p>
                     <div class="diagram-flow">
                         <!-- Left Column: Accounting Software -->
                         <div class="diagram-column">
@@ -1605,13 +1612,13 @@
                             <span class="diagram-arrow-label">Encrypted connection</span>
                         </div>
 
-                        <!-- Center: Finro -->
+                        <!-- Center: Lenduck -->
                         <div class="diagram-column">
                             <div class="diagram-column-header">
-                                <h4>Finro Platform</h4>
+                                <h4>Lenduck Platform</h4>
                                 <p>AI-powered analysis</p>
                             </div>
-                            <div class="diagram-node finro-hub">
+                            <div class="diagram-node lenduck-hub">
                                 <div class="diagram-node-icon">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="28" height="28">
                                         <circle cx="12" cy="12" r="3"/>
@@ -1620,26 +1627,26 @@
                                 </div>
                                 <h5>Smart Matching Engine</h5>
                                 <p>We analyze and normalize your data</p>
-                                <div class="finro-features">
-                                    <div class="finro-feature">
+                                <div class="lenduck-features">
+                                    <div class="lenduck-feature">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M20 6L9 17l-5-5"/>
                                         </svg>
                                         Financial health score
                                     </div>
-                                    <div class="finro-feature">
+                                    <div class="lenduck-feature">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M20 6L9 17l-5-5"/>
                                         </svg>
                                         Cash flow analysis
                                     </div>
-                                    <div class="finro-feature">
+                                    <div class="lenduck-feature">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M20 6L9 17l-5-5"/>
                                         </svg>
                                         Risk profiling
                                     </div>
-                                    <div class="finro-feature">
+                                    <div class="lenduck-feature">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M20 6L9 17l-5-5"/>
                                         </svg>
@@ -1888,7 +1895,7 @@
                     <div class="cta-card lender">
                         <span class="cta-card-badge">For Lenders</span>
                         <h3>Partner with us</h3>
-                        <p>Reach thousands of pre-qualified SMEs looking for financing. Let's discuss how Finro can grow your loan portfolio.</p>
+                        <p>Reach thousands of pre-qualified SMEs looking for financing. Let's discuss how Lenduck can grow your loan portfolio.</p>
                         <form class="cta-form" id="lender-form">
                             <input type="email" placeholder="Enter your work email" required>
                             <button type="submit" class="btn btn-secondary" style="background: var(--color-secondary); color: white; border: none;">Book a Demo</button>
@@ -1908,7 +1915,7 @@
                 </div>
                 <div class="faq-grid">
                     <div class="faq-item">
-                        <h4>Is Finro free for businesses?</h4>
+                        <h4>Is Lenduck free for businesses?</h4>
                         <p>Yes, completely free. We're paid by lenders when they successfully provide financing to businesses through our platform. You'll never pay us a cent.</p>
                     </div>
                     <div class="faq-item">
@@ -1928,7 +1935,7 @@
                         <p>Business loans, lines of credit, invoice factoring, equipment financing, and more. Our lender network covers most SME financing needs.</p>
                     </div>
                     <div class="faq-item">
-                        <h4>How do lenders benefit from Finro?</h4>
+                        <h4>How do lenders benefit from Lenduck?</h4>
                         <p>Lenders get pre-qualified leads with verified financial data, dramatically reducing their acquisition costs and underwriting time. They only pay when they fund a deal.</p>
                     </div>
                 </div>
@@ -1941,8 +1948,16 @@
             <div class="footer-logo">
                 <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
                     <rect width="36" height="36" rx="8" fill="url(#footer-logo-gradient)"/>
-                    <circle cx="18" cy="18" r="6" fill="white"/>
-                    <circle cx="18" cy="18" r="3" fill="url(#footer-logo-gradient)"/>
+                    <!-- Duck body -->
+                    <ellipse cx="18" cy="21" rx="10" ry="8" fill="white"/>
+                    <!-- Duck head -->
+                    <circle cx="24" cy="13" r="6" fill="white"/>
+                    <!-- Duck eye -->
+                    <circle cx="26" cy="12" r="1.5" fill="#0d9488"/>
+                    <!-- Duck beak -->
+                    <path d="M29 14 L35 15 L29 17 Z" fill="#f59e0b"/>
+                    <!-- Duck wing -->
+                    <ellipse cx="15" cy="21" rx="5" ry="4" fill="#e2e8f0"/>
                     <defs>
                         <linearGradient id="footer-logo-gradient" x1="0" y1="0" x2="36" y2="36">
                             <stop stop-color="#0d9488"/>
@@ -1950,14 +1965,14 @@
                         </linearGradient>
                     </defs>
                 </svg>
-                <span class="footer-logo-text">Finro</span>
+                <span class="footer-logo-text">Lenduck</span>
             </div>
             <div class="footer-links">
                 <a href="#">Privacy Policy</a>
                 <a href="#">Terms of Service</a>
-                <a href="mailto:hello@finro.dev">Contact Us</a>
+                <a href="mailto:hello@lenduck.com">Contact Us</a>
             </div>
-            <p class="footer-copy">© 2026 Finro. The smarter way to find business financing.</p>
+            <p class="footer-copy">© 2026 Lenduck. The smarter way to find business financing.</p>
         </div>
     </footer>
 
