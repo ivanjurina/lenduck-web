@@ -2566,8 +2566,8 @@
                             </li>
                         </ul>
                         <form class="partner-form" id="partner-form">
-                            <input type="text" placeholder="Název společnosti" required>
-                            <input type="email" placeholder="Pracovní e-mail" required>
+                            <input type="text" name="company_name" placeholder="Název společnosti" required>
+                            <input type="email" name="email" placeholder="Pracovní e-mail" required>
                             <button type="submit" class="btn btn-dark btn-lg pricing-btn">Kontaktujte nás</button>
                         </form>
                     </div>
@@ -2584,7 +2584,7 @@
                         <h3>Najděte lepší financování</h3>
                         <p>Propojte svůj účetní software a zjistěte, na jaké sazby máte nárok. Trvá to méně než 2 minuty.</p>
                         <form class="cta-form" id="business-form">
-                            <input type="email" placeholder="Zadejte svůj pracovní e-mail" required>
+                            <input type="email" name="email" placeholder="Zadejte svůj pracovní e-mail" required>
                             <button type="submit" class="btn btn-primary" style="color: whitesmoke;">Začít</button>
                         </form>
                         <p class="cta-note">Váš e-mail nikdy nesdílíme. Pro firmy navždy zdarma.</p>
@@ -2594,7 +2594,7 @@
                         <h3>Staňte se partnerem</h3>
                         <p>Oslovte tisíce předkvalifikovaných malých a středních podniků hledajících financování. Pojďme diskutovat, jak Lenduck může rozšířit vaše úvěrové portfolio.</p>
                         <form class="cta-form" id="lender-form">
-                            <input type="email" placeholder="Zadejte svůj pracovní e-mail" required>
+                            <input type="email" name="email" placeholder="Zadejte svůj pracovní e-mail" required>
                             <button type="submit" class="btn btn-dark">Rezervovat demo</button>
                         </form>
                         <p class="cta-note">Ozveme se do 24 hodin a domluvíme hovor.</p>
@@ -2712,38 +2712,111 @@
     </div>
 
     <script>
-        // Form submission
-        document.querySelectorAll('.cta-form').forEach(form => {
-            form.addEventListener('submit', function(e) {
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    ${isError
+                        ? '<circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>'
+                        : '<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/>'}
+                </svg>
+                ${message}
+            `;
+            toast.style.background = isError ? '#c44536' : '#2d5a3d';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Business form submission (SME waiting list)
+        const businessForm = document.getElementById('business-form');
+        if (businessForm) {
+            businessForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                const email = this.querySelector('input').value;
-                const formType = this.id === 'business-form' ? 'business' : 'lender';
+                const email = this.querySelector('input[name="email"]').value;
 
-                console.log(`New ${formType} signup:`, email);
+                try {
+                    const response = await fetch('/api/waitlist/sme', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            company_name: 'Z webu',
+                            email: email
+                        })
+                    });
+                    const data = await response.json();
 
-                const toast = document.getElementById('toast');
-                toast.classList.add('show');
-                this.querySelector('input').value = '';
-
-                setTimeout(() => toast.classList.remove('show'), 3000);
+                    if (data.success) {
+                        showToast('Děkujeme! Brzy se ozveme.');
+                        this.querySelector('input').value = '';
+                    } else {
+                        showToast(data.message || 'Něco se pokazilo.', true);
+                    }
+                } catch (error) {
+                    showToast('Chyba sítě. Zkuste to prosím znovu.', true);
+                }
             });
-        });
+        }
 
-        // Partner form submission
+        // Lender form submission (Partner waiting list)
+        const lenderForm = document.getElementById('lender-form');
+        if (lenderForm) {
+            lenderForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const email = this.querySelector('input[name="email"]').value;
+
+                try {
+                    const response = await fetch('/api/waitlist/partner', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            company_name: 'Z webu',
+                            email: email,
+                            partner_type: 'lender'
+                        })
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showToast('Děkujeme! Ozveme se do 24 hodin.');
+                        this.querySelector('input').value = '';
+                    } else {
+                        showToast(data.message || 'Něco se pokazilo.', true);
+                    }
+                } catch (error) {
+                    showToast('Chyba sítě. Zkuste to prosím znovu.', true);
+                }
+            });
+        }
+
+        // Partner form submission (Pricing section)
         const partnerForm = document.getElementById('partner-form');
         if (partnerForm) {
-            partnerForm.addEventListener('submit', function(e) {
+            partnerForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                const company = this.querySelectorAll('input')[0].value;
-                const email = this.querySelectorAll('input')[1].value;
+                const company = this.querySelector('input[name="company_name"]').value;
+                const email = this.querySelector('input[name="email"]').value;
 
-                console.log('New partner inquiry:', { company, email });
+                try {
+                    const response = await fetch('/api/waitlist/partner', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            company_name: company,
+                            email: email,
+                            partner_type: 'enterprise'
+                        })
+                    });
+                    const data = await response.json();
 
-                const toast = document.getElementById('toast');
-                toast.classList.add('show');
-                this.querySelectorAll('input').forEach(input => input.value = '');
-
-                setTimeout(() => toast.classList.remove('show'), 3000);
+                    if (data.success) {
+                        showToast('Děkujeme! Brzy se ozveme.');
+                        this.querySelectorAll('input').forEach(input => input.value = '');
+                    } else {
+                        showToast(data.message || 'Něco se pokazilo.', true);
+                    }
+                } catch (error) {
+                    showToast('Chyba sítě. Zkuste to prosím znovu.', true);
+                }
             });
         }
 

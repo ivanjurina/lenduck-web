@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | Lenduck{% endblock %}
+
+{% block extra_styles %}
+.empty-state {
+    padding: 48px;
+    text-align: center;
+    color: var(--color-text-light);
+}
+.empty-state svg {
+    margin-bottom: 16px;
+    opacity: 0.4;
+}
+.truncate {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.time-ago {
+    color: var(--color-text-light);
+    font-size: 0.85rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container">
+        <h1 class="dashboard-title">Admin Dashboard</h1>
+        <p class="dashboard-subtitle">Monitor visitors and waiting list signups</p>
+    </div>
+</div>
+
+<div class="dashboard-content">
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_visitors }}</div>
+                <div class="stat-label">Total Page Views</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ today_visitors }}</div>
+                <div class="stat-label">Today's Views</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ sme_signups }}</div>
+                <div class="stat-label">SME Signups</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ partner_signups }}</div>
+                <div class="stat-label">Partner Signups</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_users }}</div>
+                <div class="stat-label">Registered Users</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('visitors')">Recent Visitors</button>
+            <button class="tab" onclick="showTab('sme')">SME Waiting List</button>
+            <button class="tab" onclick="showTab('partners')">Partner Waiting List</button>
+        </div>
+
+        <!-- Visitors Tab -->
+        <div id="visitors" class="tab-content active">
+            <div class="data-table">
+                <div class="table-header">
+                    <h3>Recent Page Views (Last 50)</h3>
+                </div>
+                <div class="table-content">
+                    {% if recent_visitors %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Page</th>
+                                <th>IP Address</th>
+                                <th>Referrer</th>
+                                <th>User Agent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visitor in recent_visitors %}
+                            <tr>
+                                <td class="time-ago">{{ visitor.visited_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ visitor.page_visited }}</td>
+                                <td>{{ visitor.ip_address }}</td>
+                                <td class="truncate" title="{{ visitor.referrer or 'Direct' }}">{{ visitor.referrer or 'Direct' }}</td>
+                                <td class="truncate" title="{{ visitor.user_agent }}">{{ visitor.user_agent[:50] }}...</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-state">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <p>No visitors recorded yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- SME Waiting List Tab -->
+        <div id="sme" class="tab-content">
+            <div class="data-table">
+                <div class="table-header">
+                    <h3>SME Waiting List ({{ sme_signups }} total)</h3>
+                </div>
+                <div class="table-content">
+                    {% if recent_sme %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Company</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Accounting SW</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in recent_sme %}
+                            <tr>
+                                <td class="time-ago">{{ entry.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ entry.company_name }}</td>
+                                <td>{{ entry.email }}</td>
+                                <td>{{ entry.phone or '-' }}</td>
+                                <td>{{ entry.accounting_software or '-' }}</td>
+                                <td class="truncate" title="{{ entry.message or '' }}">{{ entry.message or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-state">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <p>No SME signups yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Partner Waiting List Tab -->
+        <div id="partners" class="tab-content">
+            <div class="data-table">
+                <div class="table-header">
+                    <h3>Partner Waiting List ({{ partner_signups }} total)</h3>
+                </div>
+                <div class="table-content">
+                    {% if recent_partners %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Company</th>
+                                <th>Contact</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Type</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in recent_partners %}
+                            <tr>
+                                <td class="time-ago">{{ entry.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ entry.company_name }}</td>
+                                <td>{{ entry.contact_name or '-' }}</td>
+                                <td>{{ entry.email }}</td>
+                                <td>{{ entry.phone or '-' }}</td>
+                                <td>{{ entry.partner_type or '-' }}</td>
+                                <td class="truncate" title="{{ entry.message or '' }}">{{ entry.message or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-state">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <p>No partner signups yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTab(tabId) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+
+    // Remove active from all tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Show selected tab content
+    document.getElementById(tabId).classList.add('active');
+
+    // Mark clicked tab as active
+    event.target.classList.add('active');
+}
+</script>
+{% endblock %}
