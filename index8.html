@@ -151,6 +151,34 @@
             width: 100%;
         }
 
+        .lang-switcher {
+            display: flex;
+            gap: 4px;
+            margin-left: 12px;
+            padding-left: 16px;
+            border-left: 1px solid var(--color-border);
+        }
+
+        .lang-option {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--color-text-light);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .lang-option:hover {
+            background: var(--color-sage-pale);
+            color: var(--color-forest);
+        }
+
+        .lang-option.active {
+            background: var(--color-forest);
+            color: white;
+        }
+
         .btn {
             display: inline-flex;
             align-items: center;
@@ -1871,6 +1899,10 @@
                 <a href="#pricing">Pricing</a>
                 <a href="#faq">FAQ</a>
                 <a href="#cta" class="btn btn-primary"  style="color: whitesmoke;">Get Started</a>
+                <div class="lang-switcher">
+                    <a href="/" class="lang-option active">EN</a>
+                    <a href="/cz" class="lang-option">CZ</a>
+                </div>
             </div>
         </div>
     </nav>
