@@ -186,5 +186,3 @@ export function initDefaultAdmin() {
     console.log('Default admin created: admin@lenduck.com / admin123');
   }
 }
-
-export default db;
