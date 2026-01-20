@@ -1201,6 +1201,191 @@
             background: var(--color-brown);
         }
 
+        /* Pricing Section */
+        .pricing-section {
+            padding: 120px 0;
+            background: white;
+            position: relative;
+        }
+
+        .pricing-header {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 64px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            align-items: start;
+        }
+
+        .pricing-card {
+            background: var(--color-cream);
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-soft);
+            padding: 40px 32px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-large);
+        }
+
+        .pricing-card.featured {
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            border: none;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: var(--shadow-large);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-8px);
+        }
+
+        .pricing-card.partner {
+            background: linear-gradient(135deg, rgba(92, 77, 60, 0.05), rgba(139, 115, 85, 0.1));
+            border-color: var(--color-earth);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-earth);
+            color: white;
+            padding: 6px 20px;
+            border-radius: var(--radius-round);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pricing-card-header h3 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .pricing-card.featured .pricing-card-header h3 {
+            color: white;
+        }
+
+        .pricing-desc {
+            font-size: 0.95rem;
+            color: var(--color-text-light);
+            margin-bottom: 24px;
+        }
+
+        .pricing-card.featured .pricing-desc {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .pricing-price {
+            margin-bottom: 8px;
+        }
+
+        .pricing-price .price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--color-forest-dark);
+        }
+
+        .pricing-card.featured .pricing-price .price {
+            color: white;
+        }
+
+        .pricing-price .price.custom {
+            font-size: 2rem;
+        }
+
+        .pricing-price .period {
+            font-size: 1rem;
+            color: var(--color-text-light);
+            font-weight: 500;
+        }
+
+        .pricing-card.featured .pricing-price .period {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .pricing-annual {
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+            margin-bottom: 28px;
+        }
+
+        .pricing-card.featured .pricing-annual {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 32px;
+        }
+
+        .pricing-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 14px;
+            font-size: 0.95rem;
+            color: var(--color-text);
+        }
+
+        .pricing-card.featured .pricing-features li {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .pricing-features li svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            color: var(--color-moss);
+            margin-top: 2px;
+        }
+
+        .pricing-card.featured .pricing-features li svg {
+            color: var(--color-sage-light);
+        }
+
+        .pricing-btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        .partner-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .partner-form input {
+            padding: 14px 18px;
+            border: 2px solid var(--color-border);
+            border-radius: 12px;
+            background: white;
+            color: var(--color-text);
+            font-size: 0.95rem;
+            font-family: var(--font-main);
+            transition: all 0.3s ease;
+        }
+
+        .partner-form input:focus {
+            outline: none;
+            border-color: var(--color-brown);
+            box-shadow: 0 0 0 4px rgba(92, 77, 60, 0.1);
+        }
+
+        .partner-form input::placeholder {
+            color: var(--color-text-light);
+        }
+
         /* CTA Section */
         .cta-section {
             padding: 120px 0;
@@ -1470,6 +1655,20 @@
                 gap: 48px;
             }
 
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                max-width: 450px;
+                margin: 0 auto;
+            }
+
+            .pricing-card.featured {
+                transform: none;
+            }
+
+            .pricing-card.featured:hover {
+                transform: translateY(-8px);
+            }
+
             .hero-visual {
                 order: -1;
             }
@@ -1554,6 +1753,7 @@
                 <a href="#how-it-works">Jak to funguje</a>
                 <a href="#for-business">Pro firmy</a>
                 <a href="#for-lenders">Pro poskytovatele</a>
+                <a href="#pricing">Ceník</a>
                 <a href="#faq">FAQ</a>
                 <a href="#cta" class="btn btn-primary" style="color: whitesmoke;">Začít</a>
             </div>
@@ -2124,6 +2324,141 @@
             </div>
         </section>
 
+        <!-- Pricing Section -->
+        <section class="pricing-section" id="pricing">
+            <div class="container">
+                <div class="pricing-header">
+                    <p class="section-label">Ceník</p>
+                    <h2 class="section-title">Vyberte si správný plán pro vaši firmu</h2>
+                    <p class="section-text">Začněte zdarma a upgradujte podle potřeby. Všechny plány zahrnují naše základní funkce finančního zdraví.</p>
+                </div>
+                <div class="pricing-grid">
+                    <!-- Free Plan -->
+                    <div class="pricing-card">
+                        <div class="pricing-card-header">
+                            <h3>Zdarma</h3>
+                            <p class="pricing-desc">Pro malé firmy a freelancery</p>
+                        </div>
+                        <div class="pricing-price">
+                            <span class="price">0 Kč</span>
+                            <span class="period">navždy</span>
+                        </div>
+                        <ul class="pricing-features">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Reporty finančního zdraví
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Základní monitoring zdraví
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Nejlepší nabídky financování do 3 dnů
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                1 propojení účetního softwaru
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                1 společnost
+                            </li>
+                        </ul>
+                        <a href="#cta" class="btn btn-secondary btn-lg pricing-btn">Začít zdarma</a>
+                    </div>
+
+                    <!-- Pro Plan -->
+                    <div class="pricing-card featured">
+                        <div class="pricing-badge">Nejoblíbenější</div>
+                        <div class="pricing-card-header">
+                            <h3>Pro</h3>
+                            <p class="pricing-desc">Pro rostoucí firmy</p>
+                        </div>
+                        <div class="pricing-price">
+                            <span class="price">2 490 Kč</span>
+                            <span class="period">/měsíc</span>
+                        </div>
+                        <p class="pricing-annual">nebo 24 990 Kč/rok (ušetříte 17%)</p>
+                        <ul class="pricing-features">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Vše ze Zdarma, plus:
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Nejlepší nabídky financování do 24 hodin
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Více společností
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Více propojení účetních systémů
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                AI skórovací model
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Finanční diagnostika a doporučení
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Pokročilé reporty a notifikace
+                            </li>
+                        </ul>
+                        <a href="#cta" class="btn btn-primary btn-lg pricing-btn">Vyzkoušet Pro</a>
+                    </div>
+
+                    <!-- Partner Plan -->
+                    <div class="pricing-card partner">
+                        <div class="pricing-card-header">
+                            <h3>Partner</h3>
+                            <p class="pricing-desc">Pro banky, poskytovatele a finanční poradce</p>
+                        </div>
+                        <div class="pricing-price">
+                            <span class="price custom">Individuální</span>
+                        </div>
+                        <p class="pricing-annual">Přizpůsobeno vašim potřebám</p>
+                        <ul class="pricing-features">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Přístup k účetním datům klientů (se souhlasem)
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Monitoring finančního zdraví klientů
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Využití našich AI skórovacích modelů
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Plný přístup k API
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                White-label možnosti
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Dedikovaná podpora
+                            </li>
+                        </ul>
+                        <form class="partner-form" id="partner-form">
+                            <input type="text" placeholder="Název společnosti" required>
+                            <input type="email" placeholder="Pracovní e-mail" required>
+                            <button type="submit" class="btn btn-dark btn-lg pricing-btn">Kontaktujte nás</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- CTA Section -->
         <section class="cta-section" id="cta">
             <div class="container">
@@ -2229,6 +2564,24 @@
                 setTimeout(() => toast.classList.remove('show'), 3000);
             });
         });
+
+        // Partner form submission
+        const partnerForm = document.getElementById('partner-form');
+        if (partnerForm) {
+            partnerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const company = this.querySelectorAll('input')[0].value;
+                const email = this.querySelectorAll('input')[1].value;
+
+                console.log('New partner inquiry:', { company, email });
+
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                this.querySelectorAll('input').forEach(input => input.value = '');
+
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            });
+        }
 
         // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {

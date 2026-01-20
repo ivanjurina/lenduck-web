@@ -1200,6 +1200,191 @@
             background: var(--color-brown);
         }
 
+        /* Pricing Section */
+        .pricing-section {
+            padding: 120px 0;
+            background: white;
+            position: relative;
+        }
+
+        .pricing-header {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 64px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            align-items: start;
+        }
+
+        .pricing-card {
+            background: var(--color-cream);
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-soft);
+            padding: 40px 32px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-large);
+        }
+
+        .pricing-card.featured {
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            border: none;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: var(--shadow-large);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-8px);
+        }
+
+        .pricing-card.partner {
+            background: linear-gradient(135deg, rgba(92, 77, 60, 0.05), rgba(139, 115, 85, 0.1));
+            border-color: var(--color-earth);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-earth);
+            color: white;
+            padding: 6px 20px;
+            border-radius: var(--radius-round);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pricing-card-header h3 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .pricing-card.featured .pricing-card-header h3 {
+            color: white;
+        }
+
+        .pricing-desc {
+            font-size: 0.95rem;
+            color: var(--color-text-light);
+            margin-bottom: 24px;
+        }
+
+        .pricing-card.featured .pricing-desc {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .pricing-price {
+            margin-bottom: 8px;
+        }
+
+        .pricing-price .price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--color-forest-dark);
+        }
+
+        .pricing-card.featured .pricing-price .price {
+            color: white;
+        }
+
+        .pricing-price .price.custom {
+            font-size: 2rem;
+        }
+
+        .pricing-price .period {
+            font-size: 1rem;
+            color: var(--color-text-light);
+            font-weight: 500;
+        }
+
+        .pricing-card.featured .pricing-price .period {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .pricing-annual {
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+            margin-bottom: 28px;
+        }
+
+        .pricing-card.featured .pricing-annual {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 32px;
+        }
+
+        .pricing-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 14px;
+            font-size: 0.95rem;
+            color: var(--color-text);
+        }
+
+        .pricing-card.featured .pricing-features li {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .pricing-features li svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            color: var(--color-moss);
+            margin-top: 2px;
+        }
+
+        .pricing-card.featured .pricing-features li svg {
+            color: var(--color-sage-light);
+        }
+
+        .pricing-btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        .partner-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .partner-form input {
+            padding: 14px 18px;
+            border: 2px solid var(--color-border);
+            border-radius: 12px;
+            background: white;
+            color: var(--color-text);
+            font-size: 0.95rem;
+            font-family: var(--font-main);
+            transition: all 0.3s ease;
+        }
+
+        .partner-form input:focus {
+            outline: none;
+            border-color: var(--color-brown);
+            box-shadow: 0 0 0 4px rgba(92, 77, 60, 0.1);
+        }
+
+        .partner-form input::placeholder {
+            color: var(--color-text-light);
+        }
+
         /* CTA Section */
         .cta-section {
             padding: 120px 0;
@@ -1469,6 +1654,20 @@
                 gap: 48px;
             }
 
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                max-width: 450px;
+                margin: 0 auto;
+            }
+
+            .pricing-card.featured {
+                transform: none;
+            }
+
+            .pricing-card.featured:hover {
+                transform: translateY(-8px);
+            }
+
             .hero-visual {
                 order: -1;
             }
@@ -1553,6 +1752,7 @@
                 <a href="#how-it-works">How It Works</a>
                 <a href="#for-business">For Businesses</a>
                 <a href="#for-lenders">For Lenders</a>
+                <a href="#pricing">Pricing</a>
                 <a href="#faq">FAQ</a>
                 <a href="#cta" class="btn btn-primary"  style="color: whitesmoke;">Get Started</a>
             </div>
@@ -2123,6 +2323,141 @@
             </div>
         </section>
 
+        <!-- Pricing Section -->
+        <section class="pricing-section" id="pricing">
+            <div class="container">
+                <div class="pricing-header">
+                    <p class="section-label">Pricing</p>
+                    <h2 class="section-title">Choose the right plan for your business</h2>
+                    <p class="section-text">Start free and upgrade as you grow. All plans include our core financial health features.</p>
+                </div>
+                <div class="pricing-grid">
+                    <!-- Free Plan -->
+                    <div class="pricing-card">
+                        <div class="pricing-card-header">
+                            <h3>Free</h3>
+                            <p class="pricing-desc">For small companies and freelancers</p>
+                        </div>
+                        <div class="pricing-price">
+                            <span class="price">€0</span>
+                            <span class="period">forever</span>
+                        </div>
+                        <ul class="pricing-features">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Financial health reports
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Basic health monitoring
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Best financing offers in 3 days
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                1 accounting software connection
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                1 company
+                            </li>
+                        </ul>
+                        <a href="#cta" class="btn btn-secondary btn-lg pricing-btn">Get Started Free</a>
+                    </div>
+
+                    <!-- Pro Plan -->
+                    <div class="pricing-card featured">
+                        <div class="pricing-badge">Most Popular</div>
+                        <div class="pricing-card-header">
+                            <h3>Pro</h3>
+                            <p class="pricing-desc">For growing businesses</p>
+                        </div>
+                        <div class="pricing-price">
+                            <span class="price">€99</span>
+                            <span class="period">/month</span>
+                        </div>
+                        <p class="pricing-annual">or €999/year (save 17%)</p>
+                        <ul class="pricing-features">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Everything in Free, plus:
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Best financing offers in 24 hours
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Multiple companies
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Multiple accounting connections
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                AI-powered scoring model
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Financial diagnostics & recommendations
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Advanced reports & notifications
+                            </li>
+                        </ul>
+                        <a href="#cta" class="btn btn-primary btn-lg pricing-btn">Start Pro Trial</a>
+                    </div>
+
+                    <!-- Partner Plan -->
+                    <div class="pricing-card partner">
+                        <div class="pricing-card-header">
+                            <h3>Partner</h3>
+                            <p class="pricing-desc">For banks, lenders & financial advisors</p>
+                        </div>
+                        <div class="pricing-price">
+                            <span class="price custom">Custom</span>
+                        </div>
+                        <p class="pricing-annual">Tailored to your needs</p>
+                        <ul class="pricing-features">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Access client accounting data (with consent)
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Monitor client financial health
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Use our AI scoring models
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Full API access
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                White-label options
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Dedicated support
+                            </li>
+                        </ul>
+                        <form class="partner-form" id="partner-form">
+                            <input type="text" placeholder="Company name" required>
+                            <input type="email" placeholder="Work email" required>
+                            <button type="submit" class="btn btn-dark btn-lg pricing-btn">Contact Us</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- CTA Section -->
         <section class="cta-section" id="cta">
             <div class="container">
@@ -2228,6 +2563,24 @@
                 setTimeout(() => toast.classList.remove('show'), 3000);
             });
         });
+
+        // Partner form submission
+        const partnerForm = document.getElementById('partner-form');
+        if (partnerForm) {
+            partnerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const company = this.querySelectorAll('input')[0].value;
+                const email = this.querySelectorAll('input')[1].value;
+
+                console.log('New partner inquiry:', { company, email });
+
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                this.querySelectorAll('input').forEach(input => input.value = '');
+
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            });
+        }
 
         // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
