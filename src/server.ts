@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import * as db from './database';
 import * as quickbooks from './services/quickbooks';
+import * as profit365 from './services/profit365';
 
 // Extend session type
 declare module 'express-session' {
@@ -522,7 +523,7 @@ app.get('/company/:id/connect', requireAuth, (req: Request, res: Response) => {
     { value: 'flexibee', name: 'ABRA FlexiBee', description: 'Popular in Czech Republic, REST API', available: false },
     { value: 'pohoda', name: 'Pohoda', description: 'Most popular in Czech Republic, XML API', available: false },
     { value: 'idoklad', name: 'iDoklad', description: 'Czech invoicing system, REST API', available: false },
-    { value: 'profit365', name: 'Profit365', description: 'Slovak/Czech accounting, REST API', available: false },
+    { value: 'profit365', name: 'Profit365', description: 'Slovak/Czech accounting, REST API', available: true },
     { value: 'other', name: 'Other', description: 'Tell us what you use', available: true },
   ];
 
@@ -598,10 +599,15 @@ app.post('/company/:id/connect', requireAuth, (req: Request, res: Response) => {
     status: 'pending',
   });
 
-  // Redirect to appropriate OAuth flow
+  // Redirect to appropriate OAuth flow or credentials form
   if (software_type === 'quickbooks') {
     const authUrl = quickbooks.getAuthorizationUrl(companyId);
     return res.redirect(authUrl);
+  }
+
+  // Profit365 uses API key authentication, redirect to credentials form
+  if (software_type === 'profit365') {
+    return res.redirect(`/company/${companyId}/connect/profit365`);
   }
 
   // For other software types (not yet implemented)
@@ -669,6 +675,99 @@ app.post('/company/:id/connect/other', requireAuth, (req: Request, res: Response
   res.redirect('/company/' + companyId + '/connect?success=' + encodeURIComponent('Thank you! We\'ll notify you when this integration is available.'));
 });
 
+// Profit365 API credentials setup
+app.get('/company/:id/connect/profit365', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const error = req.query.error as string;
+
+  const content = `
+    <div class="auth-container">
+      <div class="auth-card" style="max-width: 540px;">
+        <div class="auth-header">
+          <h1>Connect Profit365</h1>
+          <p>Enter your Profit365 API credentials</p>
+        </div>
+        ${error ? `<div class="flash flash-error">${error}</div>` : ''}
+        <div class="info-box" style="background: var(--color-sage-pale); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+          <p style="margin: 0; font-size: 0.9rem; color: var(--color-text);">
+            <strong>Where to find your API credentials:</strong><br>
+            In Profit365, go to <strong>Company &gt; Security &gt; API Keys</strong> to generate your Client ID and Client Secret.
+            The Company ID can be found in your account settings.
+          </p>
+        </div>
+        <form method="POST" action="/company/${companyId}/connect/profit365">
+          <div class="form-group">
+            <label for="client_id">Client ID *</label>
+            <input type="text" id="client_id" name="client_id" required placeholder="Your Profit365 Client ID">
+          </div>
+          <div class="form-group">
+            <label for="client_secret">Client Secret *</label>
+            <input type="password" id="client_secret" name="client_secret" required placeholder="Your Profit365 Client Secret">
+          </div>
+          <div class="form-group">
+            <label for="profit365_company_id">Profit365 Company ID *</label>
+            <input type="text" id="profit365_company_id" name="profit365_company_id" required placeholder="Your company ID in Profit365">
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Connect</button>
+        </form>
+        <div class="auth-footer">
+          <a href="/company/${companyId}/connect">Back to Software Selection</a>
+        </div>
+      </div>
+    </div>
+  `;
+
+  res.send(renderPage('Connect Profit365', content, req));
+});
+
+app.post('/company/:id/connect/profit365', requireAuth, async (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+  const { client_id, client_secret, profit365_company_id } = req.body;
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  if (!client_id || !client_secret || !profit365_company_id) {
+    return res.redirect(`/company/${companyId}/connect/profit365?error=` + encodeURIComponent('All fields are required.'));
+  }
+
+  try {
+    // Check if connection already exists
+    const existingConnection = db.getAccountingConnection(companyId);
+    if (!existingConnection) {
+      db.createAccountingConnection({
+        company_id: companyId,
+        software_type: 'profit365',
+        status: 'pending',
+      });
+    }
+
+    // Save credentials
+    profit365.saveCredentials(companyId, client_id, client_secret, profit365_company_id);
+
+    // Test the connection
+    const isValid = await profit365.testConnection(companyId);
+
+    if (!isValid) {
+      return res.redirect(`/company/${companyId}/connect/profit365?error=` + encodeURIComponent('Could not connect to Profit365. Please check your credentials.'));
+    }
+
+    // Trigger initial sync
+    res.redirect(`/company/${companyId}/sync?initial=true`);
+  } catch (e: any) {
+    console.error('Profit365 connection error:', e);
+    res.redirect(`/company/${companyId}/connect/profit365?error=` + encodeURIComponent('Failed to connect: ' + e.message));
+  }
+});
+
 // QuickBooks OAuth callback
 app.get('/api/quickbooks/callback', async (req: Request, res: Response) => {
   const { code, state, realmId, error } = req.query;
@@ -724,7 +823,16 @@ app.get('/company/:id/sync', requireAuth, async (req: Request, res: Response) =>
   }
 
   try {
-    const result = await quickbooks.fullSync(companyId);
+    let result: { accounts: number; invoices: number; metrics: any };
+
+    // Call the appropriate sync function based on software type
+    if (connection.software_type === 'profit365') {
+      result = await profit365.fullSync(companyId);
+    } else if (connection.software_type === 'quickbooks') {
+      result = await quickbooks.fullSync(companyId);
+    } else {
+      throw new Error(`Sync not supported for ${connection.software_type}`);
+    }
 
     const message = isInitial
       ? `Successfully connected! Synced ${result.accounts} accounts and ${result.invoices} invoices.`
