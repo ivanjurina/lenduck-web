@@ -1889,29 +1889,28 @@
         @media (max-width: 768px) {
             .mobile-menu-btn {
                 display: flex;
+                position: relative;
+                z-index: 1002;
             }
 
             .nav-links {
-                display: none;
                 position: fixed;
                 top: 0;
                 left: 0;
-                right: 0;
-                bottom: 0;
-                background: #faf8f3;
-                background-color: #faf8f3 !important;
+                width: 100%;
+                height: 100vh;
+                background-color: #faf8f3;
+                display: none;
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
                 gap: 24px;
-                z-index: 1000;
+                z-index: 1001;
                 padding: 80px 24px 40px;
             }
 
             .nav-links.active {
-                display: flex;
-                background: #faf8f3 !important;
-                background-color: #faf8f3 !important;
+                display: flex !important;
             }
 
             .nav-links a {
