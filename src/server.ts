@@ -208,6 +208,470 @@ function renderPage(title: string, content: string, req: Request): string {
 </html>`;
 }
 
+// App layout for logged-in users with sidebar navigation
+interface AppPageOptions {
+  title: string;
+  content: string;
+  companyId?: number;
+  companyName?: string;
+  activePage?: 'overview' | 'data' | 'invoices' | 'accounts' | 'transactions' | 'reports' | 'settings';
+  req: Request;
+}
+
+function renderAppPage(options: AppPageOptions): string {
+  const { title, content, companyId, companyName, activePage, req } = options;
+  const isAdmin = !!req.session.isAdmin;
+
+  const navItem = (href: string, icon: string, label: string, page: string) => `
+    <a href="${href}" class="nav-item ${activePage === page ? 'active' : ''}">
+      <span class="nav-icon">${icon}</span>
+      <span class="nav-label">${label}</span>
+    </a>
+  `;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="apple-touch-icon" href="/logo.png">
+    <title>${title} | Lenduck</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --header-height: 64px;
+            --color-primary: #2d5a3d;
+            --color-primary-dark: #1e3d29;
+            --color-primary-light: #3d7a52;
+            --color-accent: #10b981;
+            --color-bg: #f8fafc;
+            --color-bg-card: #ffffff;
+            --color-sidebar: #1e293b;
+            --color-sidebar-hover: #334155;
+            --color-sidebar-active: #3b82f6;
+            --color-text: #1e293b;
+            --color-text-secondary: #64748b;
+            --color-text-muted: #94a3b8;
+            --color-border: #e2e8f0;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-error: #ef4444;
+            --color-info: #3b82f6;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-main); background: var(--color-bg); color: var(--color-text); line-height: 1.5; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--color-sidebar);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: white;
+        }
+        .sidebar-logo img { width: 36px; height: 36px; }
+        .sidebar-logo span { font-size: 1.25rem; font-weight: 700; }
+
+        .sidebar-company {
+            padding: 16px 20px;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .company-selector {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.1);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .company-selector:hover { background: rgba(255,255,255,0.15); }
+        .company-name { font-weight: 600; font-size: 0.9rem; }
+        .company-label { font-size: 0.75rem; color: var(--color-text-muted); }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+            overflow-y: auto;
+        }
+        .nav-section {
+            margin-bottom: 24px;
+        }
+        .nav-section-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-text-muted);
+            padding: 0 12px;
+            margin-bottom: 8px;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: var(--radius);
+            margin-bottom: 2px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .nav-item:hover {
+            background: var(--color-sidebar-hover);
+            color: white;
+        }
+        .nav-item.active {
+            background: var(--color-sidebar-active);
+            color: white;
+        }
+        .nav-icon { font-size: 1.1rem; width: 20px; text-align: center; }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .user-info { flex: 1; }
+        .user-name { font-size: 0.85rem; font-weight: 600; }
+        .user-role { font-size: 0.75rem; color: var(--color-text-muted); }
+        .logout-btn {
+            color: var(--color-text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+        .logout-btn:hover { color: white; }
+
+        /* Main content */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+        .top-header {
+            height: var(--header-height);
+            background: var(--color-bg-card);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .main-content {
+            padding: 32px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .card-body { padding: 20px; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            font-family: var(--font-main);
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--color-primary-dark); }
+        .btn-secondary {
+            background: white;
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+        .btn-secondary:hover { background: var(--color-bg); }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+        .btn-icon { padding: 8px; }
+
+        /* Tables */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+            font-size: 0.875rem;
+        }
+        th {
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--color-bg);
+        }
+        tr:hover td { background: var(--color-bg); }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 4px;
+        }
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-text);
+        }
+        .stat-change {
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+        .stat-change.positive { color: var(--color-success); }
+        .stat-change.negative { color: var(--color-error); }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-error { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+
+        /* Grid layouts */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        @media (max-width: 1024px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+        /* Alerts */
+        .alert {
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            font-size: 0.875rem;
+        }
+        .alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+        /* Page header */
+        .page-header {
+            margin-bottom: 24px;
+        }
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .page-header p {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Tab navigation */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--color-border);
+            margin-bottom: 24px;
+        }
+        .tab {
+            padding: 12px 20px;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: var(--color-text); }
+        .tab.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--color-text-secondary);
+        }
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-wrapper { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/dashboard" class="sidebar-logo">
+                <img src="/logo.png" alt="Lenduck">
+                <span>Lenduck</span>
+            </a>
+        </div>
+        ${companyId ? `
+        <div class="sidebar-company">
+            <a href="/dashboard" class="company-selector">
+                <div>
+                    <div class="company-label">Current Company</div>
+                    <div class="company-name">${companyName || 'Select Company'}</div>
+                </div>
+                <span>&#8595;</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Overview</div>
+                ${navItem(`/company/${companyId}/overview`, '&#128200;', 'Dashboard', 'overview')}
+                ${navItem(`/company/${companyId}/reports`, '&#128202;', 'Reports & Analytics', 'reports')}
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Data</div>
+                ${navItem(`/company/${companyId}/data/invoices`, '&#128196;', 'Invoices', 'invoices')}
+                ${navItem(`/company/${companyId}/data/accounts`, '&#128179;', 'Chart of Accounts', 'accounts')}
+                ${navItem(`/company/${companyId}/data/transactions`, '&#128176;', 'Transactions', 'transactions')}
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Settings</div>
+                ${navItem(`/company/${companyId}/connect`, '&#128279;', 'Integrations', 'settings')}
+            </div>
+        </nav>
+        ` : `
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                ${navItem('/dashboard', '&#127968;', 'Companies', 'overview')}
+                ${isAdmin ? navItem('/admin', '&#128736;', 'Admin Panel', 'admin') : ''}
+            </div>
+        </nav>
+        `}
+        <div class="sidebar-footer">
+            <div class="user-menu">
+                <div class="user-avatar">U</div>
+                <div class="user-info">
+                    <div class="user-name">User</div>
+                    <div class="user-role">${isAdmin ? 'Administrator' : 'User'}</div>
+                </div>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-header">
+            <h1 class="page-title">${title}</h1>
+            <div class="header-actions">
+                ${companyId ? `<a href="/company/${companyId}/sync" class="btn btn-secondary btn-sm">&#8635; Sync Data</a>` : ''}
+            </div>
+        </header>
+        <main class="main-content">
+            ${content}
+        </main>
+    </div>
+</body>
+</html>`;
+}
+
 // Routes
 
 // Home
@@ -361,80 +825,109 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
 
   const companyCards = companies.length > 0 ? companies.map(company => {
     const connection = db.getAccountingConnection(company.id);
+    const metrics = db.getLatestMetrics(company.id);
+
     const statusBadge = connection
       ? (connection.status === 'connected'
         ? '<span class="badge badge-success">Connected</span>'
         : '<span class="badge badge-warning">Pending</span>')
       : '<span class="badge badge-error">Not Connected</span>';
 
+    const formatCurrency = (amount: number | null) => {
+      if (!amount) return 'N/A';
+      return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+    };
+
     return `
-      <div class="company-card">
-        <div class="company-card-header">
-          <h3>${company.name}</h3>
+      <div class="card company-card">
+        <div class="card-header" style="background: var(--color-bg);">
+          <div>
+            <h3 style="font-size: 1.1rem; margin-bottom: 4px;">${company.name}</h3>
+            <span style="font-size: 0.8rem; color: var(--color-text-secondary);">${company.country || ''} ${company.business_id ? '| ICO: ' + company.business_id : ''}</span>
+          </div>
           ${statusBadge}
         </div>
-        <div class="company-card-body">
-          <p><strong>Country:</strong> ${company.country || 'N/A'}</p>
-          <p><strong>Currency:</strong> ${company.currency || 'N/A'}</p>
-          ${connection ? `<p><strong>Software:</strong> ${connection.software_type}</p>` : ''}
-          ${connection?.last_sync_at ? `<p><strong>Last Sync:</strong> ${new Date(connection.last_sync_at).toLocaleString()}</p>` : ''}
+        <div class="card-body">
+          ${connection?.status === 'connected' && metrics ? `
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
+              <div>
+                <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Revenue</div>
+                <div style="font-size: 1.1rem; font-weight: 600;">${formatCurrency(metrics.revenue)}</div>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Net Income</div>
+                <div style="font-size: 1.1rem; font-weight: 600; color: ${metrics.net_income >= 0 ? 'var(--color-success)' : 'var(--color-error)'};">${formatCurrency(metrics.net_income)}</div>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Cash</div>
+                <div style="font-size: 1.1rem; font-weight: 600;">${formatCurrency(metrics.cash_balance)}</div>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Health Score</div>
+                <div style="font-size: 1.1rem; font-weight: 600;">${Math.min(100, 50 + (metrics.current_ratio >= 1.5 ? 15 : 0) + (metrics.net_income > 0 ? 15 : 0) + (metrics.dso_days <= 30 ? 10 : 0) + (metrics.debt_to_equity < 1 ? 10 : 0))}/100</div>
+              </div>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--color-text-muted);">
+              ${connection.software_type} | Last sync: ${connection.last_sync_at ? new Date(connection.last_sync_at).toLocaleDateString('cs-CZ') : 'Never'}
+            </div>
+          ` : `
+            <div style="text-align: center; padding: 20px; color: var(--color-text-secondary);">
+              <p style="margin-bottom: 8px;">Connect your accounting software to see financial data</p>
+            </div>
+          `}
         </div>
-        <div class="company-card-actions">
+        <div style="padding: 16px 20px; border-top: 1px solid var(--color-border); display: flex; gap: 12px;">
           ${connection?.status === 'connected'
-            ? `<a href="/company/${company.id}/overview" class="btn btn-primary">View Financial Data</a>
-               <a href="/company/${company.id}/sync" class="btn btn-secondary">Sync Now</a>`
-            : `<a href="/company/${company.id}/connect" class="btn btn-primary">Connect Accounting</a>`
+            ? `<a href="/company/${company.id}/overview" class="btn btn-primary" style="flex: 1;">Open</a>
+               <a href="/company/${company.id}/sync" class="btn btn-secondary btn-icon" title="Sync">&#8635;</a>`
+            : `<a href="/company/${company.id}/connect" class="btn btn-primary" style="flex: 1;">Connect Accounting</a>`
           }
         </div>
       </div>
     `;
-  }).join('') : `
-    <div class="empty-state" style="padding: 48px;">
-      <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">No companies yet</p>
-      <p style="margin-bottom: 24px;">Add your first company to connect your accounting software and get financing offers.</p>
-      <a href="/company/new" class="btn btn-primary">Add Company</a>
-    </div>
-  `;
+  }).join('') : '';
 
   const content = `
-    <div class="dashboard-header">
-        <div class="container">
-            <h1 class="dashboard-title">Welcome, ${user.email}</h1>
-            <p class="dashboard-subtitle">Manage your companies and financing</p>
-        </div>
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h1>Companies</h1>
+        <p>Manage your connected companies</p>
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <form method="POST" action="/company/demo" style="margin: 0;">
+          <button type="submit" class="btn btn-secondary">Try Demo</button>
+        </form>
+        <a href="/company/new" class="btn btn-primary">+ Add Company</a>
+      </div>
     </div>
-    <div class="dashboard-content">
-        <div class="container">
-            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <h2>Your Companies</h2>
-                <div style="display: flex; gap: 12px;">
-                    <form method="POST" action="/company/demo" style="margin: 0;">
-                        <button type="submit" class="btn btn-secondary">Try Demo</button>
-                    </form>
-                    <a href="/company/new" class="btn btn-primary">+ Add Company</a>
-                </div>
-            </div>
-            <div class="companies-grid">
-                ${companyCards}
-            </div>
+
+    ${companies.length > 0 ? `
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px;">
+        ${companyCards}
+      </div>
+    ` : `
+      <div class="card">
+        <div class="empty-state" style="padding: 60px 20px;">
+          <div class="empty-state-icon">&#127970;</div>
+          <h3 style="margin-bottom: 8px;">No companies yet</h3>
+          <p style="margin-bottom: 24px;">Add your first company to connect your accounting software and get financing offers.</p>
+          <div style="display: flex; gap: 12px; justify-content: center;">
+            <form method="POST" action="/company/demo" style="margin: 0;">
+              <button type="submit" class="btn btn-secondary">Try Demo Company</button>
+            </form>
+            <a href="/company/new" class="btn btn-primary">Add Company</a>
+          </div>
         </div>
-    </div>
-    <style>
-      .companies-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
-      .company-card { background: white; border: 1px solid var(--color-border); border-radius: 16px; overflow: hidden; }
-      .company-card-header { padding: 20px; background: var(--color-sage-pale); display: flex; justify-content: space-between; align-items: center; }
-      .company-card-header h3 { margin: 0; color: var(--color-forest-dark); }
-      .company-card-body { padding: 20px; }
-      .company-card-body p { margin: 8px 0; color: var(--color-text-light); }
-      .company-card-actions { padding: 20px; border-top: 1px solid var(--color-border); display: flex; gap: 12px; }
-      .badge-success { background: #22c55e; color: white; }
-      .badge-warning { background: #f59e0b; color: white; }
-      .badge-error { background: #ef4444; color: white; }
-      .section-header h2 { margin: 0; color: var(--color-forest-dark); }
-    </style>
+      </div>
+    `}
   `;
 
-  res.send(renderPage('Dashboard', content, req));
+  res.send(renderAppPage({
+    title: 'Companies',
+    content,
+    activePage: 'overview',
+    req
+  }));
 });
 
 // Add new company form
@@ -1004,7 +1497,7 @@ app.get('/company/:id/sync', requireAuth, async (req: Request, res: Response) =>
   }
 });
 
-// Company financial overview
+// Company financial overview (Dashboard)
 app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
   const companyId = parseInt(req.params.id);
   const company = db.getCompanyById(companyId);
@@ -1015,19 +1508,16 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
 
   const connection = db.getAccountingConnection(companyId);
   const metrics = db.getLatestMetrics(companyId);
-  const metricsHistory = db.getMetricsHistory(companyId, 12);
-  const allInvoices = db.getInvoicesByCompany(companyId);
-  const recentInvoices = allInvoices.slice(0, 15);
-  const accounts = db.getAccountsByCompany(companyId);
-  const transactions = db.getBankTransactionsByCompany(companyId, 20);
+  const metricsHistory = db.getMetricsHistory(companyId, 6);
+  const invoices = db.getInvoicesByCompany(companyId);
+  const recentInvoices = invoices.slice(0, 5);
 
   const error = req.query.error as string;
   const success = req.query.success as string;
 
-  // Format currency helper
-  const formatCurrency = (amount: number | null, currency: string = 'CZK') => {
+  const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return 'N/A';
-    return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount);
+    return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
   };
 
   // Calculate health score
@@ -1041,408 +1531,685 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
   }
   healthScore = Math.min(100, healthScore);
 
-  // Prepare chart data
-  const chartLabels = metricsHistory.map((m: any) => {
-    const date = new Date(m.metric_date);
-    return date.toLocaleDateString('cs-CZ', { month: 'short', year: '2-digit' });
-  });
+  // Chart data
+  const chartLabels = metricsHistory.map((m: any) => new Date(m.metric_date).toLocaleDateString('cs-CZ', { month: 'short' }));
   const revenueData = metricsHistory.map((m: any) => Math.round((m.revenue || 0) / 1000));
   const expensesData = metricsHistory.map((m: any) => Math.round((m.expenses || 0) / 1000));
-  const cashData = metricsHistory.map((m: any) => Math.round((m.cash_balance || 0) / 1000));
-  const arData = metricsHistory.map((m: any) => Math.round((m.accounts_receivable || 0) / 1000));
-  const apData = metricsHistory.map((m: any) => Math.round((m.accounts_payable || 0) / 1000));
 
-  // Invoice statistics
-  const issuedInvoices = allInvoices.filter((i: any) => i.invoice_type === 'issued');
-  const receivedInvoices = allInvoices.filter((i: any) => i.invoice_type === 'received');
-  const unpaidReceivables = issuedInvoices.filter((i: any) => i.status !== 'paid');
-  const unpaidPayables = receivedInvoices.filter((i: any) => i.status !== 'paid');
-
+  // Invoice counts
+  const unpaidReceivables = invoices.filter((i: any) => i.invoice_type === 'issued' && i.status !== 'paid');
+  const unpaidPayables = invoices.filter((i: any) => i.invoice_type === 'received' && i.status !== 'paid');
   const totalReceivables = unpaidReceivables.reduce((sum: number, i: any) => sum + (i.balance_due || 0), 0);
   const totalPayables = unpaidPayables.reduce((sum: number, i: any) => sum + (i.balance_due || 0), 0);
 
-  // Top customers by revenue
-  const customerRevenue: Record<string, number> = {};
-  issuedInvoices.forEach((inv: any) => {
-    const name = inv.customer_name || 'Unknown';
-    customerRevenue[name] = (customerRevenue[name] || 0) + (inv.total_amount || 0);
-  });
-  const topCustomers = Object.entries(customerRevenue)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
-
   const content = `
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <div class="dashboard-header">
-      <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-          <div>
-            <h1 class="dashboard-title">${company.name}</h1>
-            <p class="dashboard-subtitle">Financial Overview | ${company.business_id ? 'ICO: ' + company.business_id : ''} ${connection?.software_type ? '| Connected to ' + connection.software_type.charAt(0).toUpperCase() + connection.software_type.slice(1) : ''}</p>
-          </div>
-          <div style="display: flex; gap: 12px;">
-            <a href="/company/${companyId}/sync" class="btn btn-secondary">Sync Data</a>
-            <a href="/dashboard" class="btn btn-secondary">Back</a>
-          </div>
+    ${error ? `<div class="alert alert-error">${error}</div>` : ''}
+    ${success ? `<div class="alert alert-success">${success}</div>` : ''}
+
+    <!-- Health Score Banner -->
+    <div class="card" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; margin-bottom: 24px;">
+      <div class="card-body" style="display: flex; align-items: center; justify-content: space-between; padding: 24px 32px;">
+        <div>
+          <h2 style="color: white; margin-bottom: 8px;">Financial Health Score</h2>
+          <p style="color: #94a3b8; margin: 0;">${healthScore >= 70 ? 'Excellent! Eligible for competitive financing rates.' : healthScore >= 50 ? 'Good standing. Multiple financing options available.' : 'We can help improve your financial position.'}</p>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 3rem; font-weight: 700; color: ${healthScore >= 70 ? '#10b981' : healthScore >= 50 ? '#f59e0b' : '#ef4444'};">${healthScore}</div>
+          <div style="font-size: 0.9rem; color: #94a3b8;">out of 100</div>
         </div>
       </div>
     </div>
-    <div class="dashboard-content">
-      <div class="container">
-        ${error ? `<div class="flash flash-error">${error}</div>` : ''}
-        ${success ? `<div class="flash flash-success">${success}</div>` : ''}
 
-        <!-- Health Score & Key Metrics Row -->
-        <div class="overview-grid">
-          <div class="health-score-card">
-            <div class="health-score-header">
-              <h2>Financial Health</h2>
-              <div class="health-score-badge score-${healthScore >= 70 ? 'good' : healthScore >= 50 ? 'medium' : 'low'}">
-                ${healthScore}/100
-              </div>
-            </div>
-            <div class="health-score-bar">
-              <div class="health-score-fill" style="width: ${healthScore}%"></div>
-            </div>
-            <p class="health-score-description">
-              ${healthScore >= 70 ? 'Excellent financial health. Eligible for competitive financing.'
-                : healthScore >= 50 ? 'Moderate health. Financing options available.'
-                : 'Needs improvement. We can help find solutions.'}
-            </p>
-            <div class="health-factors">
-              <div class="factor ${metrics?.current_ratio >= 1.5 ? 'good' : metrics?.current_ratio >= 1 ? 'medium' : 'bad'}">
-                <span class="factor-icon">${metrics?.current_ratio >= 1 ? '&#10003;' : '&#10007;'}</span>
-                <span>Liquidity Ratio</span>
-              </div>
-              <div class="factor ${metrics?.net_income > 0 ? 'good' : 'bad'}">
-                <span class="factor-icon">${metrics?.net_income > 0 ? '&#10003;' : '&#10007;'}</span>
-                <span>Profitability</span>
-              </div>
-              <div class="factor ${metrics?.dso_days <= 30 ? 'good' : metrics?.dso_days <= 45 ? 'medium' : 'bad'}">
-                <span class="factor-icon">${metrics?.dso_days <= 45 ? '&#10003;' : '&#10007;'}</span>
-                <span>Collection Speed</span>
-              </div>
-              <div class="factor ${metrics?.debt_to_equity < 1 ? 'good' : metrics?.debt_to_equity < 2 ? 'medium' : 'bad'}">
-                <span class="factor-icon">${metrics?.debt_to_equity < 2 ? '&#10003;' : '&#10007;'}</span>
-                <span>Debt Level</span>
-              </div>
-            </div>
-          </div>
+    <!-- Key Metrics -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Revenue (YTD)</div>
+        <div class="stat-value">${formatCurrency(metrics?.revenue)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Net Income</div>
+        <div class="stat-value" style="color: ${(metrics?.net_income || 0) >= 0 ? 'var(--color-success)' : 'var(--color-error)'}">${formatCurrency(metrics?.net_income)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Cash Balance</div>
+        <div class="stat-value">${formatCurrency(metrics?.cash_balance)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Receivables</div>
+        <div class="stat-value">${formatCurrency(totalReceivables)}</div>
+        <div class="stat-change">${unpaidReceivables.length} unpaid invoices</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Payables</div>
+        <div class="stat-value">${formatCurrency(totalPayables)}</div>
+        <div class="stat-change">${unpaidPayables.length} unpaid bills</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Current Ratio</div>
+        <div class="stat-value">${metrics?.current_ratio?.toFixed(2) || 'N/A'}</div>
+        <div class="stat-change ${(metrics?.current_ratio || 0) >= 1.5 ? 'positive' : 'negative'}">${(metrics?.current_ratio || 0) >= 1.5 ? 'Healthy' : 'Needs attention'}</div>
+      </div>
+    </div>
 
-          <div class="key-metrics-card">
-            <h3>Key Metrics</h3>
-            <div class="key-metric">
-              <span class="key-metric-label">Revenue (YTD)</span>
-              <span class="key-metric-value">${formatCurrency(metrics?.revenue, company.currency)}</span>
-            </div>
-            <div class="key-metric">
-              <span class="key-metric-label">Net Income</span>
-              <span class="key-metric-value ${metrics?.net_income >= 0 ? 'positive' : 'negative'}">${formatCurrency(metrics?.net_income, company.currency)}</span>
-            </div>
-            <div class="key-metric">
-              <span class="key-metric-label">Cash Balance</span>
-              <span class="key-metric-value">${formatCurrency(metrics?.cash_balance, company.currency)}</span>
-            </div>
-            <div class="key-metric">
-              <span class="key-metric-label">Current Ratio</span>
-              <span class="key-metric-value">${metrics?.current_ratio?.toFixed(2) || 'N/A'}</span>
-            </div>
-            <div class="key-metric">
-              <span class="key-metric-label">DSO (Days)</span>
-              <span class="key-metric-value">${metrics?.dso_days?.toFixed(0) || 'N/A'} days</span>
-            </div>
-            <div class="key-metric">
-              <span class="key-metric-label">Debt to Equity</span>
-              <span class="key-metric-value">${metrics?.debt_to_equity?.toFixed(2) || 'N/A'}</span>
-            </div>
-            ${connection?.last_sync_at ? `<p class="sync-time">Last synced: ${new Date(connection.last_sync_at).toLocaleString('cs-CZ')}</p>` : ''}
-          </div>
+    <!-- Charts & Recent Activity -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Revenue vs Expenses</span>
+          <a href="/company/${companyId}/reports" class="btn btn-secondary btn-sm">View Reports</a>
         </div>
-
-        <!-- Charts Row -->
-        <div class="charts-grid">
-          <div class="chart-card">
-            <h3>Revenue vs Expenses (in thousands ${company.currency})</h3>
-            <canvas id="revenueChart"></canvas>
-          </div>
-          <div class="chart-card">
-            <h3>Cash Flow Trend (in thousands ${company.currency})</h3>
-            <canvas id="cashFlowChart"></canvas>
-          </div>
+        <div class="card-body">
+          <canvas id="revenueChart" height="200"></canvas>
         </div>
+      </div>
 
-        <!-- Receivables & Payables -->
-        <div class="ar-ap-grid">
-          <div class="ar-ap-card">
-            <div class="ar-ap-header">
-              <h3>Accounts Receivable</h3>
-              <span class="ar-ap-total">${formatCurrency(totalReceivables, company.currency)}</span>
-            </div>
-            <div class="ar-ap-stats">
-              <div class="ar-ap-stat">
-                <span class="stat-num">${issuedInvoices.length}</span>
-                <span class="stat-label">Total Invoices</span>
-              </div>
-              <div class="ar-ap-stat">
-                <span class="stat-num">${unpaidReceivables.length}</span>
-                <span class="stat-label">Unpaid</span>
-              </div>
-              <div class="ar-ap-stat">
-                <span class="stat-num">${metrics?.dso_days?.toFixed(0) || '-'}</span>
-                <span class="stat-label">Avg DSO</span>
-              </div>
-            </div>
-            <canvas id="arChart" height="120"></canvas>
-          </div>
-          <div class="ar-ap-card">
-            <div class="ar-ap-header">
-              <h3>Accounts Payable</h3>
-              <span class="ar-ap-total negative">${formatCurrency(totalPayables, company.currency)}</span>
-            </div>
-            <div class="ar-ap-stats">
-              <div class="ar-ap-stat">
-                <span class="stat-num">${receivedInvoices.length}</span>
-                <span class="stat-label">Total Bills</span>
-              </div>
-              <div class="ar-ap-stat">
-                <span class="stat-num">${unpaidPayables.length}</span>
-                <span class="stat-label">Unpaid</span>
-              </div>
-              <div class="ar-ap-stat">
-                <span class="stat-num">${metrics?.dpo_days?.toFixed(0) || '-'}</span>
-                <span class="stat-label">Avg DPO</span>
-              </div>
-            </div>
-            <canvas id="apChart" height="120"></canvas>
-          </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent Invoices</span>
+          <a href="/company/${companyId}/data/invoices" class="btn btn-secondary btn-sm">View All</a>
         </div>
-
-        <!-- Top Customers & Recent Transactions -->
-        <div class="bottom-grid">
-          <div class="data-card">
-            <div class="card-header"><h3>Top Customers by Revenue</h3></div>
-            <table class="compact-table">
-              <thead><tr><th>Customer</th><th style="text-align:right">Revenue</th></tr></thead>
-              <tbody>
-                ${topCustomers.map(([name, amount]) => `
-                  <tr>
-                    <td>${name}</td>
-                    <td style="text-align:right; font-weight: 600;">${formatCurrency(amount, company.currency)}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-
-          <div class="data-card">
-            <div class="card-header"><h3>Recent Transactions</h3></div>
-            <table class="compact-table">
-              <thead>
-                <tr><th>Date</th><th>Type</th><th>Number</th><th>Party</th><th style="text-align:right">Amount</th><th>Status</th></tr>
-              </thead>
-              <tbody>
-                ${recentInvoices.slice(0, 8).map((inv: any) => `
-                  <tr>
-                    <td>${inv.issue_date || '-'}</td>
-                    <td><span class="type-badge ${inv.invoice_type}">${inv.invoice_type === 'issued' ? 'Invoice' : 'Bill'}</span></td>
-                    <td>${inv.invoice_number || '-'}</td>
-                    <td class="truncate-cell">${inv.customer_name || '-'}</td>
-                    <td style="text-align:right; font-weight: 600;">${formatCurrency(inv.total_amount, company.currency)}</td>
-                    <td><span class="status-badge ${inv.status}">${inv.status || '-'}</span></td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Chart of Accounts -->
-        <div class="data-card" style="margin-top: 24px;">
-          <div class="card-header"><h3>Chart of Accounts</h3></div>
-          <table class="compact-table">
+        <div class="table-wrapper">
+          <table>
             <thead>
-              <tr><th>Account #</th><th>Name</th><th>Type</th><th style="text-align:right">Balance</th></tr>
+              <tr><th>Number</th><th>Customer</th><th style="text-align:right">Amount</th><th>Status</th></tr>
             </thead>
             <tbody>
-              ${accounts.map((acc: any) => `
+              ${recentInvoices.length > 0 ? recentInvoices.map((inv: any) => `
                 <tr>
-                  <td>${acc.account_number || '-'}</td>
+                  <td>${inv.invoice_number || '-'}</td>
+                  <td>${inv.customer_name || '-'}</td>
+                  <td style="text-align:right">${formatCurrency(inv.total_amount)}</td>
+                  <td><span class="badge ${inv.status === 'paid' ? 'badge-success' : 'badge-error'}">${inv.status}</span></td>
+                </tr>
+              `).join('') : '<tr><td colspan="4" class="empty-state">No invoices yet</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <h3 style="margin: 32px 0 16px; font-size: 1rem; color: var(--color-text-secondary);">Quick Actions</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+      <a href="/company/${companyId}/reports" class="card" style="text-decoration: none; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s;">
+        <span style="font-size: 2rem;">&#128202;</span>
+        <div>
+          <div style="font-weight: 600; color: var(--color-text);">Reports & Analytics</div>
+          <div style="font-size: 0.85rem; color: var(--color-text-secondary);">Detailed financial analysis</div>
+        </div>
+      </a>
+      <a href="/company/${companyId}/data/invoices" class="card" style="text-decoration: none; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s;">
+        <span style="font-size: 2rem;">&#128196;</span>
+        <div>
+          <div style="font-weight: 600; color: var(--color-text);">Invoices</div>
+          <div style="font-size: 0.85rem; color: var(--color-text-secondary);">${invoices.length} total invoices</div>
+        </div>
+      </a>
+      <a href="/company/${companyId}/data/accounts" class="card" style="text-decoration: none; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s;">
+        <span style="font-size: 2rem;">&#128179;</span>
+        <div>
+          <div style="font-weight: 600; color: var(--color-text);">Chart of Accounts</div>
+          <div style="font-size: 0.85rem; color: var(--color-text-secondary);">View all accounts</div>
+        </div>
+      </a>
+      <a href="/company/${companyId}/connect" class="card" style="text-decoration: none; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s;">
+        <span style="font-size: 2rem;">&#128279;</span>
+        <div>
+          <div style="font-weight: 600; color: var(--color-text);">Integration Settings</div>
+          <div style="font-size: 0.85rem; color: var(--color-text-secondary);">${connection?.software_type || 'Not connected'}</div>
+        </div>
+      </a>
+    </div>
+
+    <script>
+      new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: {
+          labels: ${JSON.stringify(chartLabels)},
+          datasets: [
+            { label: 'Revenue', data: ${JSON.stringify(revenueData)}, backgroundColor: '#10b981', borderRadius: 4 },
+            { label: 'Expenses', data: ${JSON.stringify(expensesData)}, backgroundColor: '#ef4444', borderRadius: 4 }
+          ]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+      });
+    </script>
+  `;
+
+  res.send(renderAppPage({
+    title: 'Dashboard',
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'overview',
+    req
+  }));
+});
+
+// Data: Invoices listing
+app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const invoices = db.getInvoicesByCompany(companyId);
+  const typeFilter = req.query.type as string || 'all';
+
+  const filteredInvoices = typeFilter === 'all'
+    ? invoices
+    : invoices.filter((i: any) => i.invoice_type === typeFilter);
+
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null || amount === undefined) return 'N/A';
+    return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+  };
+
+  const issuedCount = invoices.filter((i: any) => i.invoice_type === 'issued').length;
+  const receivedCount = invoices.filter((i: any) => i.invoice_type === 'received').length;
+  const paidCount = invoices.filter((i: any) => i.status === 'paid').length;
+  const unpaidCount = invoices.filter((i: any) => i.status === 'unpaid').length;
+
+  const content = `
+    <div class="page-header">
+      <h1>Invoices</h1>
+      <p>All synced invoices and bills from your accounting software</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Invoices</div>
+        <div class="stat-value">${invoices.length}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Sales Invoices</div>
+        <div class="stat-value">${issuedCount}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Bills (Received)</div>
+        <div class="stat-value">${receivedCount}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Unpaid</div>
+        <div class="stat-value" style="color: var(--color-warning)">${unpaidCount}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="tabs" style="border: none; margin: 0;">
+          <a href="/company/${companyId}/data/invoices" class="tab ${typeFilter === 'all' ? 'active' : ''}">All</a>
+          <a href="/company/${companyId}/data/invoices?type=issued" class="tab ${typeFilter === 'issued' ? 'active' : ''}">Sales</a>
+          <a href="/company/${companyId}/data/invoices?type=received" class="tab ${typeFilter === 'received' ? 'active' : ''}">Bills</a>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Number</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Due Date</th>
+              <th>Customer/Vendor</th>
+              <th style="text-align:right">Amount</th>
+              <th style="text-align:right">Balance</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredInvoices.length > 0 ? filteredInvoices.map((inv: any) => `
+              <tr>
+                <td><strong>${inv.invoice_number || '-'}</strong></td>
+                <td><span class="badge ${inv.invoice_type === 'issued' ? 'badge-info' : 'badge-warning'}">${inv.invoice_type === 'issued' ? 'Invoice' : 'Bill'}</span></td>
+                <td>${inv.issue_date || '-'}</td>
+                <td>${inv.due_date || '-'}</td>
+                <td>${inv.customer_name || '-'}</td>
+                <td style="text-align:right">${formatCurrency(inv.total_amount)}</td>
+                <td style="text-align:right">${formatCurrency(inv.balance_due)}</td>
+                <td><span class="badge ${inv.status === 'paid' ? 'badge-success' : 'badge-error'}">${inv.status || '-'}</span></td>
+              </tr>
+            `).join('') : '<tr><td colspan="8" class="empty-state">No invoices found</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  res.send(renderAppPage({
+    title: 'Invoices',
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'invoices',
+    req
+  }));
+});
+
+// Data: Chart of Accounts
+app.get('/company/:id/data/accounts', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const accounts = db.getAccountsByCompany(companyId);
+
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null || amount === undefined) return 'N/A';
+    return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+  };
+
+  // Group accounts by type
+  const accountsByType: Record<string, any[]> = {};
+  accounts.forEach((acc: any) => {
+    const type = acc.account_type || 'Other';
+    if (!accountsByType[type]) accountsByType[type] = [];
+    accountsByType[type].push(acc);
+  });
+
+  const totalAssets = accounts.filter((a: any) => ['Bank', 'Accounts Receivable', 'Fixed Asset', 'Other Current Asset'].includes(a.account_type)).reduce((sum: number, a: any) => sum + (a.current_balance || 0), 0);
+  const totalLiabilities = accounts.filter((a: any) => ['Accounts Payable', 'Credit Card', 'Long Term Liability', 'Other Current Liability'].includes(a.account_type)).reduce((sum: number, a: any) => sum + (a.current_balance || 0), 0);
+
+  const content = `
+    <div class="page-header">
+      <h1>Chart of Accounts</h1>
+      <p>Your synced accounts and current balances</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Accounts</div>
+        <div class="stat-value">${accounts.length}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Assets</div>
+        <div class="stat-value" style="color: var(--color-success)">${formatCurrency(totalAssets)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Liabilities</div>
+        <div class="stat-value" style="color: var(--color-error)">${formatCurrency(totalLiabilities)}</div>
+      </div>
+    </div>
+
+    ${Object.entries(accountsByType).map(([type, accs]) => `
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-header">
+          <span class="card-title">${type}</span>
+          <span class="badge badge-info">${accs.length} accounts</span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Account #</th>
+                <th>Name</th>
+                <th>Sub Type</th>
+                <th style="text-align:right">Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${accs.map((acc: any) => `
+                <tr>
+                  <td><strong>${acc.account_number || '-'}</strong></td>
                   <td>${acc.name}</td>
-                  <td>${acc.account_type}</td>
-                  <td style="text-align:right; font-weight: 600; color: ${acc.current_balance >= 0 ? 'var(--color-forest)' : '#991b1b'}">
-                    ${formatCurrency(acc.current_balance, company.currency)}
+                  <td>${acc.account_sub_type || '-'}</td>
+                  <td style="text-align:right; font-weight: 600; color: ${acc.current_balance >= 0 ? 'var(--color-success)' : 'var(--color-error)'}">
+                    ${formatCurrency(acc.current_balance)}
                   </td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
         </div>
+      </div>
+    `).join('')}
 
+    ${accounts.length === 0 ? '<div class="card"><div class="empty-state"><div class="empty-state-icon">&#128179;</div><p>No accounts synced yet</p></div></div>' : ''}
+  `;
+
+  res.send(renderAppPage({
+    title: 'Chart of Accounts',
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'accounts',
+    req
+  }));
+});
+
+// Data: Transactions
+app.get('/company/:id/data/transactions', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const transactions = db.getBankTransactionsByCompany(companyId, 100);
+
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null || amount === undefined) return 'N/A';
+    return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+  };
+
+  const deposits = transactions.filter((t: any) => t.amount > 0);
+  const withdrawals = transactions.filter((t: any) => t.amount < 0);
+  const totalIn = deposits.reduce((sum: number, t: any) => sum + t.amount, 0);
+  const totalOut = Math.abs(withdrawals.reduce((sum: number, t: any) => sum + t.amount, 0));
+
+  const content = `
+    <div class="page-header">
+      <h1>Bank Transactions</h1>
+      <p>Recent bank account activity</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Transactions</div>
+        <div class="stat-value">${transactions.length}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Money In</div>
+        <div class="stat-value" style="color: var(--color-success)">${formatCurrency(totalIn)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Money Out</div>
+        <div class="stat-value" style="color: var(--color-error)">${formatCurrency(totalOut)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Net Flow</div>
+        <div class="stat-value" style="color: ${totalIn - totalOut >= 0 ? 'var(--color-success)' : 'var(--color-error)'}">${formatCurrency(totalIn - totalOut)}</div>
       </div>
     </div>
 
-    <style>
-      .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
-      .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
-      .ar-ap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
-      .bottom-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; }
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Recent Transactions</span>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Payee</th>
+              <th>Category</th>
+              <th style="text-align:right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${transactions.length > 0 ? transactions.map((txn: any) => `
+              <tr>
+                <td>${txn.transaction_date || '-'}</td>
+                <td>${txn.description || '-'}</td>
+                <td>${txn.payee || '-'}</td>
+                <td><span class="badge badge-info">${txn.category || '-'}</span></td>
+                <td style="text-align:right; font-weight: 600; color: ${txn.amount >= 0 ? 'var(--color-success)' : 'var(--color-error)'}">
+                  ${txn.amount >= 0 ? '+' : ''}${formatCurrency(txn.amount)}
+                </td>
+              </tr>
+            `).join('') : '<tr><td colspan="5" class="empty-state">No transactions found</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
 
-      @media (max-width: 900px) {
-        .overview-grid, .charts-grid, .ar-ap-grid, .bottom-grid { grid-template-columns: 1fr; }
-      }
+  res.send(renderAppPage({
+    title: 'Transactions',
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'transactions',
+    req
+  }));
+});
 
-      .health-score-card, .key-metrics-card, .chart-card, .ar-ap-card, .data-card {
-        background: white; border: 1px solid var(--color-border); border-radius: 16px; padding: 24px;
-      }
-      .health-score-card h2, .key-metrics-card h3, .chart-card h3, .ar-ap-card h3, .data-card h3 {
-        margin: 0 0 16px 0; color: var(--color-forest-dark); font-size: 1.1rem;
-      }
+// Reports & Analytics
+app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
 
-      .health-score-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-      .health-score-badge { padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 1.2rem; }
-      .score-good { background: #dcfce7; color: #166534; }
-      .score-medium { background: #fef3c7; color: #92400e; }
-      .score-low { background: #fee2e2; color: #991b1b; }
-      .health-score-bar { height: 8px; background: var(--color-cream-dark); border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
-      .health-score-fill { height: 100%; background: linear-gradient(90deg, var(--color-forest), var(--color-sage)); border-radius: 4px; }
-      .health-score-description { color: var(--color-text-light); font-size: 0.9rem; margin-bottom: 16px; }
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
 
-      .health-factors { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-      .factor { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; }
-      .factor.good { background: #dcfce7; color: #166534; }
-      .factor.medium { background: #fef3c7; color: #92400e; }
-      .factor.bad { background: #fee2e2; color: #991b1b; }
-      .factor-icon { font-weight: bold; }
+  const metrics = db.getLatestMetrics(companyId);
+  const metricsHistory = db.getMetricsHistory(companyId, 12);
+  const invoices = db.getInvoicesByCompany(companyId);
 
-      .key-metric { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--color-border); }
-      .key-metric:last-of-type { border-bottom: none; }
-      .key-metric-label { color: var(--color-text-light); }
-      .key-metric-value { font-weight: 700; color: var(--color-forest-dark); }
-      .key-metric-value.positive { color: #166534; }
-      .key-metric-value.negative { color: #991b1b; }
-      .sync-time { margin-top: 16px; font-size: 0.8rem; color: var(--color-text-light); text-align: right; }
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null || amount === undefined) return 'N/A';
+    return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+  };
 
-      .ar-ap-header { display: flex; justify-content: space-between; align-items: center; }
-      .ar-ap-total { font-size: 1.5rem; font-weight: 700; color: var(--color-forest); }
-      .ar-ap-total.negative { color: #991b1b; }
-      .ar-ap-stats { display: flex; gap: 24px; margin: 16px 0; }
-      .ar-ap-stat { text-align: center; }
-      .stat-num { display: block; font-size: 1.5rem; font-weight: 700; color: var(--color-forest-dark); }
-      .stat-label { font-size: 0.8rem; color: var(--color-text-light); }
+  // Calculate additional metrics
+  const issuedInvoices = invoices.filter((i: any) => i.invoice_type === 'issued');
+  const receivedInvoices = invoices.filter((i: any) => i.invoice_type === 'received');
+  const totalRevenue = issuedInvoices.reduce((sum: number, i: any) => sum + (i.total_amount || 0), 0);
+  const totalExpenses = receivedInvoices.reduce((sum: number, i: any) => sum + (i.total_amount || 0), 0);
 
-      .card-header { border-bottom: 1px solid var(--color-border); margin: -24px -24px 16px -24px; padding: 16px 24px; background: var(--color-sage-pale); border-radius: 16px 16px 0 0; }
-      .card-header h3 { margin: 0; }
+  // Customer analysis
+  const customerRevenue: Record<string, number> = {};
+  issuedInvoices.forEach((inv: any) => {
+    const name = inv.customer_name || 'Unknown';
+    customerRevenue[name] = (customerRevenue[name] || 0) + (inv.total_amount || 0);
+  });
+  const topCustomers = Object.entries(customerRevenue).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
-      .compact-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-      .compact-table th, .compact-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--color-border); }
-      .compact-table th { font-weight: 600; color: var(--color-text-light); font-size: 0.8rem; text-transform: uppercase; }
-      .compact-table tr:last-child td { border-bottom: none; }
-      .compact-table tr:hover td { background: var(--color-cream); }
-      .truncate-cell { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  // Vendor analysis
+  const vendorExpenses: Record<string, number> = {};
+  receivedInvoices.forEach((inv: any) => {
+    const name = inv.customer_name || 'Unknown';
+    vendorExpenses[name] = (vendorExpenses[name] || 0) + (inv.total_amount || 0);
+  });
+  const topVendors = Object.entries(vendorExpenses).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
-      .type-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
-      .type-badge.issued { background: #dbeafe; color: #1e40af; }
-      .type-badge.received { background: #fef3c7; color: #92400e; }
+  // Monthly data for charts
+  const chartLabels = metricsHistory.map((m: any) => new Date(m.metric_date).toLocaleDateString('cs-CZ', { month: 'short' }));
+  const revenueData = metricsHistory.map((m: any) => Math.round((m.revenue || 0) / 1000));
+  const expensesData = metricsHistory.map((m: any) => Math.round((m.expenses || 0) / 1000));
+  const profitData = metricsHistory.map((m: any) => Math.round((m.net_income || 0) / 1000));
+  const cashData = metricsHistory.map((m: any) => Math.round((m.cash_balance || 0) / 1000));
 
-      .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
-      .status-badge.paid { background: #dcfce7; color: #166534; }
-      .status-badge.unpaid { background: #fee2e2; color: #991b1b; }
-    </style>
+  const content = `
+    <div class="page-header">
+      <h1>Reports & Analytics</h1>
+      <p>Financial insights and performance analysis</p>
+    </div>
+
+    <!-- Profitability Section -->
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128200; Profitability</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value">${formatCurrency(totalRevenue)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Expenses</div>
+        <div class="stat-value">${formatCurrency(totalExpenses)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Net Profit</div>
+        <div class="stat-value" style="color: ${(totalRevenue - totalExpenses) >= 0 ? 'var(--color-success)' : 'var(--color-error)'}">${formatCurrency(totalRevenue - totalExpenses)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Profit Margin</div>
+        <div class="stat-value">${totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue * 100).toFixed(1) : 0}%</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Revenue vs Expenses (in thousands)</span></div>
+        <div class="card-body"><canvas id="revenueChart" height="200"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Net Profit Trend (in thousands)</span></div>
+        <div class="card-body"><canvas id="profitChart" height="200"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Liquidity Section -->
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128176; Liquidity & Cash Flow</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Cash Balance</div>
+        <div class="stat-value">${formatCurrency(metrics?.cash_balance)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Current Ratio</div>
+        <div class="stat-value">${metrics?.current_ratio?.toFixed(2) || 'N/A'}</div>
+        <div class="stat-change ${metrics?.current_ratio >= 1.5 ? 'positive' : 'negative'}">${metrics?.current_ratio >= 1.5 ? 'Healthy' : 'Needs attention'}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Quick Ratio</div>
+        <div class="stat-value">${metrics?.quick_ratio?.toFixed(2) || 'N/A'}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Working Capital</div>
+        <div class="stat-value">${formatCurrency((metrics?.current_assets || 0) - (metrics?.current_liabilities || 0))}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Cash Balance Trend (in thousands)</span></div>
+      <div class="card-body"><canvas id="cashChart" height="150"></canvas></div>
+    </div>
+
+    <!-- Receivables & Payables Section -->
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128203; Receivables & Payables</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Accounts Receivable</div>
+        <div class="stat-value">${formatCurrency(metrics?.accounts_receivable)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">DSO (Days Sales Outstanding)</div>
+        <div class="stat-value">${metrics?.dso_days?.toFixed(0) || 'N/A'} days</div>
+        <div class="stat-change ${metrics?.dso_days <= 30 ? 'positive' : 'negative'}">${metrics?.dso_days <= 30 ? 'Good collection' : 'Slow collection'}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Accounts Payable</div>
+        <div class="stat-value">${formatCurrency(metrics?.accounts_payable)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">DPO (Days Payable Outstanding)</div>
+        <div class="stat-value">${metrics?.dpo_days?.toFixed(0) || 'N/A'} days</div>
+      </div>
+    </div>
+
+    <!-- Leverage Section -->
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#9878; Financial Structure</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Assets</div>
+        <div class="stat-value">${formatCurrency(metrics?.total_assets)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Liabilities</div>
+        <div class="stat-value">${formatCurrency(metrics?.total_liabilities)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Equity</div>
+        <div class="stat-value">${formatCurrency(metrics?.total_equity)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Debt to Equity</div>
+        <div class="stat-value">${metrics?.debt_to_equity?.toFixed(2) || 'N/A'}</div>
+        <div class="stat-change ${metrics?.debt_to_equity < 1 ? 'positive' : 'negative'}">${metrics?.debt_to_equity < 1 ? 'Low leverage' : 'High leverage'}</div>
+      </div>
+    </div>
+
+    <!-- Top Customers & Vendors -->
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128101; Customer & Vendor Analysis</h2>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Top Customers by Revenue</span></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Customer</th><th style="text-align:right">Revenue</th><th style="text-align:right">% of Total</th></tr></thead>
+            <tbody>
+              ${topCustomers.map(([name, amount]) => `
+                <tr>
+                  <td>${name}</td>
+                  <td style="text-align:right">${formatCurrency(amount)}</td>
+                  <td style="text-align:right">${totalRevenue > 0 ? (amount / totalRevenue * 100).toFixed(1) : 0}%</td>
+                </tr>
+              `).join('') || '<tr><td colspan="3" class="empty-state">No data</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Top Vendors by Spend</span></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Vendor</th><th style="text-align:right">Spend</th><th style="text-align:right">% of Total</th></tr></thead>
+            <tbody>
+              ${topVendors.map(([name, amount]) => `
+                <tr>
+                  <td>${name}</td>
+                  <td style="text-align:right">${formatCurrency(amount)}</td>
+                  <td style="text-align:right">${totalExpenses > 0 ? (amount / totalExpenses * 100).toFixed(1) : 0}%</td>
+                </tr>
+              `).join('') || '<tr><td colspan="3" class="empty-state">No data</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
     <script>
       // Revenue vs Expenses Chart
       new Chart(document.getElementById('revenueChart'), {
-        type: 'line',
+        type: 'bar',
         data: {
           labels: ${JSON.stringify(chartLabels)},
           datasets: [
-            {
-              label: 'Revenue',
-              data: ${JSON.stringify(revenueData)},
-              borderColor: '#2d5a3d',
-              backgroundColor: 'rgba(45, 90, 61, 0.1)',
-              fill: true,
-              tension: 0.3
-            },
-            {
-              label: 'Expenses',
-              data: ${JSON.stringify(expensesData)},
-              borderColor: '#c44536',
-              backgroundColor: 'rgba(196, 69, 54, 0.1)',
-              fill: true,
-              tension: 0.3
-            }
+            { label: 'Revenue', data: ${JSON.stringify(revenueData)}, backgroundColor: '#10b981', borderRadius: 4 },
+            { label: 'Expenses', data: ${JSON.stringify(expensesData)}, backgroundColor: '#ef4444', borderRadius: 4 }
           ]
         },
-        options: {
-          responsive: true,
-          plugins: { legend: { position: 'bottom' } },
-          scales: { y: { beginAtZero: true } }
-        }
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
       });
 
-      // Cash Flow Chart
-      new Chart(document.getElementById('cashFlowChart'), {
+      // Profit Chart
+      new Chart(document.getElementById('profitChart'), {
         type: 'line',
         data: {
           labels: ${JSON.stringify(chartLabels)},
-          datasets: [{
-            label: 'Cash Balance',
-            data: ${JSON.stringify(cashData)},
-            borderColor: '#2d5a3d',
-            backgroundColor: 'rgba(45, 90, 61, 0.2)',
-            fill: true,
-            tension: 0.3
-          }]
+          datasets: [{ label: 'Net Profit', data: ${JSON.stringify(profitData)}, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3 }]
         },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
+        options: { responsive: true, plugins: { legend: { display: false } } }
       });
 
-      // AR Trend Chart
-      new Chart(document.getElementById('arChart'), {
-        type: 'bar',
+      // Cash Chart
+      new Chart(document.getElementById('cashChart'), {
+        type: 'line',
         data: {
-          labels: ${JSON.stringify(chartLabels.slice(-6))},
-          datasets: [{
-            label: 'Receivables',
-            data: ${JSON.stringify(arData.slice(-6))},
-            backgroundColor: 'rgba(45, 90, 61, 0.6)',
-            borderRadius: 4
-          }]
+          labels: ${JSON.stringify(chartLabels)},
+          datasets: [{ label: 'Cash', data: ${JSON.stringify(cashData)}, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3 }]
         },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-
-      // AP Trend Chart
-      new Chart(document.getElementById('apChart'), {
-        type: 'bar',
-        data: {
-          labels: ${JSON.stringify(chartLabels.slice(-6))},
-          datasets: [{
-            label: 'Payables',
-            data: ${JSON.stringify(apData.slice(-6))},
-            backgroundColor: 'rgba(196, 69, 54, 0.6)',
-            borderRadius: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
       });
     </script>
   `;
 
-  res.send(renderPage('Company Overview', content, req));
+  res.send(renderAppPage({
+    title: 'Reports & Analytics',
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'reports',
+    req
+  }));
 });
 
 // Admin Dashboard
