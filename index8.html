@@ -805,7 +805,7 @@
         .diagram-container {
             background: white;
             border-radius: var(--radius-soft);
-            padding: 40px;
+            padding: 60px;
             border: 1px solid var(--color-border);
             box-shadow: var(--shadow-large);
             position: relative;
@@ -817,17 +817,46 @@
             font-size: 0.9rem;
             font-weight: 700;
             color: var(--color-text-light);
-            margin-bottom: 32px;
+            margin-bottom: 48px;
             text-transform: uppercase;
             letter-spacing: 0.1em;
         }
 
-        .diagram-svg {
-            width: 100%;
-            max-width: 1000px;
-            height: auto;
-            display: block;
-            margin: 0 auto;
+        .diagram-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            position: relative;
+        }
+
+        .diagram-column {
+            flex: 1;
+            max-width: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .diagram-column:nth-child(3) {
+            justify-content: center;
+        }
+
+        .diagram-column-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .diagram-column-header h4 {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            color: var(--color-forest-dark);
+        }
+
+        .diagram-column-header p {
+            font-size: 0.85rem;
+            color: var(--color-text-light);
         }
 
         .diagram-node {
@@ -2115,7 +2144,140 @@
 
                 <div class="diagram-container">
                     <p class="diagram-title">The Lenduck Data Flow</p>
-                    <img src="diagram.svg" alt="Lenduck Data Flow - From accounting software through our platform to lenders" class="diagram-svg">
+                    <div class="diagram-flow">
+                        <!-- Left Column: Accounting Software -->
+                        <div class="diagram-column">
+                            <div class="diagram-column-header">
+                                <h4>Your Accounting Software</h4>
+                                <p>Connect once, securely</p>
+                            </div>
+                            <div class="diagram-node software">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#4a7c59" stroke-width="2" width="24" height="24">
+                                        <circle cx="12" cy="12" r="9"/>
+                                        <path d="M12 6v6l4 2"/>
+                                    </svg>
+                                </div>
+                                <h5>QuickBooks</h5>
+                                <p>Invoices, ledger, bank</p>
+                            </div>
+                            <div class="diagram-node software">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#4a7c59" stroke-width="2" width="24" height="24">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                        <path d="M3 9h18M9 21V9"/>
+                                    </svg>
+                                </div>
+                                <h5>Xero</h5>
+                                <p>Invoices, ledger, bank</p>
+                            </div>
+                            <div class="diagram-node software">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#4a7c59" stroke-width="2" width="24" height="24">
+                                        <path d="M4 6h16M4 12h16M4 18h10"/>
+                                    </svg>
+                                </div>
+                                <h5>Sage, FreshBooks...</h5>
+                                <p>Invoices, ledger, bank</p>
+                            </div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="diagram-arrow">
+                            <svg viewBox="0 0 60 24" fill="none">
+                                <path d="M0 12h50M45 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="diagram-arrow-label">Encrypted connection</span>
+                        </div>
+
+                        <!-- Center: Lenduck -->
+                        <div class="diagram-column">
+                            <div class="diagram-column-header">
+                                <h4>Lenduck Platform</h4>
+                                <p>AI-powered analysis</p>
+                            </div>
+                            <div class="diagram-node lenduck-hub">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="28" height="28">
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4"/>
+                                    </svg>
+                                </div>
+                                <h5>Smart Matching Engine</h5>
+                                <p>We analyze and normalize your data</p>
+                                <div class="lenduck-features">
+                                    <div class="lenduck-feature">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 6L9 17l-5-5"/>
+                                        </svg>
+                                        Financial health score
+                                    </div>
+                                    <div class="lenduck-feature">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 6L9 17l-5-5"/>
+                                        </svg>
+                                        Cash flow analysis
+                                    </div>
+                                    <div class="lenduck-feature">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 6L9 17l-5-5"/>
+                                        </svg>
+                                        Risk profiling
+                                    </div>
+                                    <div class="lenduck-feature">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 6L9 17l-5-5"/>
+                                        </svg>
+                                        Lender matching
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="diagram-arrow">
+                            <svg viewBox="0 0 60 24" fill="none">
+                                <path d="M0 12h50M45 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="diagram-arrow-label">Anonymized profiles</span>
+                        </div>
+
+                        <!-- Right Column: Lenders -->
+                        <div class="diagram-column">
+                            <div class="diagram-column-header">
+                                <h4>Lender Network</h4>
+                                <p>Compete for your business</p>
+                            </div>
+                            <div class="diagram-node lender">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#8b7355" stroke-width="2" width="24" height="24">
+                                        <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>
+                                    </svg>
+                                </div>
+                                <h5>Traditional Banks</h5>
+                                <p>Major & regional banks</p>
+                            </div>
+                            <div class="diagram-node lender">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#8b7355" stroke-width="2" width="24" height="24">
+                                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                                    </svg>
+                                </div>
+                                <h5>Alternative Lenders</h5>
+                                <p>Fintech, P2P platforms</p>
+                            </div>
+                            <div class="diagram-node lender">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#8b7355" stroke-width="2" width="24" height="24">
+                                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                                        <path d="M7 15h0M2 10h20"/>
+                                    </svg>
+                                </div>
+                                <h5>Factoring Companies</h5>
+                                <p>Invoice financing</p>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Privacy Note -->
                     <div class="privacy-note">
