@@ -160,6 +160,46 @@
             border-left: 1px solid var(--color-border);
         }
 
+        .nav-login {
+            color: var(--color-forest) !important;
+            font-weight: 700 !important;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            width: 32px;
+            height: 32px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            z-index: 1001;
+        }
+
+        .mobile-menu-btn span {
+            display: block;
+            width: 100%;
+            height: 2px;
+            background: var(--color-forest);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .mobile-menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
         .lang-option {
             padding: 6px 10px;
             border-radius: 6px;
@@ -1848,8 +1888,47 @@
         }
 
         @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex;
+            }
+
             .nav-links {
                 display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: var(--color-cream);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 24px;
+                z-index: 1000;
+                padding: 80px 24px 40px;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links a {
+                font-size: 1.25rem;
+            }
+
+            .nav-links .btn {
+                width: 100%;
+                max-width: 280px;
+                text-align: center;
+            }
+
+            .lang-switcher {
+                margin-left: 0;
+                padding-left: 0;
+                border-left: none;
+                margin-top: 16px;
+                padding-top: 16px;
+                border-top: 1px solid var(--color-border);
             }
 
             .process-steps {
@@ -1900,12 +1979,18 @@
                 <img src="logo.png" alt="Lenduck" class="logo-icon">
                 <span class="logo-text">Lenduck</span>
             </a>
-            <div class="nav-links">
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Přepnout menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-links" id="navLinks">
                 <a href="#how-it-works">Jak to funguje</a>
                 <a href="#for-business">Pro firmy</a>
                 <a href="#for-lenders">Pro poskytovatele</a>
                 <a href="#pricing">Ceník</a>
                 <a href="#faq">FAQ</a>
+                <a href="/login" class="nav-login">Přihlásit</a>
                 <a href="#cta" class="btn btn-primary" style="color: whitesmoke;">Začít</a>
                 <div class="lang-switcher">
                     <a href="/" class="lang-option">EN</a>
@@ -2751,6 +2836,28 @@
     </div>
 
     <script>
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            navLinks.classList.toggle('active');
+            menuBtn.classList.toggle('active');
+            document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+        }
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                const navLinks = document.getElementById('navLinks');
+                const menuBtn = document.querySelector('.mobile-menu-btn');
+                if (navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                    menuBtn.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
             toast.innerHTML = `
