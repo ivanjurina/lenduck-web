@@ -274,29 +274,23 @@ app.post('/login', (req: Request, res: Response) => {
 // Signup
 app.get('/signup', (req: Request, res: Response) => {
   const error = req.query.error as string;
+  const success = req.query.success as string;
 
   const content = `
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <h1>Create account</h1>
-                <p>Start your journey with Lenduck</p>
+                <h1>Get Early Access</h1>
+                <p>Join Lenduck and we'll send you login details</p>
             </div>
             ${error ? `<div class="flash flash-error">${error}</div>` : ''}
+            ${success ? `<div class="flash flash-success">${success}</div>` : ''}
             <form method="POST" action="/signup">
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" required placeholder="you@company.com">
                 </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required placeholder="At least 8 characters" minlength="8">
-                </div>
-                <div class="form-group">
-                    <label for="confirm_password">Confirm Password</label>
-                    <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm your password">
-                </div>
-                <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                <button type="submit" class="btn btn-primary btn-full">Sign Up</button>
             </form>
             <div class="auth-footer">
                 Already have an account? <a href="/login">Log in</a>
@@ -309,18 +303,10 @@ app.get('/signup', (req: Request, res: Response) => {
 });
 
 app.post('/signup', (req: Request, res: Response) => {
-  const { email, password, confirm_password } = req.body;
+  const { email } = req.body;
 
-  if (!email || !password) {
-    return res.redirect('/signup?error=' + encodeURIComponent('Email and password are required.'));
-  }
-
-  if (password !== confirm_password) {
-    return res.redirect('/signup?error=' + encodeURIComponent('Passwords do not match.'));
-  }
-
-  if (password.length < 8) {
-    return res.redirect('/signup?error=' + encodeURIComponent('Password must be at least 8 characters.'));
+  if (!email) {
+    return res.redirect('/signup?error=' + encodeURIComponent('Email is required.'));
   }
 
   const existing = db.getUserByEmail(email);
@@ -329,10 +315,10 @@ app.post('/signup', (req: Request, res: Response) => {
   }
 
   try {
-    db.createUser(email, password);
-    res.redirect('/login?success=' + encodeURIComponent('Account created successfully! Please log in.'));
+    db.createPendingUser(email);
+    res.redirect('/signup?success=' + encodeURIComponent('Thanks for signing up! We will send you your login details soon.'));
   } catch (e) {
-    res.redirect('/signup?error=' + encodeURIComponent('Failed to create account.'));
+    res.redirect('/signup?error=' + encodeURIComponent('Failed to sign up. Please try again.'));
   }
 });
 

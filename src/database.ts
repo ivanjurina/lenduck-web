@@ -10,7 +10,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
+    password_hash TEXT,
     is_admin INTEGER DEFAULT 0,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
@@ -64,6 +64,11 @@ export function createUser(email: string, password: string, isAdmin: boolean = f
   const passwordHash = hashPassword(password);
   const stmt = db.prepare('INSERT INTO users (email, password_hash, is_admin) VALUES (?, ?, ?)');
   return stmt.run(email.toLowerCase(), passwordHash, isAdmin ? 1 : 0);
+}
+
+export function createPendingUser(email: string) {
+  const stmt = db.prepare('INSERT INTO users (email, password_hash, is_admin) VALUES (?, NULL, 0)');
+  return stmt.run(email.toLowerCase());
 }
 
 export function getUserByEmail(email: string) {
