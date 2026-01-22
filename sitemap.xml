@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- English Homepage -->
+  <url>
+    <loc>https://lenduck.com/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lenduck.com/"/>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://lenduck.com/cz"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lenduck.com/"/>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Czech Homepage -->
+  <url>
+    <loc>https://lenduck.com/cz</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lenduck.com/"/>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://lenduck.com/cz"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lenduck.com/"/>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Login Page -->
+  <url>
+    <loc>https://lenduck.com/login</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Signup Page -->
+  <url>
+    <loc>https://lenduck.com/signup</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>

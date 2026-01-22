@@ -215,6 +215,17 @@ app.get('/cz', (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '..', 'index8-cz.html'));
 });
 
+// SEO files
+app.get('/robots.txt', (req: Request, res: Response) => {
+  res.type('text/plain');
+  res.sendFile(path.join(__dirname, '..', 'robots.txt'));
+});
+
+app.get('/sitemap.xml', (req: Request, res: Response) => {
+  res.type('application/xml');
+  res.sendFile(path.join(__dirname, '..', 'sitemap.xml'));
+});
+
 // Login
 app.get('/login', (req: Request, res: Response) => {
   const error = req.query.error as string;

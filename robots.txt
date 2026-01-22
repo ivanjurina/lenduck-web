@@ -1,0 +1,13 @@
+# Robots.txt for Lenduck.com
+# Allow all crawlers
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://lenduck.com/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
