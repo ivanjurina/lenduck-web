@@ -824,7 +824,7 @@
 
         .diagram-flow {
             display: flex;
-            align-items: stretch;
+            align-items: center;
             justify-content: center;
             gap: 0;
             position: relative;
@@ -836,6 +836,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+
+        .diagram-column:nth-child(3) {
+            justify-content: center;
         }
 
         .diagram-column-header {
@@ -884,9 +888,13 @@
             background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
             border: none;
             color: white;
-            padding: 36px 28px;
-            box-shadow: var(--shadow-medium);
+            padding: 48px 32px;
+            box-shadow: var(--shadow-large), 0 0 60px rgba(45, 90, 61, 0.2);
             border-radius: var(--radius-soft);
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .diagram-node.lender {
@@ -941,7 +949,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding-top: 60px;
         }
 
         .diagram-arrow svg {
