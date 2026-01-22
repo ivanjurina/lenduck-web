@@ -407,7 +407,12 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
         <div class="container">
             <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <h2>Your Companies</h2>
-                <a href="/company/new" class="btn btn-primary">+ Add Company</a>
+                <div style="display: flex; gap: 12px;">
+                    <form method="POST" action="/company/demo" style="margin: 0;">
+                        <button type="submit" class="btn btn-secondary">Try Demo</button>
+                    </form>
+                    <a href="/company/new" class="btn btn-primary">+ Add Company</a>
+                </div>
             </div>
             <div class="companies-grid">
                 ${companyCards}
@@ -502,6 +507,160 @@ app.post('/company/new', requireAuth, (req: Request, res: Response) => {
     res.redirect(`/company/${result.lastInsertRowid}/connect`);
   } catch (e) {
     res.redirect('/company/new?error=' + encodeURIComponent('Failed to create company.'));
+  }
+});
+
+// Create Demo Company with sample data
+app.post('/company/demo', requireAuth, (req: Request, res: Response) => {
+  const userId = req.session.userId!;
+
+  try {
+    // Create demo company
+    const result = db.createCompany({
+      user_id: userId,
+      name: 'Demo Company s.r.o.',
+      business_id: '12345678',
+      country: 'CZ',
+      currency: 'CZK',
+    });
+
+    const companyId = result.lastInsertRowid as number;
+
+    // Create accounting connection (demo/connected)
+    db.createAccountingConnection({
+      company_id: companyId,
+      software_type: 'quickbooks',
+      status: 'connected',
+    });
+
+    // Update with last sync time
+    db.updateAccountingConnection(companyId, {
+      last_sync_at: new Date().toISOString(),
+    });
+
+    // Create sample accounts
+    const accounts = [
+      { external_id: 'acc_1', name: 'Business Checking', account_type: 'Bank', account_sub_type: 'Checking', account_number: '1000', current_balance: 2850000 },
+      { external_id: 'acc_2', name: 'Savings Account', account_type: 'Bank', account_sub_type: 'Savings', account_number: '1010', current_balance: 1500000 },
+      { external_id: 'acc_3', name: 'Accounts Receivable', account_type: 'Accounts Receivable', account_sub_type: 'AccountsReceivable', account_number: '1200', current_balance: 1250000 },
+      { external_id: 'acc_4', name: 'Office Equipment', account_type: 'Fixed Asset', account_sub_type: 'FurnitureAndFixtures', account_number: '1500', current_balance: 450000 },
+      { external_id: 'acc_5', name: 'Accounts Payable', account_type: 'Accounts Payable', account_sub_type: 'AccountsPayable', account_number: '2000', current_balance: 420000 },
+      { external_id: 'acc_6', name: 'Bank Loan', account_type: 'Long Term Liability', account_sub_type: 'NotesPayable', account_number: '2500', current_balance: 800000 },
+      { external_id: 'acc_7', name: 'Owner Equity', account_type: 'Equity', account_sub_type: 'OpeningBalanceEquity', account_number: '3000', current_balance: 3500000 },
+      { external_id: 'acc_8', name: 'Retained Earnings', account_type: 'Equity', account_sub_type: 'RetainedEarnings', account_number: '3100', current_balance: 1330000 },
+    ];
+
+    for (const acc of accounts) {
+      db.upsertAccount({
+        company_id: companyId,
+        external_id: acc.external_id,
+        name: acc.name,
+        account_type: acc.account_type,
+        account_sub_type: acc.account_sub_type,
+        account_number: acc.account_number,
+        current_balance: acc.current_balance,
+        currency: 'CZK',
+        is_active: true,
+      });
+    }
+
+    // Sample customers and vendors
+    const customers = ['Škoda Auto a.s.', 'České dráhy, a.s.', 'Alza.cz a.s.', 'Komerční banka', 'O2 Czech Republic'];
+    const vendors = ['Microsoft CZ', 'Amazon Web Services', 'T-Mobile CZ', 'PRE Energetika', 'ČSOB Leasing'];
+
+    // Generate invoices for last 12 months
+    const today = new Date();
+    let invoiceNum = 2024001;
+
+    for (let monthsAgo = 11; monthsAgo >= 0; monthsAgo--) {
+      // 3-5 sales invoices per month
+      const numSales = Math.floor(Math.random() * 3) + 3;
+      for (let i = 0; i < numSales; i++) {
+        const invoiceDate = new Date(today.getFullYear(), today.getMonth() - monthsAgo, Math.floor(Math.random() * 20) + 1);
+        const dueDate = new Date(invoiceDate);
+        dueDate.setDate(dueDate.getDate() + 30);
+        const amount = Math.floor(Math.random() * 350000) + 50000;
+        const isPaid = monthsAgo > 1 || Math.random() > 0.4;
+
+        db.upsertInvoice({
+          company_id: companyId,
+          external_id: `inv_${invoiceNum}`,
+          invoice_type: 'issued',
+          invoice_number: `FV-${invoiceNum}`,
+          customer_name: customers[Math.floor(Math.random() * customers.length)],
+          customer_id: `cust_${i}`,
+          issue_date: invoiceDate.toISOString().split('T')[0],
+          due_date: dueDate.toISOString().split('T')[0],
+          total_amount: amount,
+          balance_due: isPaid ? 0 : amount,
+          currency: 'CZK',
+          status: isPaid ? 'paid' : 'unpaid',
+        });
+        invoiceNum++;
+      }
+
+      // 2-3 purchase invoices per month
+      const numPurchases = Math.floor(Math.random() * 2) + 2;
+      for (let i = 0; i < numPurchases; i++) {
+        const invoiceDate = new Date(today.getFullYear(), today.getMonth() - monthsAgo, Math.floor(Math.random() * 20) + 5);
+        const dueDate = new Date(invoiceDate);
+        dueDate.setDate(dueDate.getDate() + 14);
+        const amount = Math.floor(Math.random() * 120000) + 15000;
+        const isPaid = monthsAgo > 0 || Math.random() > 0.5;
+
+        db.upsertInvoice({
+          company_id: companyId,
+          external_id: `bill_${invoiceNum}`,
+          invoice_type: 'received',
+          invoice_number: `PF-${invoiceNum}`,
+          customer_name: vendors[Math.floor(Math.random() * vendors.length)],
+          customer_id: `vend_${i}`,
+          issue_date: invoiceDate.toISOString().split('T')[0],
+          due_date: dueDate.toISOString().split('T')[0],
+          total_amount: amount,
+          balance_due: isPaid ? 0 : amount,
+          currency: 'CZK',
+          status: isPaid ? 'paid' : 'unpaid',
+        });
+        invoiceNum++;
+      }
+    }
+
+    // Generate monthly financial metrics
+    for (let monthsAgo = 11; monthsAgo >= 0; monthsAgo--) {
+      const metricDate = new Date(today.getFullYear(), today.getMonth() - monthsAgo + 1, 0);
+      const growthFactor = 1 + (11 - monthsAgo) * 0.02;
+
+      const revenue = Math.round(1200000 * growthFactor * (0.9 + Math.random() * 0.2));
+      const expenses = Math.round(480000 * growthFactor * (0.9 + Math.random() * 0.2));
+
+      db.saveFinancialMetrics({
+        company_id: companyId,
+        metric_date: metricDate.toISOString().split('T')[0],
+        revenue,
+        expenses,
+        net_income: revenue - expenses,
+        gross_profit: revenue * 0.65,
+        total_assets: Math.round(6430000 * growthFactor),
+        total_liabilities: Math.round(1220000 * growthFactor),
+        total_equity: Math.round(5210000 * growthFactor),
+        current_assets: Math.round(5600000 * growthFactor),
+        current_liabilities: Math.round(420000 * growthFactor),
+        accounts_receivable: Math.round(1250000 * growthFactor * (0.7 + Math.random() * 0.3)),
+        accounts_payable: Math.round(420000 * growthFactor * (0.7 + Math.random() * 0.3)),
+        cash_balance: Math.round(4350000 * growthFactor),
+        current_ratio: 13.3,
+        quick_ratio: 12.0,
+        debt_to_equity: 0.23,
+        dso_days: 28 + Math.random() * 8,
+        dpo_days: 18 + Math.random() * 6,
+      });
+    }
+
+    res.redirect(`/company/${companyId}/overview?success=` + encodeURIComponent('Demo company created with sample data!'));
+  } catch (e: any) {
+    console.error('Demo company creation error:', e);
+    res.redirect('/dashboard?error=' + encodeURIComponent('Failed to create demo company.'));
   }
 });
 
