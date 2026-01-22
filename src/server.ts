@@ -229,6 +229,11 @@ app.get('/sitemap.xml', (req: Request, res: Response) => {
 
 // Login
 app.get('/login', (req: Request, res: Response) => {
+  // Redirect logged-in users to dashboard
+  if (req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
   const error = req.query.error as string;
   const success = req.query.success as string;
 
@@ -285,6 +290,11 @@ app.post('/login', (req: Request, res: Response) => {
 
 // Signup
 app.get('/signup', (req: Request, res: Response) => {
+  // Redirect logged-in users to dashboard
+  if (req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
   const error = req.query.error as string;
   const success = req.query.success as string;
 
