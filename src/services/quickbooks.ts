@@ -73,7 +73,13 @@ export async function exchangeCodeForTokens(code: string): Promise<{
     throw new Error(`Token exchange failed: ${error}`);
   }
 
-  return response.json();
+  return response.json() as Promise<{
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+    x_refresh_token_expires_in: number;
+    token_type: string;
+  }>;
 }
 
 /**
@@ -104,7 +110,11 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
     throw new Error(`Token refresh failed: ${error}`);
   }
 
-  return response.json();
+  return response.json() as Promise<{
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+  }>;
 }
 
 /**
