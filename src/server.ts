@@ -856,18 +856,22 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
 
   const connection = db.getAccountingConnection(companyId);
   const metrics = db.getLatestMetrics(companyId);
-  const recentInvoices = db.getInvoicesByCompany(companyId).slice(0, 10);
+  const metricsHistory = db.getMetricsHistory(companyId, 12);
+  const allInvoices = db.getInvoicesByCompany(companyId);
+  const recentInvoices = allInvoices.slice(0, 15);
+  const accounts = db.getAccountsByCompany(companyId);
+  const transactions = db.getBankTransactionsByCompany(companyId, 20);
 
   const error = req.query.error as string;
   const success = req.query.success as string;
 
-  // Format currency
-  const formatCurrency = (amount: number | null, currency: string = 'USD') => {
+  // Format currency helper
+  const formatCurrency = (amount: number | null, currency: string = 'CZK') => {
     if (amount === null || amount === undefined) return 'N/A';
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+    return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount);
   };
 
-  // Calculate health score (simplified)
+  // Calculate health score
   let healthScore = 50;
   if (metrics) {
     if (metrics.current_ratio >= 1.5) healthScore += 15;
@@ -878,77 +882,44 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
   }
   healthScore = Math.min(100, healthScore);
 
-  const metricsHtml = metrics ? `
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-label">Revenue (YTD)</div>
-        <div class="metric-value">${formatCurrency(metrics.revenue, company.currency)}</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Net Income</div>
-        <div class="metric-value ${metrics.net_income >= 0 ? 'positive' : 'negative'}">${formatCurrency(metrics.net_income, company.currency)}</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Cash Balance</div>
-        <div class="metric-value">${formatCurrency(metrics.cash_balance, company.currency)}</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Accounts Receivable</div>
-        <div class="metric-value">${formatCurrency(metrics.accounts_receivable, company.currency)}</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Accounts Payable</div>
-        <div class="metric-value">${formatCurrency(metrics.accounts_payable, company.currency)}</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Current Ratio</div>
-        <div class="metric-value">${metrics.current_ratio?.toFixed(2) || 'N/A'}</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">DSO (Days)</div>
-        <div class="metric-value">${metrics.dso_days?.toFixed(0) || 'N/A'}</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Debt to Equity</div>
-        <div class="metric-value">${metrics.debt_to_equity?.toFixed(2) || 'N/A'}</div>
-      </div>
-    </div>
-  ` : '<p style="color: var(--color-text-light);">No metrics available yet. Sync your data to see financial metrics.</p>';
+  // Prepare chart data
+  const chartLabels = metricsHistory.map((m: any) => {
+    const date = new Date(m.metric_date);
+    return date.toLocaleDateString('cs-CZ', { month: 'short', year: '2-digit' });
+  });
+  const revenueData = metricsHistory.map((m: any) => Math.round((m.revenue || 0) / 1000));
+  const expensesData = metricsHistory.map((m: any) => Math.round((m.expenses || 0) / 1000));
+  const cashData = metricsHistory.map((m: any) => Math.round((m.cash_balance || 0) / 1000));
+  const arData = metricsHistory.map((m: any) => Math.round((m.accounts_receivable || 0) / 1000));
+  const apData = metricsHistory.map((m: any) => Math.round((m.accounts_payable || 0) / 1000));
 
-  const invoicesHtml = recentInvoices.length > 0 ? `
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Type</th>
-          <th>Number</th>
-          <th>Customer/Vendor</th>
-          <th>Amount</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${recentInvoices.map(inv => `
-          <tr>
-            <td>${inv.issue_date || 'N/A'}</td>
-            <td>${inv.invoice_type === 'issued' ? 'Invoice' : 'Bill'}</td>
-            <td>${inv.invoice_number || 'N/A'}</td>
-            <td>${inv.customer_name || 'N/A'}</td>
-            <td>${formatCurrency(inv.total_amount, company.currency)}</td>
-            <td><span class="badge ${inv.status === 'paid' ? 'badge-success' : 'badge-warning'}">${inv.status || 'N/A'}</span></td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  ` : '<p style="color: var(--color-text-light);">No invoices synced yet.</p>';
+  // Invoice statistics
+  const issuedInvoices = allInvoices.filter((i: any) => i.invoice_type === 'issued');
+  const receivedInvoices = allInvoices.filter((i: any) => i.invoice_type === 'received');
+  const unpaidReceivables = issuedInvoices.filter((i: any) => i.status !== 'paid');
+  const unpaidPayables = receivedInvoices.filter((i: any) => i.status !== 'paid');
+
+  const totalReceivables = unpaidReceivables.reduce((sum: number, i: any) => sum + (i.balance_due || 0), 0);
+  const totalPayables = unpaidPayables.reduce((sum: number, i: any) => sum + (i.balance_due || 0), 0);
+
+  // Top customers by revenue
+  const customerRevenue: Record<string, number> = {};
+  issuedInvoices.forEach((inv: any) => {
+    const name = inv.customer_name || 'Unknown';
+    customerRevenue[name] = (customerRevenue[name] || 0) + (inv.total_amount || 0);
+  });
+  const topCustomers = Object.entries(customerRevenue)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
 
   const content = `
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <div class="dashboard-header">
       <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
           <div>
             <h1 class="dashboard-title">${company.name}</h1>
-            <p class="dashboard-subtitle">Financial Overview</p>
+            <p class="dashboard-subtitle">Financial Overview | ${company.business_id ? 'ICO: ' + company.business_id : ''} ${connection?.software_type ? '| Connected to ' + connection.software_type.charAt(0).toUpperCase() + connection.software_type.slice(1) : ''}</p>
           </div>
           <div style="display: flex; gap: 12px;">
             <a href="/company/${companyId}/sync" class="btn btn-secondary">Sync Data</a>
@@ -962,61 +933,354 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
         ${error ? `<div class="flash flash-error">${error}</div>` : ''}
         ${success ? `<div class="flash flash-success">${success}</div>` : ''}
 
-        <div class="health-score-card">
-          <div class="health-score-header">
-            <h2>Financial Health Score</h2>
-            <div class="health-score-badge score-${healthScore >= 70 ? 'good' : healthScore >= 50 ? 'medium' : 'low'}">
-              ${healthScore}/100
+        <!-- Health Score & Key Metrics Row -->
+        <div class="overview-grid">
+          <div class="health-score-card">
+            <div class="health-score-header">
+              <h2>Financial Health</h2>
+              <div class="health-score-badge score-${healthScore >= 70 ? 'good' : healthScore >= 50 ? 'medium' : 'low'}">
+                ${healthScore}/100
+              </div>
+            </div>
+            <div class="health-score-bar">
+              <div class="health-score-fill" style="width: ${healthScore}%"></div>
+            </div>
+            <p class="health-score-description">
+              ${healthScore >= 70 ? 'Excellent financial health. Eligible for competitive financing.'
+                : healthScore >= 50 ? 'Moderate health. Financing options available.'
+                : 'Needs improvement. We can help find solutions.'}
+            </p>
+            <div class="health-factors">
+              <div class="factor ${metrics?.current_ratio >= 1.5 ? 'good' : metrics?.current_ratio >= 1 ? 'medium' : 'bad'}">
+                <span class="factor-icon">${metrics?.current_ratio >= 1 ? '&#10003;' : '&#10007;'}</span>
+                <span>Liquidity Ratio</span>
+              </div>
+              <div class="factor ${metrics?.net_income > 0 ? 'good' : 'bad'}">
+                <span class="factor-icon">${metrics?.net_income > 0 ? '&#10003;' : '&#10007;'}</span>
+                <span>Profitability</span>
+              </div>
+              <div class="factor ${metrics?.dso_days <= 30 ? 'good' : metrics?.dso_days <= 45 ? 'medium' : 'bad'}">
+                <span class="factor-icon">${metrics?.dso_days <= 45 ? '&#10003;' : '&#10007;'}</span>
+                <span>Collection Speed</span>
+              </div>
+              <div class="factor ${metrics?.debt_to_equity < 1 ? 'good' : metrics?.debt_to_equity < 2 ? 'medium' : 'bad'}">
+                <span class="factor-icon">${metrics?.debt_to_equity < 2 ? '&#10003;' : '&#10007;'}</span>
+                <span>Debt Level</span>
+              </div>
             </div>
           </div>
-          <div class="health-score-bar">
-            <div class="health-score-fill" style="width: ${healthScore}%"></div>
+
+          <div class="key-metrics-card">
+            <h3>Key Metrics</h3>
+            <div class="key-metric">
+              <span class="key-metric-label">Revenue (YTD)</span>
+              <span class="key-metric-value">${formatCurrency(metrics?.revenue, company.currency)}</span>
+            </div>
+            <div class="key-metric">
+              <span class="key-metric-label">Net Income</span>
+              <span class="key-metric-value ${metrics?.net_income >= 0 ? 'positive' : 'negative'}">${formatCurrency(metrics?.net_income, company.currency)}</span>
+            </div>
+            <div class="key-metric">
+              <span class="key-metric-label">Cash Balance</span>
+              <span class="key-metric-value">${formatCurrency(metrics?.cash_balance, company.currency)}</span>
+            </div>
+            <div class="key-metric">
+              <span class="key-metric-label">Current Ratio</span>
+              <span class="key-metric-value">${metrics?.current_ratio?.toFixed(2) || 'N/A'}</span>
+            </div>
+            <div class="key-metric">
+              <span class="key-metric-label">DSO (Days)</span>
+              <span class="key-metric-value">${metrics?.dso_days?.toFixed(0) || 'N/A'} days</span>
+            </div>
+            <div class="key-metric">
+              <span class="key-metric-label">Debt to Equity</span>
+              <span class="key-metric-value">${metrics?.debt_to_equity?.toFixed(2) || 'N/A'}</span>
+            </div>
+            ${connection?.last_sync_at ? `<p class="sync-time">Last synced: ${new Date(connection.last_sync_at).toLocaleString('cs-CZ')}</p>` : ''}
           </div>
-          <p class="health-score-description">
-            ${healthScore >= 70 ? 'Your financial health is good. You should qualify for competitive financing rates.'
-              : healthScore >= 50 ? 'Your financial health is moderate. There are financing options available to you.'
-              : 'Your financial health needs improvement. We can help you find suitable financing options.'}
-          </p>
         </div>
 
-        <div class="data-table" style="margin-top: 24px;">
-          <div class="table-header">
-            <h3>Key Financial Metrics</h3>
-            ${connection?.last_sync_at ? `<span style="color: var(--color-text-light); font-size: 0.9rem;">Last synced: ${new Date(connection.last_sync_at).toLocaleString()}</span>` : ''}
+        <!-- Charts Row -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>Revenue vs Expenses (in thousands ${company.currency})</h3>
+            <canvas id="revenueChart"></canvas>
           </div>
-          <div style="padding: 24px;">
-            ${metricsHtml}
+          <div class="chart-card">
+            <h3>Cash Flow Trend (in thousands ${company.currency})</h3>
+            <canvas id="cashFlowChart"></canvas>
           </div>
         </div>
 
-        <div class="data-table" style="margin-top: 24px;">
-          <div class="table-header">
-            <h3>Recent Transactions</h3>
+        <!-- Receivables & Payables -->
+        <div class="ar-ap-grid">
+          <div class="ar-ap-card">
+            <div class="ar-ap-header">
+              <h3>Accounts Receivable</h3>
+              <span class="ar-ap-total">${formatCurrency(totalReceivables, company.currency)}</span>
+            </div>
+            <div class="ar-ap-stats">
+              <div class="ar-ap-stat">
+                <span class="stat-num">${issuedInvoices.length}</span>
+                <span class="stat-label">Total Invoices</span>
+              </div>
+              <div class="ar-ap-stat">
+                <span class="stat-num">${unpaidReceivables.length}</span>
+                <span class="stat-label">Unpaid</span>
+              </div>
+              <div class="ar-ap-stat">
+                <span class="stat-num">${metrics?.dso_days?.toFixed(0) || '-'}</span>
+                <span class="stat-label">Avg DSO</span>
+              </div>
+            </div>
+            <canvas id="arChart" height="120"></canvas>
           </div>
-          <div style="overflow-x: auto;">
-            ${invoicesHtml}
+          <div class="ar-ap-card">
+            <div class="ar-ap-header">
+              <h3>Accounts Payable</h3>
+              <span class="ar-ap-total negative">${formatCurrency(totalPayables, company.currency)}</span>
+            </div>
+            <div class="ar-ap-stats">
+              <div class="ar-ap-stat">
+                <span class="stat-num">${receivedInvoices.length}</span>
+                <span class="stat-label">Total Bills</span>
+              </div>
+              <div class="ar-ap-stat">
+                <span class="stat-num">${unpaidPayables.length}</span>
+                <span class="stat-label">Unpaid</span>
+              </div>
+              <div class="ar-ap-stat">
+                <span class="stat-num">${metrics?.dpo_days?.toFixed(0) || '-'}</span>
+                <span class="stat-label">Avg DPO</span>
+              </div>
+            </div>
+            <canvas id="apChart" height="120"></canvas>
           </div>
         </div>
+
+        <!-- Top Customers & Recent Transactions -->
+        <div class="bottom-grid">
+          <div class="data-card">
+            <div class="card-header"><h3>Top Customers by Revenue</h3></div>
+            <table class="compact-table">
+              <thead><tr><th>Customer</th><th style="text-align:right">Revenue</th></tr></thead>
+              <tbody>
+                ${topCustomers.map(([name, amount]) => `
+                  <tr>
+                    <td>${name}</td>
+                    <td style="text-align:right; font-weight: 600;">${formatCurrency(amount, company.currency)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="data-card">
+            <div class="card-header"><h3>Recent Transactions</h3></div>
+            <table class="compact-table">
+              <thead>
+                <tr><th>Date</th><th>Type</th><th>Number</th><th>Party</th><th style="text-align:right">Amount</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                ${recentInvoices.slice(0, 8).map((inv: any) => `
+                  <tr>
+                    <td>${inv.issue_date || '-'}</td>
+                    <td><span class="type-badge ${inv.invoice_type}">${inv.invoice_type === 'issued' ? 'Invoice' : 'Bill'}</span></td>
+                    <td>${inv.invoice_number || '-'}</td>
+                    <td class="truncate-cell">${inv.customer_name || '-'}</td>
+                    <td style="text-align:right; font-weight: 600;">${formatCurrency(inv.total_amount, company.currency)}</td>
+                    <td><span class="status-badge ${inv.status}">${inv.status || '-'}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Chart of Accounts -->
+        <div class="data-card" style="margin-top: 24px;">
+          <div class="card-header"><h3>Chart of Accounts</h3></div>
+          <table class="compact-table">
+            <thead>
+              <tr><th>Account #</th><th>Name</th><th>Type</th><th style="text-align:right">Balance</th></tr>
+            </thead>
+            <tbody>
+              ${accounts.map((acc: any) => `
+                <tr>
+                  <td>${acc.account_number || '-'}</td>
+                  <td>${acc.name}</td>
+                  <td>${acc.account_type}</td>
+                  <td style="text-align:right; font-weight: 600; color: ${acc.current_balance >= 0 ? 'var(--color-forest)' : '#991b1b'}">
+                    ${formatCurrency(acc.current_balance, company.currency)}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
       </div>
     </div>
+
     <style>
-      .health-score-card { background: white; border: 1px solid var(--color-border); border-radius: 16px; padding: 24px; }
+      .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+      .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+      .ar-ap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+      .bottom-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; }
+
+      @media (max-width: 900px) {
+        .overview-grid, .charts-grid, .ar-ap-grid, .bottom-grid { grid-template-columns: 1fr; }
+      }
+
+      .health-score-card, .key-metrics-card, .chart-card, .ar-ap-card, .data-card {
+        background: white; border: 1px solid var(--color-border); border-radius: 16px; padding: 24px;
+      }
+      .health-score-card h2, .key-metrics-card h3, .chart-card h3, .ar-ap-card h3, .data-card h3 {
+        margin: 0 0 16px 0; color: var(--color-forest-dark); font-size: 1.1rem;
+      }
+
       .health-score-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-      .health-score-header h2 { margin: 0; color: var(--color-forest-dark); }
       .health-score-badge { padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 1.2rem; }
       .score-good { background: #dcfce7; color: #166534; }
       .score-medium { background: #fef3c7; color: #92400e; }
       .score-low { background: #fee2e2; color: #991b1b; }
-      .health-score-bar { height: 8px; background: var(--color-cream-dark); border-radius: 4px; overflow: hidden; }
-      .health-score-fill { height: 100%; background: linear-gradient(90deg, var(--color-forest), var(--color-sage)); border-radius: 4px; transition: width 0.5s; }
-      .health-score-description { margin-top: 16px; color: var(--color-text-light); }
-      .metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
-      .metric-card { background: var(--color-sage-pale); padding: 16px; border-radius: 12px; text-align: center; }
-      .metric-label { font-size: 0.85rem; color: var(--color-text-light); margin-bottom: 4px; }
-      .metric-value { font-size: 1.25rem; font-weight: 700; color: var(--color-forest-dark); }
-      .metric-value.positive { color: #166534; }
-      .metric-value.negative { color: #991b1b; }
+      .health-score-bar { height: 8px; background: var(--color-cream-dark); border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+      .health-score-fill { height: 100%; background: linear-gradient(90deg, var(--color-forest), var(--color-sage)); border-radius: 4px; }
+      .health-score-description { color: var(--color-text-light); font-size: 0.9rem; margin-bottom: 16px; }
+
+      .health-factors { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .factor { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; }
+      .factor.good { background: #dcfce7; color: #166534; }
+      .factor.medium { background: #fef3c7; color: #92400e; }
+      .factor.bad { background: #fee2e2; color: #991b1b; }
+      .factor-icon { font-weight: bold; }
+
+      .key-metric { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--color-border); }
+      .key-metric:last-of-type { border-bottom: none; }
+      .key-metric-label { color: var(--color-text-light); }
+      .key-metric-value { font-weight: 700; color: var(--color-forest-dark); }
+      .key-metric-value.positive { color: #166534; }
+      .key-metric-value.negative { color: #991b1b; }
+      .sync-time { margin-top: 16px; font-size: 0.8rem; color: var(--color-text-light); text-align: right; }
+
+      .ar-ap-header { display: flex; justify-content: space-between; align-items: center; }
+      .ar-ap-total { font-size: 1.5rem; font-weight: 700; color: var(--color-forest); }
+      .ar-ap-total.negative { color: #991b1b; }
+      .ar-ap-stats { display: flex; gap: 24px; margin: 16px 0; }
+      .ar-ap-stat { text-align: center; }
+      .stat-num { display: block; font-size: 1.5rem; font-weight: 700; color: var(--color-forest-dark); }
+      .stat-label { font-size: 0.8rem; color: var(--color-text-light); }
+
+      .card-header { border-bottom: 1px solid var(--color-border); margin: -24px -24px 16px -24px; padding: 16px 24px; background: var(--color-sage-pale); border-radius: 16px 16px 0 0; }
+      .card-header h3 { margin: 0; }
+
+      .compact-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+      .compact-table th, .compact-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--color-border); }
+      .compact-table th { font-weight: 600; color: var(--color-text-light); font-size: 0.8rem; text-transform: uppercase; }
+      .compact-table tr:last-child td { border-bottom: none; }
+      .compact-table tr:hover td { background: var(--color-cream); }
+      .truncate-cell { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+      .type-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+      .type-badge.issued { background: #dbeafe; color: #1e40af; }
+      .type-badge.received { background: #fef3c7; color: #92400e; }
+
+      .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+      .status-badge.paid { background: #dcfce7; color: #166534; }
+      .status-badge.unpaid { background: #fee2e2; color: #991b1b; }
     </style>
+
+    <script>
+      // Revenue vs Expenses Chart
+      new Chart(document.getElementById('revenueChart'), {
+        type: 'line',
+        data: {
+          labels: ${JSON.stringify(chartLabels)},
+          datasets: [
+            {
+              label: 'Revenue',
+              data: ${JSON.stringify(revenueData)},
+              borderColor: '#2d5a3d',
+              backgroundColor: 'rgba(45, 90, 61, 0.1)',
+              fill: true,
+              tension: 0.3
+            },
+            {
+              label: 'Expenses',
+              data: ${JSON.stringify(expensesData)},
+              borderColor: '#c44536',
+              backgroundColor: 'rgba(196, 69, 54, 0.1)',
+              fill: true,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      // Cash Flow Chart
+      new Chart(document.getElementById('cashFlowChart'), {
+        type: 'line',
+        data: {
+          labels: ${JSON.stringify(chartLabels)},
+          datasets: [{
+            label: 'Cash Balance',
+            data: ${JSON.stringify(cashData)},
+            borderColor: '#2d5a3d',
+            backgroundColor: 'rgba(45, 90, 61, 0.2)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      // AR Trend Chart
+      new Chart(document.getElementById('arChart'), {
+        type: 'bar',
+        data: {
+          labels: ${JSON.stringify(chartLabels.slice(-6))},
+          datasets: [{
+            label: 'Receivables',
+            data: ${JSON.stringify(arData.slice(-6))},
+            backgroundColor: 'rgba(45, 90, 61, 0.6)',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      // AP Trend Chart
+      new Chart(document.getElementById('apChart'), {
+        type: 'bar',
+        data: {
+          labels: ${JSON.stringify(chartLabels.slice(-6))},
+          datasets: [{
+            label: 'Payables',
+            data: ${JSON.stringify(apData.slice(-6))},
+            backgroundColor: 'rgba(196, 69, 54, 0.6)',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    </script>
   `;
 
   res.send(renderPage('Company Overview', content, req));
