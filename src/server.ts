@@ -950,8 +950,16 @@ app.get('/admin', requireAdmin, (req: Request, res: Response) => {
   const content = `
     <div class="dashboard-header">
         <div class="container">
-            <h1 class="dashboard-title">Admin Dashboard</h1>
-            <p class="dashboard-subtitle">Monitor visitors and waiting list signups</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 class="dashboard-title">Admin Dashboard</h1>
+                    <p class="dashboard-subtitle">Monitor visitors and waiting list signups</p>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <a href="/dashboard" class="btn btn-secondary">My Companies</a>
+                    <a href="/company/new" class="btn btn-primary">+ Add Company</a>
+                </div>
+            </div>
         </div>
     </div>
     <div class="dashboard-content">
