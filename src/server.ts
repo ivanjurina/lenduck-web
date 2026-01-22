@@ -3,6 +3,7 @@ import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import * as db from './database';
+import * as quickbooks from './services/quickbooks';
 
 // Extend session type
 declare module 'express-session' {
@@ -340,45 +341,565 @@ app.get('/logout', (req: Request, res: Response) => {
   });
 });
 
-// Dashboard
+// Dashboard - Shows user's companies
 app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
   const user = db.getUserById(req.session.userId!);
+  const companies = db.getCompaniesByUserId(req.session.userId!);
+
+  const companyCards = companies.length > 0 ? companies.map(company => {
+    const connection = db.getAccountingConnection(company.id);
+    const statusBadge = connection
+      ? (connection.status === 'connected'
+        ? '<span class="badge badge-success">Connected</span>'
+        : '<span class="badge badge-warning">Pending</span>')
+      : '<span class="badge badge-error">Not Connected</span>';
+
+    return `
+      <div class="company-card">
+        <div class="company-card-header">
+          <h3>${company.name}</h3>
+          ${statusBadge}
+        </div>
+        <div class="company-card-body">
+          <p><strong>Country:</strong> ${company.country || 'N/A'}</p>
+          <p><strong>Currency:</strong> ${company.currency || 'N/A'}</p>
+          ${connection ? `<p><strong>Software:</strong> ${connection.software_type}</p>` : ''}
+          ${connection?.last_sync_at ? `<p><strong>Last Sync:</strong> ${new Date(connection.last_sync_at).toLocaleString()}</p>` : ''}
+        </div>
+        <div class="company-card-actions">
+          ${connection?.status === 'connected'
+            ? `<a href="/company/${company.id}/overview" class="btn btn-primary">View Financial Data</a>
+               <a href="/company/${company.id}/sync" class="btn btn-secondary">Sync Now</a>`
+            : `<a href="/company/${company.id}/connect" class="btn btn-primary">Connect Accounting</a>`
+          }
+        </div>
+      </div>
+    `;
+  }).join('') : `
+    <div class="empty-state" style="padding: 48px;">
+      <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">No companies yet</p>
+      <p style="margin-bottom: 24px;">Add your first company to connect your accounting software and get financing offers.</p>
+      <a href="/company/new" class="btn btn-primary">Add Company</a>
+    </div>
+  `;
 
   const content = `
     <div class="dashboard-header">
         <div class="container">
             <h1 class="dashboard-title">Welcome, ${user.email}</h1>
-            <p class="dashboard-subtitle">Your Lenduck dashboard</p>
+            <p class="dashboard-subtitle">Manage your companies and financing</p>
         </div>
     </div>
     <div class="dashboard-content">
         <div class="container">
-            <div class="data-table">
-                <div class="table-header">
-                    <h3>Account Information</h3>
-                </div>
-                <div style="padding: 32px;">
-                    <p><strong>Email:</strong> ${user.email}</p>
-                    <p style="margin-top: 12px;"><strong>Member since:</strong> ${new Date(user.created_at).toLocaleDateString()}</p>
-                    <p style="margin-top: 12px;"><strong>Account type:</strong>
-                        ${user.is_admin ? '<span class="badge badge-admin">Admin</span>' : '<span class="badge badge-user">User</span>'}
-                    </p>
-                </div>
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2>Your Companies</h2>
+                <a href="/company/new" class="btn btn-primary">+ Add Company</a>
             </div>
-            <div class="data-table">
-                <div class="table-header">
-                    <h3>Coming Soon</h3>
-                </div>
-                <div class="empty-state">
-                    <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">Feature coming soon</p>
-                    <p>Connect your accounting software and get financing offers.</p>
-                </div>
+            <div class="companies-grid">
+                ${companyCards}
             </div>
         </div>
     </div>
+    <style>
+      .companies-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+      .company-card { background: white; border: 1px solid var(--color-border); border-radius: 16px; overflow: hidden; }
+      .company-card-header { padding: 20px; background: var(--color-sage-pale); display: flex; justify-content: space-between; align-items: center; }
+      .company-card-header h3 { margin: 0; color: var(--color-forest-dark); }
+      .company-card-body { padding: 20px; }
+      .company-card-body p { margin: 8px 0; color: var(--color-text-light); }
+      .company-card-actions { padding: 20px; border-top: 1px solid var(--color-border); display: flex; gap: 12px; }
+      .badge-success { background: #22c55e; color: white; }
+      .badge-warning { background: #f59e0b; color: white; }
+      .badge-error { background: #ef4444; color: white; }
+      .section-header h2 { margin: 0; color: var(--color-forest-dark); }
+    </style>
   `;
 
   res.send(renderPage('Dashboard', content, req));
+});
+
+// Add new company form
+app.get('/company/new', requireAuth, (req: Request, res: Response) => {
+  const error = req.query.error as string;
+
+  const content = `
+    <div class="auth-container">
+      <div class="auth-card" style="max-width: 500px;">
+        <div class="auth-header">
+          <h1>Add New Company</h1>
+          <p>Enter your company details to get started</p>
+        </div>
+        ${error ? `<div class="flash flash-error">${error}</div>` : ''}
+        <form method="POST" action="/company/new">
+          <div class="form-group">
+            <label for="name">Company Name *</label>
+            <input type="text" id="name" name="name" required placeholder="Your Company Ltd.">
+          </div>
+          <div class="form-group">
+            <label for="business_id">Business ID (ICO)</label>
+            <input type="text" id="business_id" name="business_id" placeholder="12345678">
+          </div>
+          <div class="form-group">
+            <label for="country">Country</label>
+            <select id="country" name="country">
+              <option value="CZ">Czech Republic</option>
+              <option value="SK">Slovakia</option>
+              <option value="US">United States</option>
+              <option value="GB">United Kingdom</option>
+              <option value="DE">Germany</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="currency">Currency</label>
+            <select id="currency" name="currency">
+              <option value="CZK">CZK - Czech Koruna</option>
+              <option value="EUR">EUR - Euro</option>
+              <option value="USD">USD - US Dollar</option>
+              <option value="GBP">GBP - British Pound</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Create Company</button>
+        </form>
+        <div class="auth-footer">
+          <a href="/dashboard">Back to Dashboard</a>
+        </div>
+      </div>
+    </div>
+  `;
+
+  res.send(renderPage('Add Company', content, req));
+});
+
+app.post('/company/new', requireAuth, (req: Request, res: Response) => {
+  const { name, business_id, country, currency } = req.body;
+
+  if (!name) {
+    return res.redirect('/company/new?error=' + encodeURIComponent('Company name is required.'));
+  }
+
+  try {
+    const result = db.createCompany({
+      user_id: req.session.userId!,
+      name,
+      business_id,
+      country,
+      currency,
+    });
+    res.redirect(`/company/${result.lastInsertRowid}/connect`);
+  } catch (e) {
+    res.redirect('/company/new?error=' + encodeURIComponent('Failed to create company.'));
+  }
+});
+
+// Connect accounting software
+app.get('/company/:id/connect', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const error = req.query.error as string;
+  const success = req.query.success as string;
+
+  const softwareOptions = [
+    { value: 'quickbooks', name: 'QuickBooks Online', description: 'Popular in US/UK, REST API with OAuth2', available: true },
+    { value: 'xero', name: 'Xero', description: 'Cloud accounting, REST API', available: false },
+    { value: 'flexibee', name: 'ABRA FlexiBee', description: 'Popular in Czech Republic, REST API', available: false },
+    { value: 'pohoda', name: 'Pohoda', description: 'Most popular in Czech Republic, XML API', available: false },
+    { value: 'idoklad', name: 'iDoklad', description: 'Czech invoicing system, REST API', available: false },
+    { value: 'profit365', name: 'Profit365', description: 'Slovak/Czech accounting, REST API', available: false },
+    { value: 'other', name: 'Other', description: 'Tell us what you use', available: true },
+  ];
+
+  const softwareCards = softwareOptions.map(sw => `
+    <div class="software-card ${sw.available ? '' : 'disabled'}">
+      <div class="software-card-content">
+        <h3>${sw.name}</h3>
+        <p>${sw.description}</p>
+        ${!sw.available ? '<span class="badge badge-coming">Coming Soon</span>' : ''}
+      </div>
+      ${sw.available ? `
+        <form method="POST" action="/company/${companyId}/connect">
+          <input type="hidden" name="software_type" value="${sw.value}">
+          <button type="submit" class="btn btn-primary">Connect</button>
+        </form>
+      ` : ''}
+    </div>
+  `).join('');
+
+  const content = `
+    <div class="dashboard-header">
+      <div class="container">
+        <h1 class="dashboard-title">Connect Accounting Software</h1>
+        <p class="dashboard-subtitle">for ${company.name}</p>
+      </div>
+    </div>
+    <div class="dashboard-content">
+      <div class="container" style="max-width: 800px;">
+        ${error ? `<div class="flash flash-error">${error}</div>` : ''}
+        ${success ? `<div class="flash flash-success">${success}</div>` : ''}
+        <p style="margin-bottom: 24px; color: var(--color-text-light);">
+          Select your accounting software to connect. We'll securely access your financial data to provide you with the best financing options.
+        </p>
+        <div class="software-grid">
+          ${softwareCards}
+        </div>
+        <div style="margin-top: 32px; text-align: center;">
+          <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+      </div>
+    </div>
+    <style>
+      .software-grid { display: grid; gap: 16px; }
+      .software-card { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: white; border: 1px solid var(--color-border); border-radius: 12px; }
+      .software-card.disabled { opacity: 0.6; }
+      .software-card-content h3 { margin: 0 0 4px 0; color: var(--color-forest-dark); }
+      .software-card-content p { margin: 0; color: var(--color-text-light); font-size: 0.9rem; }
+      .badge-coming { background: var(--color-sage); color: white; font-size: 0.75rem; margin-left: 8px; }
+    </style>
+  `;
+
+  res.send(renderPage('Connect Accounting', content, req));
+});
+
+app.post('/company/:id/connect', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+  const { software_type, software_name, additional_info } = req.body;
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  // Handle "Other" software request
+  if (software_type === 'other') {
+    return res.redirect(`/company/${companyId}/connect/other`);
+  }
+
+  // Create connection record
+  db.createAccountingConnection({
+    company_id: companyId,
+    software_type: software_type as db.SoftwareType,
+    status: 'pending',
+  });
+
+  // Redirect to appropriate OAuth flow
+  if (software_type === 'quickbooks') {
+    const authUrl = quickbooks.getAuthorizationUrl(companyId);
+    return res.redirect(authUrl);
+  }
+
+  // For other software types (not yet implemented)
+  res.redirect(`/company/${companyId}/connect?error=` + encodeURIComponent('This integration is coming soon.'));
+});
+
+// Other software request form
+app.get('/company/:id/connect/other', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const content = `
+    <div class="auth-container">
+      <div class="auth-card" style="max-width: 500px;">
+        <div class="auth-header">
+          <h1>Request New Integration</h1>
+          <p>Tell us what accounting software you use</p>
+        </div>
+        <form method="POST" action="/company/${companyId}/connect/other">
+          <div class="form-group">
+            <label for="software_name">Software Name *</label>
+            <input type="text" id="software_name" name="software_name" required placeholder="e.g., Money S3, ABRA Gen, etc.">
+          </div>
+          <div class="form-group">
+            <label for="additional_info">Additional Information</label>
+            <textarea id="additional_info" name="additional_info" rows="3" placeholder="Any additional details about your setup..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Submit Request</button>
+        </form>
+        <div class="auth-footer">
+          <a href="/company/${companyId}/connect">Back to Software Selection</a>
+        </div>
+      </div>
+    </div>
+  `;
+
+  res.send(renderPage('Request Integration', content, req));
+});
+
+app.post('/company/:id/connect/other', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+  const { software_name, additional_info } = req.body;
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  db.createAccountingConnection({
+    company_id: companyId,
+    software_type: 'other',
+    status: 'requested',
+  });
+
+  db.createSoftwareRequest({
+    company_id: companyId,
+    software_name,
+    additional_info,
+  });
+
+  res.redirect('/company/' + companyId + '/connect?success=' + encodeURIComponent('Thank you! We\'ll notify you when this integration is available.'));
+});
+
+// QuickBooks OAuth callback
+app.get('/api/quickbooks/callback', async (req: Request, res: Response) => {
+  const { code, state, realmId, error } = req.query;
+
+  if (error) {
+    return res.redirect('/dashboard?error=' + encodeURIComponent('QuickBooks authorization was denied.'));
+  }
+
+  if (!code || !realmId || !state) {
+    return res.redirect('/dashboard?error=' + encodeURIComponent('Invalid QuickBooks callback.'));
+  }
+
+  // Extract company ID from state
+  const companyId = parseInt((state as string).replace('company_', ''));
+
+  try {
+    // Exchange code for tokens
+    const tokens = await quickbooks.exchangeCodeForTokens(code as string);
+
+    // Calculate token expiry
+    const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
+
+    // Update connection with tokens
+    db.updateAccountingConnection(companyId, {
+      status: 'connected',
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      token_expires_at: expiresAt,
+      realm_id: realmId as string,
+    });
+
+    // Trigger initial sync
+    res.redirect(`/company/${companyId}/sync?initial=true`);
+  } catch (e: any) {
+    console.error('QuickBooks callback error:', e);
+    res.redirect('/dashboard?error=' + encodeURIComponent('Failed to connect QuickBooks: ' + e.message));
+  }
+});
+
+// Sync company data
+app.get('/company/:id/sync', requireAuth, async (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+  const isInitial = req.query.initial === 'true';
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const connection = db.getAccountingConnection(companyId);
+  if (!connection || connection.status !== 'connected') {
+    return res.redirect(`/company/${companyId}/connect`);
+  }
+
+  try {
+    const result = await quickbooks.fullSync(companyId);
+
+    const message = isInitial
+      ? `Successfully connected! Synced ${result.accounts} accounts and ${result.invoices} invoices.`
+      : `Sync complete! Updated ${result.accounts} accounts and ${result.invoices} invoices.`;
+
+    res.redirect(`/company/${companyId}/overview?success=` + encodeURIComponent(message));
+  } catch (e: any) {
+    console.error('Sync error:', e);
+    res.redirect(`/company/${companyId}/overview?error=` + encodeURIComponent('Sync failed: ' + e.message));
+  }
+});
+
+// Company financial overview
+app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const connection = db.getAccountingConnection(companyId);
+  const metrics = db.getLatestMetrics(companyId);
+  const recentInvoices = db.getInvoicesByCompany(companyId).slice(0, 10);
+
+  const error = req.query.error as string;
+  const success = req.query.success as string;
+
+  // Format currency
+  const formatCurrency = (amount: number | null, currency: string = 'USD') => {
+    if (amount === null || amount === undefined) return 'N/A';
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+  };
+
+  // Calculate health score (simplified)
+  let healthScore = 50;
+  if (metrics) {
+    if (metrics.current_ratio >= 1.5) healthScore += 15;
+    else if (metrics.current_ratio >= 1) healthScore += 5;
+    if (metrics.dso_days <= 30) healthScore += 10;
+    if (metrics.net_income > 0) healthScore += 15;
+    if (metrics.debt_to_equity < 1) healthScore += 10;
+  }
+  healthScore = Math.min(100, healthScore);
+
+  const metricsHtml = metrics ? `
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Revenue (YTD)</div>
+        <div class="metric-value">${formatCurrency(metrics.revenue, company.currency)}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Net Income</div>
+        <div class="metric-value ${metrics.net_income >= 0 ? 'positive' : 'negative'}">${formatCurrency(metrics.net_income, company.currency)}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Cash Balance</div>
+        <div class="metric-value">${formatCurrency(metrics.cash_balance, company.currency)}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Accounts Receivable</div>
+        <div class="metric-value">${formatCurrency(metrics.accounts_receivable, company.currency)}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Accounts Payable</div>
+        <div class="metric-value">${formatCurrency(metrics.accounts_payable, company.currency)}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Current Ratio</div>
+        <div class="metric-value">${metrics.current_ratio?.toFixed(2) || 'N/A'}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">DSO (Days)</div>
+        <div class="metric-value">${metrics.dso_days?.toFixed(0) || 'N/A'}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Debt to Equity</div>
+        <div class="metric-value">${metrics.debt_to_equity?.toFixed(2) || 'N/A'}</div>
+      </div>
+    </div>
+  ` : '<p style="color: var(--color-text-light);">No metrics available yet. Sync your data to see financial metrics.</p>';
+
+  const invoicesHtml = recentInvoices.length > 0 ? `
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Number</th>
+          <th>Customer/Vendor</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${recentInvoices.map(inv => `
+          <tr>
+            <td>${inv.issue_date || 'N/A'}</td>
+            <td>${inv.invoice_type === 'issued' ? 'Invoice' : 'Bill'}</td>
+            <td>${inv.invoice_number || 'N/A'}</td>
+            <td>${inv.customer_name || 'N/A'}</td>
+            <td>${formatCurrency(inv.total_amount, company.currency)}</td>
+            <td><span class="badge ${inv.status === 'paid' ? 'badge-success' : 'badge-warning'}">${inv.status || 'N/A'}</span></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  ` : '<p style="color: var(--color-text-light);">No invoices synced yet.</p>';
+
+  const content = `
+    <div class="dashboard-header">
+      <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h1 class="dashboard-title">${company.name}</h1>
+            <p class="dashboard-subtitle">Financial Overview</p>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <a href="/company/${companyId}/sync" class="btn btn-secondary">Sync Data</a>
+            <a href="/dashboard" class="btn btn-secondary">Back</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dashboard-content">
+      <div class="container">
+        ${error ? `<div class="flash flash-error">${error}</div>` : ''}
+        ${success ? `<div class="flash flash-success">${success}</div>` : ''}
+
+        <div class="health-score-card">
+          <div class="health-score-header">
+            <h2>Financial Health Score</h2>
+            <div class="health-score-badge score-${healthScore >= 70 ? 'good' : healthScore >= 50 ? 'medium' : 'low'}">
+              ${healthScore}/100
+            </div>
+          </div>
+          <div class="health-score-bar">
+            <div class="health-score-fill" style="width: ${healthScore}%"></div>
+          </div>
+          <p class="health-score-description">
+            ${healthScore >= 70 ? 'Your financial health is good. You should qualify for competitive financing rates.'
+              : healthScore >= 50 ? 'Your financial health is moderate. There are financing options available to you.'
+              : 'Your financial health needs improvement. We can help you find suitable financing options.'}
+          </p>
+        </div>
+
+        <div class="data-table" style="margin-top: 24px;">
+          <div class="table-header">
+            <h3>Key Financial Metrics</h3>
+            ${connection?.last_sync_at ? `<span style="color: var(--color-text-light); font-size: 0.9rem;">Last synced: ${new Date(connection.last_sync_at).toLocaleString()}</span>` : ''}
+          </div>
+          <div style="padding: 24px;">
+            ${metricsHtml}
+          </div>
+        </div>
+
+        <div class="data-table" style="margin-top: 24px;">
+          <div class="table-header">
+            <h3>Recent Transactions</h3>
+          </div>
+          <div style="overflow-x: auto;">
+            ${invoicesHtml}
+          </div>
+        </div>
+      </div>
+    </div>
+    <style>
+      .health-score-card { background: white; border: 1px solid var(--color-border); border-radius: 16px; padding: 24px; }
+      .health-score-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+      .health-score-header h2 { margin: 0; color: var(--color-forest-dark); }
+      .health-score-badge { padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 1.2rem; }
+      .score-good { background: #dcfce7; color: #166534; }
+      .score-medium { background: #fef3c7; color: #92400e; }
+      .score-low { background: #fee2e2; color: #991b1b; }
+      .health-score-bar { height: 8px; background: var(--color-cream-dark); border-radius: 4px; overflow: hidden; }
+      .health-score-fill { height: 100%; background: linear-gradient(90deg, var(--color-forest), var(--color-sage)); border-radius: 4px; transition: width 0.5s; }
+      .health-score-description { margin-top: 16px; color: var(--color-text-light); }
+      .metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+      .metric-card { background: var(--color-sage-pale); padding: 16px; border-radius: 12px; text-align: center; }
+      .metric-label { font-size: 0.85rem; color: var(--color-text-light); margin-bottom: 4px; }
+      .metric-value { font-size: 1.25rem; font-weight: 700; color: var(--color-forest-dark); }
+      .metric-value.positive { color: #166534; }
+      .metric-value.negative { color: #991b1b; }
+    </style>
+  `;
+
+  res.send(renderPage('Company Overview', content, req));
 });
 
 // Admin Dashboard
