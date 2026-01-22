@@ -9,10 +9,7 @@
 
 import * as db from '../database';
 
-// Profit365 API Configuration
-// These should be set in environment variables in production
-const P365_CLIENT_ID = process.env.P365_CLIENT_ID || '';
-const P365_CLIENT_SECRET = process.env.P365_CLIENT_SECRET || '';
+// Profit365 API Base URL
 const P365_API_BASE = 'https://api.profit365.eu/1.6';
 
 /**
@@ -63,6 +60,7 @@ interface Profit365Account {
 
 /**
  * Get credentials for a company from database
+ * Each user provides their own Profit365 API credentials
  */
 export function getCredentials(companyId: number): Profit365Credentials {
   const connection = db.getAccountingConnection(companyId);
@@ -77,9 +75,13 @@ export function getCredentials(companyId: number): Profit365Credentials {
 
   const credentials = JSON.parse(connection.api_credentials);
 
+  if (!credentials.clientId || !credentials.clientSecret || !credentials.companyId) {
+    throw new Error('Incomplete Profit365 credentials');
+  }
+
   return {
-    clientId: credentials.clientId || P365_CLIENT_ID,
-    clientSecret: credentials.clientSecret || P365_CLIENT_SECRET,
+    clientId: credentials.clientId,
+    clientSecret: credentials.clientSecret,
     companyId: credentials.companyId,
   };
 }
