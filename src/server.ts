@@ -2062,6 +2062,20 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
   });
   const currenciesWithTotals = Object.entries(totalsByCurrency).sort((a, b) => b[1].total - a[1].total);
 
+  // Calculate total in native currency (CZK) from enriched data
+  let nativeTotalSum = 0;
+  let nativePaidSum = 0;
+  let nativeUnpaidSum = 0;
+  enrichedInvoices.forEach((inv: any) => {
+    const nativeTotal = inv.extra?.native_total || inv.total_amount || 0;
+    nativeTotalSum += nativeTotal;
+    if (inv.status === 'paid') {
+      nativePaidSum += nativeTotal;
+    } else {
+      nativeUnpaidSum += nativeTotal;
+    }
+  });
+
   // For charts, use primary currency (most used) or sum if single currency
   const primaryCurrency = currenciesWithTotals[0]?.[0] || 'CZK';
   const filteredTotalAmount = totalsByCurrency[primaryCurrency]?.total || 0;
@@ -2381,8 +2395,30 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
       </div>
     </div>
 
+    <!-- Total in CZK -->
+    <div class="card" style="margin-bottom: 16px; background: linear-gradient(135deg, var(--color-sage-pale), var(--color-sage-light));">
+      <div style="padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <div style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 4px;">${tr.invoicesPage.total} (CZK)</div>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--color-primary);">${formatCurrency(nativeTotalSum, 'CZK')}</div>
+          </div>
+          <div style="display: flex; gap: 24px;">
+            <div style="text-align: right;">
+              <div style="font-size: 0.8rem; color: var(--color-text-muted);">${tr.invoicesPage.paid}</div>
+              <div style="font-size: 1.2rem; font-weight: 600; color: var(--color-success);">${formatCurrency(nativePaidSum, 'CZK')}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.8rem; color: var(--color-text-muted);">${tr.invoicesPage.unpaid}</div>
+              <div style="font-size: 1.2rem; font-weight: 600; color: var(--color-error);">${formatCurrency(nativeUnpaidSum, 'CZK')}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Totals by Currency -->
-    ${currenciesWithTotals.length > 0 ? `
+    ${currenciesWithTotals.length > 1 ? `
     <div class="currency-totals">
       ${currenciesWithTotals.map(([cur, totals]) => `
         <div class="currency-total-card">
@@ -2391,7 +2427,6 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
           <div class="sub-amounts">
             <span style="color: var(--color-success);">${tr.invoicesPage.paid}: ${formatCurrency(totals.paid, cur)}</span>
             <span style="color: var(--color-error);">${tr.invoicesPage.unpaid}: ${formatCurrency(totals.unpaid, cur)}</span>
-            <span style="color: var(--color-text-muted);">${tr.accountsPage.balance}: ${formatCurrency(totals.balance, cur)}</span>
           </div>
         </div>
       `).join('')}
@@ -2414,20 +2449,17 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
       </div>
       <div id="invoiceTableContent" class="collapsible-content">
         <div class="table-wrapper" style="overflow-x: auto;">
-          <table style="min-width: 1200px;">
+          <table style="min-width: 1000px;">
             <thead>
               <tr>
                 <th>${tr.invoicesPage.invoiceNumber}</th>
-                <th>${tr.invoicesPage.variableSymbol}</th>
                 <th>${tr.invoicesPage.documentType}</th>
                 <th>${tr.invoicesPage.customer}/${tr.invoicesPage.vendor}</th>
                 <th>${tr.invoicesPage.issueDate}</th>
                 <th>${tr.invoicesPage.dueDate}</th>
-                <th>${tr.invoicesPage.paidOn}</th>
-                <th style="text-align:right">${tr.invoicesPage.subtotal}</th>
                 <th style="text-align:right">${tr.invoicesPage.amount}</th>
+                <th style="text-align:right">${tr.invoicesPage.nativeAmount}</th>
                 <th style="text-align:right">${tr.accountsPage.balance}</th>
-                <th>${tr.invoicesPage.paymentMethod}</th>
                 <th>${tr.invoicesPage.status}</th>
               </tr>
             </thead>
@@ -2438,10 +2470,7 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
                   docType === 'proforma' ? tr.invoicesPage.proforma :
                   docType === 'correction' ? tr.invoicesPage.correction :
                   docType === 'tax_document' ? tr.invoicesPage.taxDocument : docType;
-                const varSymbol = inv.extra?.variable_symbol || '-';
-                const paidOn = inv.extra?.paid_on ? formatDate(inv.extra.paid_on) : '-';
-                const subtotal = inv.extra?.native_subtotal || inv.extra?.subtotal;
-                const paymentMethod = inv.extra?.payment_method || '-';
+                const nativeTotal = inv.extra?.native_total;
                 const statusLabel = inv.status === 'paid' ? tr.invoicesPage.paid :
                   inv.extra?.status === 'sent' ? tr.invoicesPage.sent :
                   inv.extra?.status === 'cancelled' ? tr.invoicesPage.cancelled :
@@ -2453,19 +2482,16 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
                 return `
                 <tr>
                   <td><strong>${inv.invoice_number || '-'}</strong></td>
-                  <td style="font-size: 0.85rem; color: var(--color-text-muted);">${varSymbol}</td>
                   <td><span class="badge ${inv.invoice_type === 'issued' ? 'badge-info' : 'badge-warning'}">${docTypeLabel}</span></td>
                   <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${inv.customer_name || ''}">${inv.customer_name || '-'}</td>
                   <td>${formatDate(inv.issue_date)}</td>
                   <td>${formatDate(inv.due_date)}</td>
-                  <td>${paidOn}</td>
-                  <td style="text-align:right; font-size: 0.85rem; color: var(--color-text-muted);">${subtotal ? formatCurrency(subtotal, inv.currency) : '-'}</td>
                   <td style="text-align:right; font-weight: 600;">${formatCurrency(inv.total_amount, inv.currency)}</td>
+                  <td style="text-align:right; color: var(--color-text-muted);">${nativeTotal ? formatCurrency(nativeTotal, 'CZK') : '-'}</td>
                   <td style="text-align:right; color: ${inv.balance_due > 0 ? 'var(--color-warning)' : 'var(--color-success)'};">${formatCurrency(inv.balance_due, inv.currency)}</td>
-                  <td style="font-size: 0.85rem;">${paymentMethod}</td>
                   <td><span class="badge ${statusClass}">${statusLabel}</span></td>
                 </tr>
-              `}).join('') : `<tr><td colspan="12" class="empty-state">${tr.invoicesPage.noInvoices}</td></tr>`}
+              `}).join('') : `<tr><td colspan="9" class="empty-state">${tr.invoicesPage.noInvoices}</td></tr>`}
             </tbody>
           </table>
         </div>
@@ -2622,12 +2648,13 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
       document.head.insertAdjacentHTML('beforeend', \`
         <style>
           .collapsible-content {
-            max-height: 600px;
-            overflow: hidden;
+            max-height: 5000px;
+            overflow: visible;
             transition: max-height 0.3s ease-out;
           }
           .collapsible-content.collapsed {
             max-height: 0;
+            overflow: hidden;
           }
           .collapse-icon.rotated {
             transform: rotate(-90deg);
