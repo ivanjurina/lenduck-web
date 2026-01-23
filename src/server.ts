@@ -243,10 +243,9 @@ function renderAppPage(options: AppPageOptions): string {
   const lang = getLang(req);
   const tr = t(req);
 
-  const navItem = (href: string, icon: string, label: string, page: string) => `
+  const navItem = (href: string, label: string, page: string) => `
     <a href="${href}" class="nav-item ${activePage === page ? 'active' : ''}">
-      <span class="nav-icon">${icon}</span>
-      <span class="nav-label">${label}</span>
+      ${label}
     </a>
   `;
 
@@ -321,23 +320,25 @@ function renderAppPage(options: AppPageOptions): string {
         .sidebar-logo span { font-size: 1.25rem; font-weight: 700; }
 
         .sidebar-company {
-            padding: 16px 20px;
-            background: rgba(255,255,255,0.05);
+            padding: 12px 20px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .company-selector {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 14px;
-            background: rgba(255,255,255,0.1);
-            border-radius: var(--radius);
-            cursor: pointer;
-            transition: background 0.2s;
+        .company-name-display {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: white;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .company-selector:hover { background: rgba(255,255,255,0.15); }
-        .company-name { font-weight: 600; font-size: 0.9rem; }
-        .company-label { font-size: 0.75rem; color: var(--color-text-muted); }
+        .company-switch-link {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .company-switch-link:hover { color: white; }
 
         .sidebar-nav {
             flex: 1;
@@ -357,9 +358,7 @@ function renderAppPage(options: AppPageOptions): string {
             margin-bottom: 8px;
         }
         .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            display: block;
             padding: 10px 12px;
             color: #cbd5e1;
             text-decoration: none;
@@ -376,7 +375,6 @@ function renderAppPage(options: AppPageOptions): string {
             background: var(--color-sidebar-active);
             color: white;
         }
-        .nav-icon { font-size: 1.1rem; width: 20px; text-align: center; }
 
         .sidebar-footer {
             padding: 16px 20px;
@@ -737,36 +735,31 @@ function renderAppPage(options: AppPageOptions): string {
         </div>
         ${companyId ? `
         <div class="sidebar-company">
-            <a href="/dashboard" class="company-selector">
-                <div>
-                    <div class="company-label">${tr.nav.switchCompany}</div>
-                    <div class="company-name">${companyName || tr.nav.switchCompany}</div>
-                </div>
-                <span>&#8595;</span>
-            </a>
+            <div class="company-name-display">${companyName || 'Company'}</div>
+            <a href="/dashboard" class="company-switch-link">${tr.nav.switchCompany}</a>
         </div>
         <nav class="sidebar-nav">
             <div class="nav-section">
                 <div class="nav-section-title">${tr.nav.overview}</div>
-                ${navItem(`/company/${companyId}/overview`, '&#128200;', tr.nav.overview, 'overview')}
-                ${navItem(`/company/${companyId}/reports`, '&#128202;', tr.nav.reports, 'reports')}
+                ${navItem(`/company/${companyId}/overview`, tr.nav.overview, 'overview')}
+                ${navItem(`/company/${companyId}/reports`, tr.nav.reports, 'reports')}
             </div>
             <div class="nav-section">
                 <div class="nav-section-title">${tr.nav.data}</div>
-                ${navItem(`/company/${companyId}/data/invoices`, '&#128196;', tr.nav.invoices, 'invoices')}
-                ${navItem(`/company/${companyId}/data/accounts`, '&#128179;', tr.nav.accounts, 'accounts')}
-                ${navItem(`/company/${companyId}/data/transactions`, '&#128176;', tr.nav.transactions, 'transactions')}
+                ${navItem(`/company/${companyId}/data/invoices`, tr.nav.invoices, 'invoices')}
+                ${navItem(`/company/${companyId}/data/accounts`, tr.nav.accounts, 'accounts')}
+                ${navItem(`/company/${companyId}/data/transactions`, tr.nav.transactions, 'transactions')}
             </div>
             <div class="nav-section">
                 <div class="nav-section-title">${tr.nav.settings}</div>
-                ${navItem(`/company/${companyId}/connect`, '&#128279;', tr.nav.settings, 'settings')}
+                ${navItem(`/company/${companyId}/connect`, tr.nav.settings, 'settings')}
             </div>
         </nav>
         ` : `
         <nav class="sidebar-nav">
             <div class="nav-section">
-                ${navItem('/dashboard', '&#127968;', tr.dashboard.yourCompanies, 'dashboard')}
-                ${isAdmin ? navItem('/admin', '&#128736;', 'Admin', 'admin') : ''}
+                ${navItem('/dashboard', tr.dashboard.yourCompanies, 'dashboard')}
+                ${isAdmin ? navItem('/admin', 'Admin', 'admin') : ''}
             </div>
         </nav>
         `}
@@ -3223,11 +3216,36 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
   });
   const topVendors = Object.entries(vendorExpenses).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
-  // Monthly data for charts
-  const chartLabels = metricsHistory.map((m: any) => tr.monthsShort[new Date(m.metric_date).getMonth()]);
-  const revenueData = metricsHistory.map((m: any) => Math.round((m.revenue || 0) / 1000));
-  const expensesData = metricsHistory.map((m: any) => Math.round((m.expenses || 0) / 1000));
-  const profitData = metricsHistory.map((m: any) => Math.round((m.net_income || 0) / 1000));
+  // Calculate monthly data from ALL invoices instead of limited metricsHistory
+  const monthlyData: Record<string, { revenue: number; expenses: number; }> = {};
+
+  // Process all invoices and group by month
+  invoices.forEach((inv: any) => {
+    const date = new Date(inv.issue_date || inv.created_at);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+    if (!monthlyData[monthKey]) {
+      monthlyData[monthKey] = { revenue: 0, expenses: 0 };
+    }
+
+    if (inv.invoice_type === 'issued') {
+      monthlyData[monthKey].revenue += (inv.total_amount || 0);
+    } else {
+      monthlyData[monthKey].expenses += (inv.total_amount || 0);
+    }
+  });
+
+  // Sort months chronologically and prepare chart data
+  const sortedMonths = Object.keys(monthlyData).sort();
+  const chartLabels = sortedMonths.map(key => {
+    const [year, month] = key.split('-');
+    return `${tr.monthsShort[parseInt(month) - 1]} ${year.slice(2)}`;
+  });
+  const revenueData = sortedMonths.map(key => Math.round(monthlyData[key].revenue / 1000));
+  const expensesData = sortedMonths.map(key => Math.round(monthlyData[key].expenses / 1000));
+  const profitData = sortedMonths.map(key => Math.round((monthlyData[key].revenue - monthlyData[key].expenses) / 1000));
+
+  // Cash data from metricsHistory (as this is balance-based, not transaction-based)
   const cashData = metricsHistory.map((m: any) => Math.round((m.cash_balance || 0) / 1000));
 
   const content = `
@@ -3237,7 +3255,7 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
     </div>
 
     <!-- Profitability Section -->
-    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128200; ${tr.reportsPage.profitability}</h2>
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">${tr.reportsPage.profitability}</h2>
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">${tr.common.total} ${tr.overview.revenue}</div>
@@ -3269,7 +3287,7 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
     </div>
 
     <!-- Liquidity Section -->
-    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128176; ${tr.reportsPage.liquidity}</h2>
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">${tr.reportsPage.liquidity}</h2>
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">${tr.overview.cashBalance}</div>
@@ -3296,7 +3314,7 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
     </div>
 
     <!-- Receivables & Payables Section -->
-    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128203; ${tr.reportsPage.receivablesPayables}</h2>
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">${tr.reportsPage.receivablesPayables}</h2>
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">${tr.overview.accountsReceivable}</div>
@@ -3318,7 +3336,7 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
     </div>
 
     <!-- Leverage Section -->
-    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#9878; ${tr.reportsPage.financialStructure}</h2>
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">${tr.reportsPage.financialStructure}</h2>
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">${tr.reportsPage.totalAssets}</div>
@@ -3340,7 +3358,7 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
     </div>
 
     <!-- Top Customers & Vendors -->
-    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128101; ${tr.reportsPage.customerAnalysis}</h2>
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">${tr.reportsPage.customerAnalysis}</h2>
     <div class="grid-2">
       <div class="card">
         <div class="card-header"><span class="card-title">${tr.reportsPage.topCustomers}</span></div>
