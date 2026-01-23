@@ -87,6 +87,22 @@ export interface Translations {
     totalBalance: string;
     totalPaid: string;
     totalUnpaid: string;
+    // Charts and analytics
+    invoiceList: string;
+    analytics: string;
+    hideList: string;
+    showList: string;
+    paymentStatus: string;
+    invoicesByType: string;
+    topCustomers: string;
+    topSuppliers: string;
+    monthlyOverview: string;
+    avgDaysToPay: string;
+    days: string;
+    overdue: string;
+    onTime: string;
+    paymentTiming: string;
+    invoicesCount: string;
   };
   // Accounts page
   accountsPage: {
@@ -304,6 +320,21 @@ export const translations: Record<Language, Translations> = {
       totalBalance: 'Total balance due',
       totalPaid: 'Total paid',
       totalUnpaid: 'Total unpaid',
+      invoiceList: 'Invoice List',
+      analytics: 'Analytics',
+      hideList: 'Hide list',
+      showList: 'Show list',
+      paymentStatus: 'Payment Status',
+      invoicesByType: 'Invoices by Type',
+      topCustomers: 'Top Customers',
+      topSuppliers: 'Top Suppliers',
+      monthlyOverview: 'Monthly Overview',
+      avgDaysToPay: 'Avg. Days to Pay',
+      days: 'days',
+      overdue: 'Overdue',
+      onTime: 'On Time',
+      paymentTiming: 'Payment Timing',
+      invoicesCount: 'invoices',
     },
     accountsPage: {
       title: 'Chart of Accounts',
@@ -511,6 +542,21 @@ export const translations: Record<Language, Translations> = {
       totalBalance: 'Celkový zůstatek k úhradě',
       totalPaid: 'Celkem zaplaceno',
       totalUnpaid: 'Celkem nezaplaceno',
+      invoiceList: 'Seznam faktur',
+      analytics: 'Analýzy',
+      hideList: 'Skrýt seznam',
+      showList: 'Zobrazit seznam',
+      paymentStatus: 'Stav plateb',
+      invoicesByType: 'Faktury podle typu',
+      topCustomers: 'Top zákazníci',
+      topSuppliers: 'Top dodavatelé',
+      monthlyOverview: 'Měsíční přehled',
+      avgDaysToPay: 'Prům. dní do zaplacení',
+      days: 'dní',
+      overdue: 'Po splatnosti',
+      onTime: 'Včas',
+      paymentTiming: 'Časování plateb',
+      invoicesCount: 'faktur',
     },
     accountsPage: {
       title: 'Účtová osnova',
@@ -718,6 +764,21 @@ export const translations: Record<Language, Translations> = {
       totalBalance: 'Celkový zostatok na úhradu',
       totalPaid: 'Celkom zaplatené',
       totalUnpaid: 'Celkom nezaplatené',
+      invoiceList: 'Zoznam faktúr',
+      analytics: 'Analýzy',
+      hideList: 'Skryť zoznam',
+      showList: 'Zobraziť zoznam',
+      paymentStatus: 'Stav platieb',
+      invoicesByType: 'Faktúry podľa typu',
+      topCustomers: 'Top zákazníci',
+      topSuppliers: 'Top dodávatelia',
+      monthlyOverview: 'Mesačný prehľad',
+      avgDaysToPay: 'Priem. dní do zaplatenia',
+      days: 'dní',
+      overdue: 'Po splatnosti',
+      onTime: 'Včas',
+      paymentTiming: 'Časovanie platieb',
+      invoicesCount: 'faktúr',
     },
     accountsPage: {
       title: 'Účtová osnova',

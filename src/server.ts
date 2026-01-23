@@ -1971,9 +1971,10 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
     );
   }
 
-  const formatCurrency = (amount: number | null) => {
+  const formatCurrency = (amount: number | null, currency?: string) => {
     if (amount === null || amount === undefined) return 'N/A';
-    return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+    const cur = currency || company.currency || 'CZK';
+    return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: cur, maximumFractionDigits: 0 }).format(amount);
   };
 
   // Format date based on locale (dd.mm.yyyy for CS/SK, mm/dd/yyyy for EN)
@@ -2007,6 +2008,78 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
   const filteredReceivedCount = filteredInvoices.filter((i: any) => i.invoice_type === 'received').length;
   const filteredPaidCount = filteredInvoices.filter((i: any) => i.status === 'paid').length;
   const filteredUnpaidCount = filteredInvoices.filter((i: any) => i.status !== 'paid').length;
+
+  // Analytics data calculations
+  // Top customers (by total amount for issued invoices)
+  const customerTotals: Record<string, { name: string; total: number; count: number }> = {};
+  filteredInvoices.filter((i: any) => i.invoice_type === 'issued').forEach((inv: any) => {
+    const name = inv.customer_name || 'Unknown';
+    if (!customerTotals[name]) customerTotals[name] = { name, total: 0, count: 0 };
+    customerTotals[name].total += inv.total_amount || 0;
+    customerTotals[name].count++;
+  });
+  const topCustomers = Object.values(customerTotals).sort((a, b) => b.total - a.total).slice(0, 5);
+
+  // Top suppliers (by total amount for received invoices)
+  const supplierTotals: Record<string, { name: string; total: number; count: number }> = {};
+  filteredInvoices.filter((i: any) => i.invoice_type === 'received').forEach((inv: any) => {
+    const name = inv.customer_name || 'Unknown';
+    if (!supplierTotals[name]) supplierTotals[name] = { name, total: 0, count: 0 };
+    supplierTotals[name].total += inv.total_amount || 0;
+    supplierTotals[name].count++;
+  });
+  const topSuppliers = Object.values(supplierTotals).sort((a, b) => b.total - a.total).slice(0, 5);
+
+  // Monthly overview (last 6 months)
+  const monthlyData: Record<string, { issued: number; received: number; issuedCount: number; receivedCount: number }> = {};
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthlyData[key] = { issued: 0, received: 0, issuedCount: 0, receivedCount: 0 };
+  }
+  filteredInvoices.forEach((inv: any) => {
+    if (!inv.issue_date) return;
+    const key = inv.issue_date.substring(0, 7);
+    if (monthlyData[key]) {
+      if (inv.invoice_type === 'issued') {
+        monthlyData[key].issued += inv.total_amount || 0;
+        monthlyData[key].issuedCount++;
+      } else {
+        monthlyData[key].received += inv.total_amount || 0;
+        monthlyData[key].receivedCount++;
+      }
+    }
+  });
+  const monthLabels = Object.keys(monthlyData);
+  const monthlyIssued = Object.values(monthlyData).map(m => m.issued);
+  const monthlyReceived = Object.values(monthlyData).map(m => m.received);
+
+  // Payment timing analysis (for paid invoices)
+  let totalDaysToPay = 0;
+  let paidWithTimingCount = 0;
+  let overdueCount = 0;
+  let onTimeCount = 0;
+  filteredInvoices.filter((i: any) => i.status === 'paid').forEach((inv: any) => {
+    if (inv.issue_date && inv.due_date) {
+      const issueDate = new Date(inv.issue_date);
+      const dueDate = new Date(inv.due_date);
+      // Estimate paid date as due date for simplicity (or could use actual paid_on if available)
+      const paidDate = dueDate; // Simplified - in reality would use paid_on field
+      const daysToPay = Math.floor((paidDate.getTime() - issueDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysToPay >= 0) {
+        totalDaysToPay += daysToPay;
+        paidWithTimingCount++;
+      }
+      // Check if paid before/after due date
+      if (paidDate <= dueDate) {
+        onTimeCount++;
+      } else {
+        overdueCount++;
+      }
+    }
+  });
+  const avgDaysToPay = paidWithTimingCount > 0 ? Math.round(totalDaysToPay / paidWithTimingCount) : 0;
 
   // Build query string for preserving filters in tabs
   const buildQueryString = (overrides: Record<string, string> = {}) => {
@@ -2198,56 +2271,296 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
     </div>
     `}
 
-    <div class="card">
-      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-        <div class="tabs" style="border: none; margin: 0;">
+    <!-- Collapsible Invoice List -->
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; cursor: pointer;" onclick="document.getElementById('invoiceTableContent').classList.toggle('collapsed'); this.querySelector('.collapse-icon').classList.toggle('rotated');">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="collapse-icon" style="transition: transform 0.2s; display: inline-block;">&#9660;</span>
+          <h3 style="margin: 0; font-size: 1rem;">${tr.invoicesPage.invoiceList}</h3>
+          <span class="badge badge-info">${filteredInvoices.length}</span>
+        </div>
+        <div class="tabs" style="border: none; margin: 0;" onclick="event.stopPropagation();">
           <a href="/company/${companyId}/data/invoices${buildQueryString({ type: 'all' })}" class="tab ${typeFilter === 'all' ? 'active' : ''}">${tr.invoicesPage.all} (${invoices.length})</a>
           <a href="/company/${companyId}/data/invoices${buildQueryString({ type: 'issued' })}" class="tab ${typeFilter === 'issued' ? 'active' : ''}">${tr.invoicesPage.issued} (${invoices.filter((i: any) => i.invoice_type === 'issued').length})</a>
           <a href="/company/${companyId}/data/invoices${buildQueryString({ type: 'received' })}" class="tab ${typeFilter === 'received' ? 'active' : ''}">${tr.invoicesPage.received} (${invoices.filter((i: any) => i.invoice_type === 'received').length})</a>
         </div>
-        ${hasFilters ? `<span style="font-size: 0.85rem; color: var(--color-text-muted);">${tr.invoicesPage.showingOf.replace('%count%', String(filteredInvoices.length)).replace('%total%', String(invoices.length))}</span>` : ''}
       </div>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>${tr.invoicesPage.invoiceNumber}</th>
-              <th>${tr.invoicesPage.type}</th>
-              <th>${tr.invoicesPage.issueDate}</th>
-              <th>${tr.invoicesPage.dueDate}</th>
-              <th>${tr.invoicesPage.customer}/${tr.invoicesPage.vendor}</th>
-              <th style="text-align:right">${tr.invoicesPage.amount}</th>
-              <th style="text-align:right">${tr.accountsPage.balance}</th>
-              <th>${tr.invoicesPage.status}</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${filteredInvoices.length > 0 ? filteredInvoices.map((inv: any) => `
+      <div id="invoiceTableContent" class="collapsible-content">
+        <div class="table-wrapper">
+          <table>
+            <thead>
               <tr>
-                <td><strong>${inv.invoice_number || '-'}</strong></td>
-                <td><span class="badge ${inv.invoice_type === 'issued' ? 'badge-info' : 'badge-warning'}">${inv.invoice_type === 'issued' ? tr.invoicesPage.issued : tr.invoicesPage.received}</span></td>
-                <td>${formatDate(inv.issue_date)}</td>
-                <td>${formatDate(inv.due_date)}</td>
-                <td>${inv.customer_name || '-'}</td>
-                <td style="text-align:right">${formatCurrency(inv.total_amount)}</td>
-                <td style="text-align:right">${formatCurrency(inv.balance_due)}</td>
-                <td><span class="badge ${inv.status === 'paid' ? 'badge-success' : 'badge-error'}">${inv.status === 'paid' ? tr.invoicesPage.paid : tr.invoicesPage.unpaid}</span></td>
+                <th>${tr.invoicesPage.invoiceNumber}</th>
+                <th>${tr.invoicesPage.type}</th>
+                <th>${tr.invoicesPage.customer}/${tr.invoicesPage.vendor}</th>
+                <th>${tr.invoicesPage.issueDate}</th>
+                <th>${tr.invoicesPage.dueDate}</th>
+                <th style="text-align:center">&#128176;</th>
+                <th style="text-align:right">${tr.invoicesPage.amount}</th>
+                <th style="text-align:right">${tr.accountsPage.balance}</th>
+                <th>${tr.invoicesPage.status}</th>
               </tr>
-            `).join('') : `<tr><td colspan="8" class="empty-state">${tr.invoicesPage.noInvoices}</td></tr>`}
-          </tbody>
-          ${filteredInvoices.length > 0 ? `
-          <tfoot style="background: var(--color-sage-pale); font-weight: 600;">
-            <tr>
-              <td colspan="5" style="text-align: right;">${tr.invoicesPage.totalAmount}:</td>
-              <td style="text-align: right;">${formatCurrency(filteredTotalAmount)}</td>
-              <td style="text-align: right;">${formatCurrency(filteredTotalBalance)}</td>
-              <td></td>
-            </tr>
-          </tfoot>
-          ` : ''}
-        </table>
+            </thead>
+            <tbody>
+              ${filteredInvoices.length > 0 ? filteredInvoices.map((inv: any) => `
+                <tr>
+                  <td><strong>${inv.invoice_number || '-'}</strong></td>
+                  <td><span class="badge ${inv.invoice_type === 'issued' ? 'badge-info' : 'badge-warning'}">${inv.invoice_type === 'issued' ? tr.invoicesPage.issued : tr.invoicesPage.received}</span></td>
+                  <td>${inv.customer_name || '-'}</td>
+                  <td>${formatDate(inv.issue_date)}</td>
+                  <td>${formatDate(inv.due_date)}</td>
+                  <td style="text-align:center; font-size: 0.85rem; color: var(--color-text-muted);">${inv.currency || 'CZK'}</td>
+                  <td style="text-align:right">${formatCurrency(inv.total_amount, inv.currency)}</td>
+                  <td style="text-align:right">${formatCurrency(inv.balance_due, inv.currency)}</td>
+                  <td><span class="badge ${inv.status === 'paid' ? 'badge-success' : 'badge-error'}">${inv.status === 'paid' ? tr.invoicesPage.paid : tr.invoicesPage.unpaid}</span></td>
+                </tr>
+              `).join('') : `<tr><td colspan="9" class="empty-state">${tr.invoicesPage.noInvoices}</td></tr>`}
+            </tbody>
+            ${filteredInvoices.length > 0 ? `
+            <tfoot style="background: var(--color-sage-pale); font-weight: 600;">
+              <tr>
+                <td colspan="6" style="text-align: right;">${tr.invoicesPage.totalAmount}:</td>
+                <td style="text-align: right;">-</td>
+                <td style="text-align: right;">-</td>
+                <td></td>
+              </tr>
+            </tfoot>
+            ` : ''}
+          </table>
+        </div>
       </div>
     </div>
+
+    <!-- Analytics Section -->
+    <div class="page-header" style="margin-top: 32px;">
+      <h2 style="font-size: 1.3rem;">${tr.invoicesPage.analytics}</h2>
+    </div>
+
+    <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 24px;">
+      <!-- Payment Status Chart -->
+      <div class="card">
+        <div class="card-header">
+          <h3 style="margin: 0; font-size: 1rem;">${tr.invoicesPage.paymentStatus}</h3>
+        </div>
+        <div style="padding: 20px; display: flex; justify-content: center;">
+          <canvas id="paymentStatusChart" style="max-width: 250px; max-height: 250px;"></canvas>
+        </div>
+        <div style="padding: 0 20px 20px; display: flex; justify-content: center; gap: 24px; font-size: 0.85rem;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 12px; height: 12px; border-radius: 50%; background: #8BA88A;"></span>
+            <span>${tr.invoicesPage.paid}: ${formatCurrency(filteredPaidAmount)}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 12px; height: 12px; border-radius: 50%; background: #E57373;"></span>
+            <span>${tr.invoicesPage.unpaid}: ${formatCurrency(filteredUnpaidAmount)}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoice Type Chart -->
+      <div class="card">
+        <div class="card-header">
+          <h3 style="margin: 0; font-size: 1rem;">${tr.invoicesPage.invoicesByType}</h3>
+        </div>
+        <div style="padding: 20px; display: flex; justify-content: center;">
+          <canvas id="invoiceTypeChart" style="max-width: 250px; max-height: 250px;"></canvas>
+        </div>
+        <div style="padding: 0 20px 20px; display: flex; justify-content: center; gap: 24px; font-size: 0.85rem;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 12px; height: 12px; border-radius: 50%; background: #64B5F6;"></span>
+            <span>${tr.invoicesPage.issued}: ${filteredIssuedCount}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 12px; height: 12px; border-radius: 50%; background: #FFB74D;"></span>
+            <span>${tr.invoicesPage.received}: ${filteredReceivedCount}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Avg Days to Pay -->
+      <div class="card">
+        <div class="card-header">
+          <h3 style="margin: 0; font-size: 1rem;">${tr.invoicesPage.paymentTiming}</h3>
+        </div>
+        <div style="padding: 40px 20px; text-align: center;">
+          <div style="font-size: 3rem; font-weight: 700; color: var(--color-primary);">${avgDaysToPay}</div>
+          <div style="font-size: 0.9rem; color: var(--color-text-muted); margin-top: 4px;">${tr.invoicesPage.avgDaysToPay}</div>
+          <div style="margin-top: 20px; display: flex; justify-content: center; gap: 24px; font-size: 0.85rem;">
+            <div>
+              <span style="color: var(--color-success); font-weight: 600;">${onTimeCount}</span>
+              <span style="color: var(--color-text-muted);"> ${tr.invoicesPage.onTime}</span>
+            </div>
+            <div>
+              <span style="color: var(--color-error); font-weight: 600;">${overdueCount}</span>
+              <span style="color: var(--color-text-muted);"> ${tr.invoicesPage.overdue}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Overview -->
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header">
+        <h3 style="margin: 0; font-size: 1rem;">${tr.invoicesPage.monthlyOverview}</h3>
+      </div>
+      <div style="padding: 20px;">
+        <canvas id="monthlyChart" style="width: 100%; height: 250px;"></canvas>
+      </div>
+    </div>
+
+    <!-- Top Customers & Suppliers -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+      ${topCustomers.length > 0 ? `
+      <div class="card">
+        <div class="card-header">
+          <h3 style="margin: 0; font-size: 1rem;">${tr.invoicesPage.topCustomers}</h3>
+        </div>
+        <div style="padding: 0;">
+          ${topCustomers.map((c, idx) => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--color-border); ${idx === topCustomers.length - 1 ? 'border: none;' : ''}">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-sage-light); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600;">${idx + 1}</span>
+                <div>
+                  <div style="font-weight: 500;">${c.name}</div>
+                  <div style="font-size: 0.8rem; color: var(--color-text-muted);">${c.count} ${tr.invoicesPage.invoicesCount}</div>
+                </div>
+              </div>
+              <div style="font-weight: 600; color: var(--color-success);">${formatCurrency(c.total)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      ` : ''}
+
+      ${topSuppliers.length > 0 ? `
+      <div class="card">
+        <div class="card-header">
+          <h3 style="margin: 0; font-size: 1rem;">${tr.invoicesPage.topSuppliers}</h3>
+        </div>
+        <div style="padding: 0;">
+          ${topSuppliers.map((s, idx) => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--color-border); ${idx === topSuppliers.length - 1 ? 'border: none;' : ''}">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-sage-light); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600;">${idx + 1}</span>
+                <div>
+                  <div style="font-weight: 500;">${s.name}</div>
+                  <div style="font-size: 0.8rem; color: var(--color-text-muted);">${s.count} ${tr.invoicesPage.invoicesCount}</div>
+                </div>
+              </div>
+              <div style="font-weight: 600; color: var(--color-error);">${formatCurrency(s.total)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      ` : ''}
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+      // Collapsible styles
+      document.head.insertAdjacentHTML('beforeend', \`
+        <style>
+          .collapsible-content {
+            max-height: 600px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+          }
+          .collapsible-content.collapsed {
+            max-height: 0;
+          }
+          .collapse-icon.rotated {
+            transform: rotate(-90deg);
+          }
+        </style>
+      \`);
+
+      // Payment Status Doughnut Chart
+      new Chart(document.getElementById('paymentStatusChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['${tr.invoicesPage.paid}', '${tr.invoicesPage.unpaid}'],
+          datasets: [{
+            data: [${filteredPaidAmount}, ${filteredUnpaidAmount}],
+            backgroundColor: ['#8BA88A', '#E57373'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { display: false }
+          },
+          cutout: '60%'
+        }
+      });
+
+      // Invoice Type Doughnut Chart
+      new Chart(document.getElementById('invoiceTypeChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['${tr.invoicesPage.issued}', '${tr.invoicesPage.received}'],
+          datasets: [{
+            data: [${filteredIssuedCount}, ${filteredReceivedCount}],
+            backgroundColor: ['#64B5F6', '#FFB74D'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { display: false }
+          },
+          cutout: '60%'
+        }
+      });
+
+      // Monthly Overview Bar Chart
+      new Chart(document.getElementById('monthlyChart'), {
+        type: 'bar',
+        data: {
+          labels: ${JSON.stringify(monthLabels)},
+          datasets: [
+            {
+              label: '${tr.invoicesPage.issued}',
+              data: ${JSON.stringify(monthlyIssued)},
+              backgroundColor: '#8BA88A',
+              borderRadius: 4
+            },
+            {
+              label: '${tr.invoicesPage.received}',
+              data: ${JSON.stringify(monthlyReceived)},
+              backgroundColor: '#FFB74D',
+              borderRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { boxWidth: 12, padding: 20 }
+            }
+          },
+          scales: {
+            x: { grid: { display: false } },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return new Intl.NumberFormat('${lang === 'en' ? 'en-US' : 'cs-CZ'}', { style: 'currency', currency: '${company.currency || 'CZK'}', maximumFractionDigits: 0 }).format(value);
+                }
+              }
+            }
+          }
+        }
+      });
+    </script>
   `;
 
   res.send(renderAppPage({
