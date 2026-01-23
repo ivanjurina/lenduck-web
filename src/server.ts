@@ -233,7 +233,7 @@ interface AppPageOptions {
   content: string;
   companyId?: number;
   companyName?: string;
-  activePage?: 'overview' | 'data' | 'invoices' | 'accounts' | 'transactions' | 'reports' | 'settings';
+  activePage?: 'overview' | 'data' | 'invoices' | 'accounts' | 'transactions' | 'reports' | 'settings' | 'admin' | 'dashboard';
   req: Request;
 }
 
@@ -642,9 +642,88 @@ function renderAppPage(options: AppPageOptions): string {
         }
 
         /* Mobile */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px;
+            color: var(--color-text);
+        }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 99;
+        }
+
+        @media (max-width: 1024px) {
+            :root { --sidebar-width: 220px; }
+            .main-content { padding: 24px; }
+            .stat-value { font-size: 1.5rem; }
+        }
+
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.open { display: block; }
             .main-wrapper { margin-left: 0; }
+            .mobile-menu-btn { display: block; }
+            .top-header { padding: 0 16px; }
+            .main-content { padding: 16px; }
+            .page-title { font-size: 1rem; }
+
+            /* Stats responsive */
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            .stat-card { padding: 14px; }
+            .stat-label { font-size: 0.7rem; }
+            .stat-value { font-size: 1.25rem; }
+
+            /* Buttons responsive */
+            .btn { padding: 8px 14px; font-size: 0.8rem; }
+            .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+
+            /* Page header */
+            .page-header h1 { font-size: 1.2rem; }
+            .page-header p { font-size: 0.8rem; }
+
+            /* Cards */
+            .card-header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+            .card-body { padding: 16px; }
+
+            /* Tables */
+            th, td { padding: 8px 10px; font-size: 0.8rem; }
+            th { font-size: 0.65rem; }
+
+            /* Tabs */
+            .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .tab { padding: 10px 14px; font-size: 0.8rem; white-space: nowrap; }
+
+            /* Header actions */
+            .header-actions { gap: 8px; }
+            .lang-switcher { gap: 2px; padding-left: 8px; margin-left: 4px; }
+            .lang-option { padding: 4px 8px; font-size: 0.7rem; }
+
+            /* Company cards on dashboard */
+            .company-grid { grid-template-columns: 1fr !important; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .stat-value { font-size: 1.5rem; }
+            .header-actions .btn { display: none; }
+            .filter-grid { grid-template-columns: 1fr !important; }
         }
     </style>
 </head>
@@ -686,7 +765,7 @@ function renderAppPage(options: AppPageOptions): string {
         ` : `
         <nav class="sidebar-nav">
             <div class="nav-section">
-                ${navItem('/dashboard', '&#127968;', tr.dashboard.yourCompanies, 'overview')}
+                ${navItem('/dashboard', '&#127968;', tr.dashboard.yourCompanies, 'dashboard')}
                 ${isAdmin ? navItem('/admin', '&#128736;', 'Admin', 'admin') : ''}
             </div>
         </nav>
@@ -703,9 +782,13 @@ function renderAppPage(options: AppPageOptions): string {
         </div>
     </aside>
 
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
     <div class="main-wrapper">
         <header class="top-header">
-            <h1 class="page-title">${title}</h1>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()">&#9776;</button>
+                <h1 class="page-title">${title}</h1>
+            </div>
             <div class="header-actions">
                 ${companyId ? `<a href="/company/${companyId}/sync" class="btn btn-secondary btn-sm">&#8635; ${tr.overview.syncNow}</a>` : ''}
                 <div class="lang-switcher">
@@ -719,6 +802,12 @@ function renderAppPage(options: AppPageOptions): string {
             ${content}
         </main>
     </div>
+    <script>
+        function toggleMobileMenu() {
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('open');
+        }
+    </script>
 </body>
 </html>`;
 }
@@ -952,21 +1041,30 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
   }).join('') : '';
 
   const content = `
-    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div class="page-header dashboard-header-mobile">
       <div>
         <h1>${tr.dashboard.yourCompanies}</h1>
         <p>${tr.connectPage.subtitle}</p>
       </div>
-      <div style="display: flex; gap: 12px;">
+      <div class="dashboard-actions">
         <form method="POST" action="/company/demo" style="margin: 0;">
           <button type="submit" class="btn btn-secondary">${tr.dashboard.tryDemo}</button>
         </form>
         <a href="/company/new" class="btn btn-primary">+ ${tr.dashboard.addCompany}</a>
       </div>
     </div>
+    <style>
+      .dashboard-header-mobile { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+      .dashboard-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+      @media (max-width: 600px) {
+        .dashboard-header-mobile { flex-direction: column; align-items: stretch; }
+        .dashboard-actions { width: 100%; }
+        .dashboard-actions .btn { flex: 1; text-align: center; justify-content: center; }
+      }
+    </style>
 
     ${companies.length > 0 ? `
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px;">
+      <div class="company-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
         ${companyCards}
       </div>
     ` : `
@@ -1773,19 +1871,29 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
   const totalPayables = unpaidPayables.reduce((sum: number, i: any) => sum + (i.balance_due || 0), 0);
 
   const content = `
+    <style>
+      .health-banner { display: flex; align-items: center; justify-content: space-between; padding: 24px 32px; gap: 20px; }
+      .health-score { font-size: 3rem; font-weight: 700; }
+      @media (max-width: 600px) {
+        .health-banner { flex-direction: column; text-align: center; padding: 20px; }
+        .health-banner > div:first-child { order: 2; }
+        .health-banner > div:last-child { order: 1; }
+        .health-score { font-size: 2.5rem; }
+      }
+    </style>
     ${error ? `<div class="alert alert-error">${error}</div>` : ''}
     ${success ? `<div class="alert alert-success">${success}</div>` : ''}
 
     <!-- Health Score Banner -->
     <div class="card" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; margin-bottom: 24px;">
-      <div class="card-body" style="display: flex; align-items: center; justify-content: space-between; padding: 24px 32px;">
+      <div class="card-body health-banner">
         <div>
-          <h2 style="color: white; margin-bottom: 8px;">${tr.overview.healthScore}</h2>
-          <p style="color: #94a3b8; margin: 0;">${healthScore >= 70 ? (lang === 'cs' ? 'Výborně! Způsobilý pro konkurenční úrokové sazby.' : lang === 'sk' ? 'Výborne! Spôsobilý pre konkurenčné úrokové sadzby.' : 'Excellent! Eligible for competitive financing rates.') : healthScore >= 50 ? (lang === 'cs' ? 'Dobrý stav. K dispozici více možností financování.' : lang === 'sk' ? 'Dobrý stav. K dispozícii viac možností financovania.' : 'Good standing. Multiple financing options available.') : (lang === 'cs' ? 'Pomůžeme vám zlepšit vaši finanční pozici.' : lang === 'sk' ? 'Pomôžeme vám zlepšiť vašu finančnú pozíciu.' : 'We can help improve your financial position.')}</p>
+          <h2 style="color: white; margin-bottom: 8px; font-size: 1.1rem;">${tr.overview.healthScore}</h2>
+          <p style="color: #94a3b8; margin: 0; font-size: 0.9rem;">${healthScore >= 70 ? (lang === 'cs' ? 'Výborně! Způsobilý pro konkurenční úrokové sazby.' : lang === 'sk' ? 'Výborne! Spôsobilý pre konkurenčné úrokové sadzby.' : 'Excellent! Eligible for competitive financing rates.') : healthScore >= 50 ? (lang === 'cs' ? 'Dobrý stav. K dispozici více možností financování.' : lang === 'sk' ? 'Dobrý stav. K dispozícii viac možností financovania.' : 'Good standing. Multiple financing options available.') : (lang === 'cs' ? 'Pomůžeme vám zlepšit vaši finanční pozici.' : lang === 'sk' ? 'Pomôžeme vám zlepšiť vašu finančnú pozíciu.' : 'We can help improve your financial position.')}</p>
         </div>
         <div style="text-align: center;">
-          <div style="font-size: 3rem; font-weight: 700; color: ${healthScore >= 70 ? '#10b981' : healthScore >= 50 ? '#f59e0b' : '#ef4444'};">${healthScore}</div>
-          <div style="font-size: 0.9rem; color: #94a3b8;">${lang === 'cs' ? 'ze 100' : lang === 'sk' ? 'zo 100' : 'out of 100'}</div>
+          <div class="health-score" style="color: ${healthScore >= 70 ? '#10b981' : healthScore >= 50 ? '#f59e0b' : '#ef4444'};">${healthScore}</div>
+          <div style="font-size: 0.85rem; color: #94a3b8;">${lang === 'cs' ? 'ze 100' : lang === 'sk' ? 'zo 100' : 'out of 100'}</div>
         </div>
       </div>
     </div>
@@ -3364,102 +3472,84 @@ app.get('/admin', requireAdmin, (req: Request, res: Response) => {
   `).join('');
 
   const content = `
-    <div class="dashboard-header">
-        <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h1 class="dashboard-title">Admin Dashboard</h1>
-                    <p class="dashboard-subtitle">Monitor visitors and waiting list signups</p>
-                </div>
-                <div style="display: flex; gap: 12px;">
-                    <a href="/dashboard" class="btn btn-secondary">My Companies</a>
-                    <a href="/company/new" class="btn btn-primary">+ Add Company</a>
-                </div>
-            </div>
-        </div>
+    <div class="page-header">
+      <h1>Admin Dashboard</h1>
+      <p>Monitor visitors and waiting list signups</p>
     </div>
-    <div class="dashboard-content">
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number">${totalVisitors}</div>
-                    <div class="stat-label">Total Page Views</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${todayVisitors}</div>
-                    <div class="stat-label">Today's Views</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${smeSignups}</div>
-                    <div class="stat-label">SME Signups</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${partnerSignups}</div>
-                    <div class="stat-label">Partner Signups</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${totalUsers}</div>
-                    <div class="stat-label">Registered Users</div>
-                </div>
-            </div>
 
-            <div class="tabs">
-                <button class="tab active" onclick="showTab('visitors')">Recent Visitors</button>
-                <button class="tab" onclick="showTab('sme')">SME Waiting List</button>
-                <button class="tab" onclick="showTab('partners')">Partner Waiting List</button>
-            </div>
-
-            <div id="visitors" class="tab-content active">
-                <div class="data-table">
-                    <div class="table-header"><h3>Recent Page Views (Last 50)</h3></div>
-                    <div style="overflow-x: auto;">
-                        ${recentVisitors.length ? `
-                        <table>
-                            <thead><tr><th>Time</th><th>Page</th><th>IP</th><th>Referrer</th><th>User Agent</th></tr></thead>
-                            <tbody>${visitorsRows}</tbody>
-                        </table>` : '<div class="empty-state">No visitors recorded yet</div>'}
-                    </div>
-                </div>
-            </div>
-
-            <div id="sme" class="tab-content">
-                <div class="data-table">
-                    <div class="table-header"><h3>SME Waiting List (${smeSignups} total)</h3></div>
-                    <div style="overflow-x: auto;">
-                        ${recentSME.length ? `
-                        <table>
-                            <thead><tr><th>Date</th><th>Company</th><th>Email</th><th>Phone</th><th>Accounting SW</th><th>Message</th></tr></thead>
-                            <tbody>${smeRows}</tbody>
-                        </table>` : '<div class="empty-state">No SME signups yet</div>'}
-                    </div>
-                </div>
-            </div>
-
-            <div id="partners" class="tab-content">
-                <div class="data-table">
-                    <div class="table-header"><h3>Partner Waiting List (${partnerSignups} total)</h3></div>
-                    <div style="overflow-x: auto;">
-                        ${recentPartners.length ? `
-                        <table>
-                            <thead><tr><th>Date</th><th>Company</th><th>Contact</th><th>Email</th><th>Phone</th><th>Type</th><th>Message</th></tr></thead>
-                            <tbody>${partnerRows}</tbody>
-                        </table>` : '<div class="empty-state">No partner signups yet</div>'}
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Page Views</div>
+        <div class="stat-value">${totalVisitors}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Today's Views</div>
+        <div class="stat-value">${todayVisitors}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">SME Signups</div>
+        <div class="stat-value">${smeSignups}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Partner Signups</div>
+        <div class="stat-value">${partnerSignups}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Registered Users</div>
+        <div class="stat-value">${totalUsers}</div>
+      </div>
     </div>
+
+    <div class="card" style="margin-top: 24px;">
+      <div class="tabs" style="padding: 16px 20px; border-bottom: 1px solid var(--color-border);">
+        <button class="tab active" onclick="showTab('visitors')">Recent Visitors</button>
+        <button class="tab" onclick="showTab('sme')">SME Waiting List</button>
+        <button class="tab" onclick="showTab('partners')">Partner Waiting List</button>
+      </div>
+
+      <div id="visitors" class="tab-content active" style="padding: 0;">
+        <div style="overflow-x: auto;">
+          ${recentVisitors.length ? `
+          <table>
+            <thead><tr><th>Time</th><th>Page</th><th>IP</th><th>Referrer</th><th>User Agent</th></tr></thead>
+            <tbody>${visitorsRows}</tbody>
+          </table>` : '<div class="empty-state" style="padding: 40px;">No visitors recorded yet</div>'}
+        </div>
+      </div>
+
+      <div id="sme" class="tab-content" style="padding: 0; display: none;">
+        <div style="overflow-x: auto;">
+          ${recentSME.length ? `
+          <table>
+            <thead><tr><th>Date</th><th>Company</th><th>Email</th><th>Phone</th><th>SW</th><th>Message</th></tr></thead>
+            <tbody>${smeRows}</tbody>
+          </table>` : '<div class="empty-state" style="padding: 40px;">No SME signups yet</div>'}
+        </div>
+      </div>
+
+      <div id="partners" class="tab-content" style="padding: 0; display: none;">
+        <div style="overflow-x: auto;">
+          ${recentPartners.length ? `
+          <table>
+            <thead><tr><th>Date</th><th>Company</th><th>Contact</th><th>Email</th><th>Phone</th><th>Type</th><th>Message</th></tr></thead>
+            <tbody>${partnerRows}</tbody>
+          </table>` : '<div class="empty-state" style="padding: 40px;">No partner signups yet</div>'}
+        </div>
+      </div>
+    </div>
+
     <script>
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
-        }
+      function showTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(c => { c.classList.remove('active'); c.style.display = 'none'; });
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.getElementById(tabId).style.display = 'block';
+        event.target.classList.add('active');
+      }
     </script>
   `;
 
-  res.send(renderPage('Admin Dashboard', content, req));
+  res.send(renderAppPage({ title: 'Admin Dashboard', content, activePage: 'admin', req }));
 });
 
 // API Endpoints
