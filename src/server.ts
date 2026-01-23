@@ -2068,12 +2068,15 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
   let nativeUnpaidSum = 0;
   enrichedInvoices.forEach((inv: any) => {
     const rawNative = inv.extra?.native_total;
-    const nativeTotal = typeof rawNative === 'number' && !isNaN(rawNative) ? rawNative : (parseFloat(inv.total_amount) || 0);
-    nativeTotalSum += nativeTotal;
-    if (inv.status === 'paid') {
-      nativePaidSum += nativeTotal;
-    } else {
-      nativeUnpaidSum += nativeTotal;
+    // Parse as number - handle both string and number values from JSON
+    const nativeTotal = rawNative !== undefined && rawNative !== null ? parseFloat(rawNative) : parseFloat(inv.total_amount) || 0;
+    if (!isNaN(nativeTotal)) {
+      nativeTotalSum += nativeTotal;
+      if (inv.status === 'paid') {
+        nativePaidSum += nativeTotal;
+      } else {
+        nativeUnpaidSum += nativeTotal;
+      }
     }
   });
 
@@ -2097,9 +2100,11 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
     const name = inv.customer_name || 'Unknown';
     if (!customerTotals[name]) customerTotals[name] = { name, total: 0, count: 0 };
     const rawNative = inv.extra?.native_total;
-    const nativeTotal = typeof rawNative === 'number' && !isNaN(rawNative) ? rawNative : (parseFloat(inv.total_amount) || 0);
-    customerTotals[name].total += nativeTotal;
-    customerTotals[name].count++;
+    const nativeTotal = rawNative !== undefined && rawNative !== null ? parseFloat(rawNative) : parseFloat(inv.total_amount) || 0;
+    if (!isNaN(nativeTotal)) {
+      customerTotals[name].total += nativeTotal;
+      customerTotals[name].count++;
+    }
   });
   const topCustomers = Object.values(customerTotals).sort((a, b) => b.total - a.total).slice(0, 5);
 
@@ -2109,9 +2114,11 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
     const name = inv.customer_name || 'Unknown';
     if (!supplierTotals[name]) supplierTotals[name] = { name, total: 0, count: 0 };
     const rawNative = inv.extra?.native_total;
-    const nativeTotal = typeof rawNative === 'number' && !isNaN(rawNative) ? rawNative : (parseFloat(inv.total_amount) || 0);
-    supplierTotals[name].total += nativeTotal;
-    supplierTotals[name].count++;
+    const nativeTotal = rawNative !== undefined && rawNative !== null ? parseFloat(rawNative) : parseFloat(inv.total_amount) || 0;
+    if (!isNaN(nativeTotal)) {
+      supplierTotals[name].total += nativeTotal;
+      supplierTotals[name].count++;
+    }
   });
   const topSuppliers = Object.values(supplierTotals).sort((a, b) => b.total - a.total).slice(0, 5);
 
