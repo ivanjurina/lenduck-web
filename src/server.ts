@@ -2440,16 +2440,22 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
 
     <!-- Collapsible Invoice List -->
     <div class="card" style="margin-bottom: 24px;">
-      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; cursor: pointer;" onclick="document.getElementById('invoiceTableContent').classList.toggle('collapsed'); this.querySelector('.collapse-icon').classList.toggle('rotated');">
-        <div style="display: flex; align-items: center; gap: 12px;">
+      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="document.getElementById('invoiceTableContent').classList.toggle('collapsed'); this.querySelector('.collapse-icon').classList.toggle('rotated');">
           <span class="collapse-icon" style="transition: transform 0.2s; display: inline-block;">&#9660;</span>
           <h3 style="margin: 0; font-size: 1rem;">${tr.invoicesPage.invoiceList}</h3>
           <span class="badge badge-info">${filteredInvoices.length}</span>
         </div>
-        <div class="tabs" style="border: none; margin: 0;" onclick="event.stopPropagation();">
-          <a href="/company/${companyId}/data/invoices${buildQueryString({ type: 'all' })}" class="tab ${typeFilter === 'all' ? 'active' : ''}">${tr.invoicesPage.all} (${invoices.length})</a>
-          <a href="/company/${companyId}/data/invoices${buildQueryString({ type: 'issued' })}" class="tab ${typeFilter === 'issued' ? 'active' : ''}">${tr.invoicesPage.issued} (${invoices.filter((i: any) => i.invoice_type === 'issued').length})</a>
-          <a href="/company/${companyId}/data/invoices${buildQueryString({ type: 'received' })}" class="tab ${typeFilter === 'received' ? 'active' : ''}">${tr.invoicesPage.received} (${invoices.filter((i: any) => i.invoice_type === 'received').length})</a>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div class="tabs" style="border: none; margin: 0;">
+            <a href="/company/${companyId}/data/invoices${buildQueryString({ type: 'all' })}" class="tab ${typeFilter === 'all' ? 'active' : ''}">${tr.invoicesPage.all} (${invoices.length})</a>
+            <a href="/company/${companyId}/data/invoices${buildQueryString({ type: 'issued' })}" class="tab ${typeFilter === 'issued' ? 'active' : ''}">${tr.invoicesPage.issued} (${invoices.filter((i: any) => i.invoice_type === 'issued').length})</a>
+            <a href="/company/${companyId}/data/invoices${buildQueryString({ type: 'received' })}" class="tab ${typeFilter === 'received' ? 'active' : ''}">${tr.invoicesPage.received} (${invoices.filter((i: any) => i.invoice_type === 'received').length})</a>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <a href="/company/${companyId}/data/invoices/export/csv" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 6px 10px;">${tr.invoicesPage.exportCSV}</a>
+            <a href="/company/${companyId}/data/invoices/export/json" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 6px 10px;">${tr.invoicesPage.exportJSON}</a>
+          </div>
         </div>
       </div>
       <div id="invoiceTableContent" class="collapsible-content">
@@ -2762,6 +2768,117 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
     activePage: 'invoices',
     req
   }));
+});
+
+// Export Invoices as CSV
+app.get('/company/:id/data/invoices/export/csv', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.status(403).send('Forbidden');
+  }
+
+  const invoices = db.getInvoicesByCompany(companyId);
+  const tr = t(req);
+
+  // Parse raw_data for extra fields
+  const enrichedInvoices = invoices.map((inv: any) => {
+    let extra: any = {};
+    if (inv.raw_data) {
+      try { extra = JSON.parse(inv.raw_data); } catch {}
+    }
+    return { ...inv, extra };
+  });
+
+  // CSV header
+  const headers = [
+    tr.invoicesPage.invoiceNumber,
+    tr.invoicesPage.documentType,
+    tr.invoicesPage.customer + '/' + tr.invoicesPage.vendor,
+    tr.invoicesPage.issueDate,
+    tr.invoicesPage.dueDate,
+    tr.invoicesPage.amount,
+    tr.invoicesPage.currency,
+    tr.invoicesPage.nativeAmount,
+    tr.accountsPage.balance,
+    tr.invoicesPage.status
+  ];
+
+  // CSV rows
+  const rows = enrichedInvoices.map((inv: any) => {
+    const nativeTotal = inv.extra?.native_total || inv.total_amount || 0;
+    return [
+      inv.invoice_number || '',
+      inv.invoice_type === 'issued' ? tr.invoicesPage.issued : tr.invoicesPage.received,
+      inv.customer_name || '',
+      inv.issue_date || '',
+      inv.due_date || '',
+      inv.total_amount || 0,
+      inv.currency || 'CZK',
+      nativeTotal,
+      inv.balance_due || 0,
+      inv.status === 'paid' ? tr.invoicesPage.paid : tr.invoicesPage.unpaid
+    ];
+  });
+
+  // Build CSV content
+  const escapeCSV = (val: any) => {
+    const str = String(val);
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+  };
+
+  const csvContent = [
+    headers.map(escapeCSV).join(','),
+    ...rows.map(row => row.map(escapeCSV).join(','))
+  ].join('\n');
+
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="invoices-${company.name}-${new Date().toISOString().split('T')[0]}.csv"`);
+  res.send('\uFEFF' + csvContent); // BOM for Excel UTF-8 support
+});
+
+// Export Invoices as JSON
+app.get('/company/:id/data/invoices/export/json', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.status(403).send('Forbidden');
+  }
+
+  const invoices = db.getInvoicesByCompany(companyId);
+
+  // Parse raw_data for extra fields and create clean export
+  const exportData = invoices.map((inv: any) => {
+    let extra: any = {};
+    if (inv.raw_data) {
+      try { extra = JSON.parse(inv.raw_data); } catch {}
+    }
+    return {
+      invoice_number: inv.invoice_number,
+      invoice_type: inv.invoice_type,
+      customer_name: inv.customer_name,
+      issue_date: inv.issue_date,
+      due_date: inv.due_date,
+      total_amount: inv.total_amount,
+      currency: inv.currency,
+      native_total: extra.native_total || inv.total_amount,
+      balance_due: inv.balance_due,
+      status: inv.status,
+      variable_symbol: extra.variable_symbol,
+      payment_method: extra.payment_method,
+      paid_on: extra.paid_on,
+      document_type: extra.document_type
+    };
+  });
+
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="invoices-${company.name}-${new Date().toISOString().split('T')[0]}.json"`);
+  res.send(JSON.stringify(exportData, null, 2));
 });
 
 // Data: Chart of Accounts

@@ -130,6 +130,9 @@ export interface Translations {
     byCurrency: string;
     nativeAmount: string;
     total: string;
+    exportCSV: string;
+    exportJSON: string;
+    export: string;
   };
   // Accounts page
   accountsPage: {
@@ -387,6 +390,9 @@ export const translations: Record<Language, Translations> = {
       byCurrency: 'By currency',
       nativeAmount: 'Amount (CZK)',
       total: 'Total',
+      exportCSV: 'Export CSV',
+      exportJSON: 'Export JSON',
+      export: 'Export',
     },
     accountsPage: {
       title: 'Chart of Accounts',
@@ -634,6 +640,9 @@ export const translations: Record<Language, Translations> = {
       byCurrency: 'Podle měny',
       nativeAmount: 'Částka (CZK)',
       total: 'Celkem',
+      exportCSV: 'Export CSV',
+      exportJSON: 'Export JSON',
+      export: 'Export',
     },
     accountsPage: {
       title: 'Účtová osnova',
@@ -881,6 +890,9 @@ export const translations: Record<Language, Translations> = {
       byCurrency: 'Podľa meny',
       nativeAmount: 'Suma (CZK)',
       total: 'Spolu',
+      exportCSV: 'Export CSV',
+      exportJSON: 'Export JSON',
+      export: 'Export',
     },
     accountsPage: {
       title: 'Účtová osnova',
