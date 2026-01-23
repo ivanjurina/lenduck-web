@@ -5,13 +5,28 @@ import path from 'path';
 import * as db from './database';
 import * as quickbooks from './services/quickbooks';
 import * as profit365 from './services/profit365';
+import { Language, Translations, translations, getTranslations, detectLanguage } from './translations';
 
 // Extend session type
 declare module 'express-session' {
   interface SessionData {
     userId?: number;
     isAdmin?: boolean;
+    language?: Language;
   }
+}
+
+// Helper to get language from request
+function getLang(req: Request): Language {
+  // First check session
+  if (req.session.language) return req.session.language;
+  // Then check Accept-Language header
+  return detectLanguage(req.headers['accept-language']);
+}
+
+// Helper to get translations for request
+function t(req: Request): Translations {
+  return getTranslations(getLang(req));
 }
 
 const app = express();
@@ -221,6 +236,8 @@ interface AppPageOptions {
 function renderAppPage(options: AppPageOptions): string {
   const { title, content, companyId, companyName, activePage, req } = options;
   const isAdmin = !!req.session.isAdmin;
+  const lang = getLang(req);
+  const tr = t(req);
 
   const navItem = (href: string, icon: string, label: string, page: string) => `
     <a href="${href}" class="nav-item ${activePage === page ? 'active' : ''}">
@@ -230,7 +247,7 @@ function renderAppPage(options: AppPageOptions): string {
   `;
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -614,34 +631,34 @@ function renderAppPage(options: AppPageOptions): string {
         <div class="sidebar-company">
             <a href="/dashboard" class="company-selector">
                 <div>
-                    <div class="company-label">Current Company</div>
-                    <div class="company-name">${companyName || 'Select Company'}</div>
+                    <div class="company-label">${tr.nav.switchCompany}</div>
+                    <div class="company-name">${companyName || tr.nav.switchCompany}</div>
                 </div>
                 <span>&#8595;</span>
             </a>
         </div>
         <nav class="sidebar-nav">
             <div class="nav-section">
-                <div class="nav-section-title">Overview</div>
-                ${navItem(`/company/${companyId}/overview`, '&#128200;', 'Dashboard', 'overview')}
-                ${navItem(`/company/${companyId}/reports`, '&#128202;', 'Reports & Analytics', 'reports')}
+                <div class="nav-section-title">${tr.nav.overview}</div>
+                ${navItem(`/company/${companyId}/overview`, '&#128200;', tr.nav.overview, 'overview')}
+                ${navItem(`/company/${companyId}/reports`, '&#128202;', tr.nav.reports, 'reports')}
             </div>
             <div class="nav-section">
-                <div class="nav-section-title">Data</div>
-                ${navItem(`/company/${companyId}/data/invoices`, '&#128196;', 'Invoices', 'invoices')}
-                ${navItem(`/company/${companyId}/data/accounts`, '&#128179;', 'Chart of Accounts', 'accounts')}
-                ${navItem(`/company/${companyId}/data/transactions`, '&#128176;', 'Transactions', 'transactions')}
+                <div class="nav-section-title">${tr.nav.data}</div>
+                ${navItem(`/company/${companyId}/data/invoices`, '&#128196;', tr.nav.invoices, 'invoices')}
+                ${navItem(`/company/${companyId}/data/accounts`, '&#128179;', tr.nav.accounts, 'accounts')}
+                ${navItem(`/company/${companyId}/data/transactions`, '&#128176;', tr.nav.transactions, 'transactions')}
             </div>
             <div class="nav-section">
-                <div class="nav-section-title">Settings</div>
-                ${navItem(`/company/${companyId}/connect`, '&#128279;', 'Integrations', 'settings')}
+                <div class="nav-section-title">${tr.nav.settings}</div>
+                ${navItem(`/company/${companyId}/connect`, '&#128279;', tr.nav.settings, 'settings')}
             </div>
         </nav>
         ` : `
         <nav class="sidebar-nav">
             <div class="nav-section">
-                ${navItem('/dashboard', '&#127968;', 'Companies', 'overview')}
-                ${isAdmin ? navItem('/admin', '&#128736;', 'Admin Panel', 'admin') : ''}
+                ${navItem('/dashboard', '&#127968;', tr.dashboard.yourCompanies, 'overview')}
+                ${isAdmin ? navItem('/admin', '&#128736;', 'Admin', 'admin') : ''}
             </div>
         </nav>
         `}
@@ -650,9 +667,9 @@ function renderAppPage(options: AppPageOptions): string {
                 <div class="user-avatar">U</div>
                 <div class="user-info">
                     <div class="user-name">User</div>
-                    <div class="user-role">${isAdmin ? 'Administrator' : 'User'}</div>
+                    <div class="user-role">${isAdmin ? 'Admin' : 'User'}</div>
                 </div>
-                <a href="/logout" class="logout-btn">Logout</a>
+                <a href="/logout" class="logout-btn">${tr.nav.logout}</a>
             </div>
         </div>
     </aside>
@@ -661,7 +678,7 @@ function renderAppPage(options: AppPageOptions): string {
         <header class="top-header">
             <h1 class="page-title">${title}</h1>
             <div class="header-actions">
-                ${companyId ? `<a href="/company/${companyId}/sync" class="btn btn-secondary btn-sm">&#8635; Sync Data</a>` : ''}
+                ${companyId ? `<a href="/company/${companyId}/sync" class="btn btn-secondary btn-sm">&#8635; ${tr.overview.syncNow}</a>` : ''}
             </div>
         </header>
         <main class="main-content">
@@ -822,6 +839,8 @@ app.get('/logout', (req: Request, res: Response) => {
 app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
   const user = db.getUserById(req.session.userId!);
   const companies = db.getCompaniesByUserId(req.session.userId!);
+  const tr = t(req);
+  const lang = getLang(req);
 
   const companyCards = companies.length > 0 ? companies.map(company => {
     const connection = db.getAccountingConnection(company.id);
@@ -829,13 +848,13 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
 
     const statusBadge = connection
       ? (connection.status === 'connected'
-        ? '<span class="badge badge-success">Connected</span>'
-        : '<span class="badge badge-warning">Pending</span>')
-      : '<span class="badge badge-error">Not Connected</span>';
+        ? `<span class="badge badge-success">${tr.settingsPage.connected}</span>`
+        : `<span class="badge badge-warning">${tr.settingsPage.pending}</span>`)
+      : `<span class="badge badge-error">${tr.dashboard.notConnected}</span>`;
 
     const formatCurrency = (amount: number | null) => {
       if (!amount) return 'N/A';
-      return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+      return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
     };
 
     return `
@@ -843,7 +862,7 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
         <div class="card-header" style="background: var(--color-bg);">
           <div>
             <h3 style="font-size: 1.1rem; margin-bottom: 4px;">${company.name}</h3>
-            <span style="font-size: 0.8rem; color: var(--color-text-secondary);">${company.country || ''} ${company.business_id ? '| ICO: ' + company.business_id : ''}</span>
+            <span style="font-size: 0.8rem; color: var(--color-text-secondary);">${company.country || ''} ${company.business_id ? '| ' + tr.settingsPage.businessId + ': ' + company.business_id : ''}</span>
           </div>
           ${statusBadge}
         </div>
@@ -851,36 +870,36 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
           ${connection?.status === 'connected' && metrics ? `
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
               <div>
-                <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Revenue</div>
+                <div style="font-size: 0.75rem; color: var(--color-text-secondary);">${tr.dashboard.revenue}</div>
                 <div style="font-size: 1.1rem; font-weight: 600;">${formatCurrency(metrics.revenue)}</div>
               </div>
               <div>
-                <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Net Income</div>
+                <div style="font-size: 0.75rem; color: var(--color-text-secondary);">${tr.dashboard.netIncome}</div>
                 <div style="font-size: 1.1rem; font-weight: 600; color: ${metrics.net_income >= 0 ? 'var(--color-success)' : 'var(--color-error)'};">${formatCurrency(metrics.net_income)}</div>
               </div>
               <div>
-                <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Cash</div>
+                <div style="font-size: 0.75rem; color: var(--color-text-secondary);">${tr.overview.cashBalance}</div>
                 <div style="font-size: 1.1rem; font-weight: 600;">${formatCurrency(metrics.cash_balance)}</div>
               </div>
               <div>
-                <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Health Score</div>
+                <div style="font-size: 0.75rem; color: var(--color-text-secondary);">${tr.overview.healthScore}</div>
                 <div style="font-size: 1.1rem; font-weight: 600;">${Math.min(100, 50 + (metrics.current_ratio >= 1.5 ? 15 : 0) + (metrics.net_income > 0 ? 15 : 0) + (metrics.dso_days <= 30 ? 10 : 0) + (metrics.debt_to_equity < 1 ? 10 : 0))}/100</div>
               </div>
             </div>
             <div style="font-size: 0.75rem; color: var(--color-text-muted);">
-              ${connection.software_type} | Last sync: ${connection.last_sync_at ? new Date(connection.last_sync_at).toLocaleDateString('cs-CZ') : 'Never'}
+              ${connection.software_type} | ${tr.dashboard.lastSync}: ${connection.last_sync_at ? new Date(connection.last_sync_at).toLocaleDateString(lang === 'en' ? 'en-US' : 'cs-CZ') : 'Never'}
             </div>
           ` : `
             <div style="text-align: center; padding: 20px; color: var(--color-text-secondary);">
-              <p style="margin-bottom: 8px;">Connect your accounting software to see financial data</p>
+              <p style="margin-bottom: 8px;">${tr.connectPage.subtitle}</p>
             </div>
           `}
         </div>
         <div style="padding: 16px 20px; border-top: 1px solid var(--color-border); display: flex; gap: 12px;">
           ${connection?.status === 'connected'
-            ? `<a href="/company/${company.id}/overview" class="btn btn-primary" style="flex: 1;">Open</a>
-               <a href="/company/${company.id}/sync" class="btn btn-secondary btn-icon" title="Sync">&#8635;</a>`
-            : `<a href="/company/${company.id}/connect" class="btn btn-primary" style="flex: 1;">Connect Accounting</a>`
+            ? `<a href="/company/${company.id}/overview" class="btn btn-primary" style="flex: 1;">${tr.dashboard.viewDetails}</a>
+               <a href="/company/${company.id}/sync" class="btn btn-secondary btn-icon" title="${tr.overview.syncNow}">&#8635;</a>`
+            : `<a href="/company/${company.id}/connect" class="btn btn-primary" style="flex: 1;">${tr.connectPage.connect}</a>`
           }
         </div>
       </div>
@@ -890,14 +909,14 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
   const content = `
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
       <div>
-        <h1>Companies</h1>
-        <p>Manage your connected companies</p>
+        <h1>${tr.dashboard.yourCompanies}</h1>
+        <p>${tr.connectPage.subtitle}</p>
       </div>
       <div style="display: flex; gap: 12px;">
         <form method="POST" action="/company/demo" style="margin: 0;">
-          <button type="submit" class="btn btn-secondary">Try Demo</button>
+          <button type="submit" class="btn btn-secondary">${tr.dashboard.tryDemo}</button>
         </form>
-        <a href="/company/new" class="btn btn-primary">+ Add Company</a>
+        <a href="/company/new" class="btn btn-primary">+ ${tr.dashboard.addCompany}</a>
       </div>
     </div>
 
@@ -909,13 +928,13 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
       <div class="card">
         <div class="empty-state" style="padding: 60px 20px;">
           <div class="empty-state-icon">&#127970;</div>
-          <h3 style="margin-bottom: 8px;">No companies yet</h3>
-          <p style="margin-bottom: 24px;">Add your first company to connect your accounting software and get financing offers.</p>
+          <h3 style="margin-bottom: 8px;">${tr.dashboard.noCompanies}</h3>
+          <p style="margin-bottom: 24px;">${tr.dashboard.createFirst}</p>
           <div style="display: flex; gap: 12px; justify-content: center;">
             <form method="POST" action="/company/demo" style="margin: 0;">
-              <button type="submit" class="btn btn-secondary">Try Demo Company</button>
+              <button type="submit" class="btn btn-secondary">${tr.dashboard.tryDemo}</button>
             </form>
-            <a href="/company/new" class="btn btn-primary">Add Company</a>
+            <a href="/company/new" class="btn btn-primary">${tr.dashboard.addCompany}</a>
           </div>
         </div>
       </div>
@@ -1511,13 +1530,15 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
   const metricsHistory = db.getMetricsHistory(companyId, 6);
   const invoices = db.getInvoicesByCompany(companyId);
   const recentInvoices = invoices.slice(0, 5);
+  const tr = t(req);
+  const lang = getLang(req);
 
   const error = req.query.error as string;
   const success = req.query.success as string;
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return 'N/A';
-    return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+    return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
   };
 
   // Calculate health score
@@ -1532,7 +1553,7 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
   healthScore = Math.min(100, healthScore);
 
   // Chart data
-  const chartLabels = metricsHistory.map((m: any) => new Date(m.metric_date).toLocaleDateString('cs-CZ', { month: 'short' }));
+  const chartLabels = metricsHistory.map((m: any) => tr.monthsShort[new Date(m.metric_date).getMonth()]);
   const revenueData = metricsHistory.map((m: any) => Math.round((m.revenue || 0) / 1000));
   const expensesData = metricsHistory.map((m: any) => Math.round((m.expenses || 0) / 1000));
 
@@ -1550,12 +1571,12 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
     <div class="card" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; margin-bottom: 24px;">
       <div class="card-body" style="display: flex; align-items: center; justify-content: space-between; padding: 24px 32px;">
         <div>
-          <h2 style="color: white; margin-bottom: 8px;">Financial Health Score</h2>
-          <p style="color: #94a3b8; margin: 0;">${healthScore >= 70 ? 'Excellent! Eligible for competitive financing rates.' : healthScore >= 50 ? 'Good standing. Multiple financing options available.' : 'We can help improve your financial position.'}</p>
+          <h2 style="color: white; margin-bottom: 8px;">${tr.overview.healthScore}</h2>
+          <p style="color: #94a3b8; margin: 0;">${healthScore >= 70 ? (lang === 'cs' ? 'Výborně! Způsobilý pro konkurenční úrokové sazby.' : lang === 'sk' ? 'Výborne! Spôsobilý pre konkurenčné úrokové sadzby.' : 'Excellent! Eligible for competitive financing rates.') : healthScore >= 50 ? (lang === 'cs' ? 'Dobrý stav. K dispozici více možností financování.' : lang === 'sk' ? 'Dobrý stav. K dispozícii viac možností financovania.' : 'Good standing. Multiple financing options available.') : (lang === 'cs' ? 'Pomůžeme vám zlepšit vaši finanční pozici.' : lang === 'sk' ? 'Pomôžeme vám zlepšiť vašu finančnú pozíciu.' : 'We can help improve your financial position.')}</p>
         </div>
         <div style="text-align: center;">
           <div style="font-size: 3rem; font-weight: 700; color: ${healthScore >= 70 ? '#10b981' : healthScore >= 50 ? '#f59e0b' : '#ef4444'};">${healthScore}</div>
-          <div style="font-size: 0.9rem; color: #94a3b8;">out of 100</div>
+          <div style="font-size: 0.9rem; color: #94a3b8;">${lang === 'cs' ? 'ze 100' : lang === 'sk' ? 'zo 100' : 'out of 100'}</div>
         </div>
       </div>
     </div>
@@ -1563,31 +1584,31 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
     <!-- Key Metrics -->
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Revenue (YTD)</div>
+        <div class="stat-label">${tr.overview.revenue} (YTD)</div>
         <div class="stat-value">${formatCurrency(metrics?.revenue)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Net Income</div>
+        <div class="stat-label">${tr.overview.netIncome}</div>
         <div class="stat-value" style="color: ${(metrics?.net_income || 0) >= 0 ? 'var(--color-success)' : 'var(--color-error)'}">${formatCurrency(metrics?.net_income)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Cash Balance</div>
+        <div class="stat-label">${tr.overview.cashBalance}</div>
         <div class="stat-value">${formatCurrency(metrics?.cash_balance)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Receivables</div>
+        <div class="stat-label">${tr.reportsPage.receivables}</div>
         <div class="stat-value">${formatCurrency(totalReceivables)}</div>
-        <div class="stat-change">${unpaidReceivables.length} unpaid invoices</div>
+        <div class="stat-change">${unpaidReceivables.length} ${tr.invoicesPage.unpaid.toLowerCase()}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Payables</div>
+        <div class="stat-label">${tr.reportsPage.payables}</div>
         <div class="stat-value">${formatCurrency(totalPayables)}</div>
-        <div class="stat-change">${unpaidPayables.length} unpaid bills</div>
+        <div class="stat-change">${unpaidPayables.length} ${tr.invoicesPage.unpaid.toLowerCase()}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Current Ratio</div>
+        <div class="stat-label">${tr.reportsPage.currentRatio}</div>
         <div class="stat-value">${metrics?.current_ratio?.toFixed(2) || 'N/A'}</div>
-        <div class="stat-change ${(metrics?.current_ratio || 0) >= 1.5 ? 'positive' : 'negative'}">${(metrics?.current_ratio || 0) >= 1.5 ? 'Healthy' : 'Needs attention'}</div>
+        <div class="stat-change ${(metrics?.current_ratio || 0) >= 1.5 ? 'positive' : 'negative'}">${(metrics?.current_ratio || 0) >= 1.5 ? (lang === 'cs' ? 'Zdravé' : lang === 'sk' ? 'Zdravé' : 'Healthy') : (lang === 'cs' ? 'Vyžaduje pozornost' : lang === 'sk' ? 'Vyžaduje pozornosť' : 'Needs attention')}</div>
       </div>
     </div>
 
@@ -1595,8 +1616,8 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
     <div class="grid-2">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Revenue vs Expenses</span>
-          <a href="/company/${companyId}/reports" class="btn btn-secondary btn-sm">View Reports</a>
+          <span class="card-title">${tr.overview.revenueVsExpenses}</span>
+          <a href="/company/${companyId}/reports" class="btn btn-secondary btn-sm">${tr.nav.reports}</a>
         </div>
         <div class="card-body">
           <canvas id="revenueChart" height="200"></canvas>
@@ -1605,13 +1626,13 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
 
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Recent Invoices</span>
-          <a href="/company/${companyId}/data/invoices" class="btn btn-secondary btn-sm">View All</a>
+          <span class="card-title">${tr.nav.invoices}</span>
+          <a href="/company/${companyId}/data/invoices" class="btn btn-secondary btn-sm">${tr.overview.viewAllInvoices}</a>
         </div>
         <div class="table-wrapper">
           <table>
             <thead>
-              <tr><th>Number</th><th>Customer</th><th style="text-align:right">Amount</th><th>Status</th></tr>
+              <tr><th>${tr.invoicesPage.invoiceNumber}</th><th>${tr.invoicesPage.customer}</th><th style="text-align:right">${tr.invoicesPage.amount}</th><th>${tr.invoicesPage.status}</th></tr>
             </thead>
             <tbody>
               ${recentInvoices.length > 0 ? recentInvoices.map((inv: any) => `
@@ -1619,9 +1640,9 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
                   <td>${inv.invoice_number || '-'}</td>
                   <td>${inv.customer_name || '-'}</td>
                   <td style="text-align:right">${formatCurrency(inv.total_amount)}</td>
-                  <td><span class="badge ${inv.status === 'paid' ? 'badge-success' : 'badge-error'}">${inv.status}</span></td>
+                  <td><span class="badge ${inv.status === 'paid' ? 'badge-success' : 'badge-error'}">${inv.status === 'paid' ? tr.invoicesPage.paid : tr.invoicesPage.unpaid}</span></td>
                 </tr>
-              `).join('') : '<tr><td colspan="4" class="empty-state">No invoices yet</td></tr>'}
+              `).join('') : `<tr><td colspan="4" class="empty-state">${tr.invoicesPage.noInvoices}</td></tr>`}
             </tbody>
           </table>
         </div>
@@ -1629,34 +1650,34 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
     </div>
 
     <!-- Quick Links -->
-    <h3 style="margin: 32px 0 16px; font-size: 1rem; color: var(--color-text-secondary);">Quick Actions</h3>
+    <h3 style="margin: 32px 0 16px; font-size: 1rem; color: var(--color-text-secondary);">${tr.overview.quickLinks}</h3>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
       <a href="/company/${companyId}/reports" class="card" style="text-decoration: none; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s;">
         <span style="font-size: 2rem;">&#128202;</span>
         <div>
-          <div style="font-weight: 600; color: var(--color-text);">Reports & Analytics</div>
-          <div style="font-size: 0.85rem; color: var(--color-text-secondary);">Detailed financial analysis</div>
+          <div style="font-weight: 600; color: var(--color-text);">${tr.nav.reports}</div>
+          <div style="font-size: 0.85rem; color: var(--color-text-secondary);">${tr.reportsPage.subtitle}</div>
         </div>
       </a>
       <a href="/company/${companyId}/data/invoices" class="card" style="text-decoration: none; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s;">
         <span style="font-size: 2rem;">&#128196;</span>
         <div>
-          <div style="font-weight: 600; color: var(--color-text);">Invoices</div>
-          <div style="font-size: 0.85rem; color: var(--color-text-secondary);">${invoices.length} total invoices</div>
+          <div style="font-weight: 600; color: var(--color-text);">${tr.nav.invoices}</div>
+          <div style="font-size: 0.85rem; color: var(--color-text-secondary);">${invoices.length} ${tr.common.total.toLowerCase()}</div>
         </div>
       </a>
       <a href="/company/${companyId}/data/accounts" class="card" style="text-decoration: none; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s;">
         <span style="font-size: 2rem;">&#128179;</span>
         <div>
-          <div style="font-weight: 600; color: var(--color-text);">Chart of Accounts</div>
-          <div style="font-size: 0.85rem; color: var(--color-text-secondary);">View all accounts</div>
+          <div style="font-weight: 600; color: var(--color-text);">${tr.accountsPage.title}</div>
+          <div style="font-size: 0.85rem; color: var(--color-text-secondary);">${tr.overview.viewAllAccounts}</div>
         </div>
       </a>
       <a href="/company/${companyId}/connect" class="card" style="text-decoration: none; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s;">
         <span style="font-size: 2rem;">&#128279;</span>
         <div>
-          <div style="font-weight: 600; color: var(--color-text);">Integration Settings</div>
-          <div style="font-size: 0.85rem; color: var(--color-text-secondary);">${connection?.software_type || 'Not connected'}</div>
+          <div style="font-weight: 600; color: var(--color-text);">${tr.overview.integrationSettings}</div>
+          <div style="font-size: 0.85rem; color: var(--color-text-secondary);">${connection?.software_type || tr.dashboard.notConnected}</div>
         </div>
       </a>
     </div>
@@ -1667,8 +1688,8 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
         data: {
           labels: ${JSON.stringify(chartLabels)},
           datasets: [
-            { label: 'Revenue', data: ${JSON.stringify(revenueData)}, backgroundColor: '#10b981', borderRadius: 4 },
-            { label: 'Expenses', data: ${JSON.stringify(expensesData)}, backgroundColor: '#ef4444', borderRadius: 4 }
+            { label: '${tr.overview.revenue}', data: ${JSON.stringify(revenueData)}, backgroundColor: '#10b981', borderRadius: 4 },
+            { label: '${tr.overview.expenses}', data: ${JSON.stringify(expensesData)}, backgroundColor: '#ef4444', borderRadius: 4 }
           ]
         },
         options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
@@ -1697,6 +1718,8 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
 
   const invoices = db.getInvoicesByCompany(companyId);
   const typeFilter = req.query.type as string || 'all';
+  const tr = t(req);
+  const lang = getLang(req);
 
   const filteredInvoices = typeFilter === 'all'
     ? invoices
@@ -1704,7 +1727,7 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return 'N/A';
-    return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+    return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
   };
 
   const issuedCount = invoices.filter((i: any) => i.invoice_type === 'issued').length;
@@ -1714,25 +1737,25 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
 
   const content = `
     <div class="page-header">
-      <h1>Invoices</h1>
-      <p>All synced invoices and bills from your accounting software</p>
+      <h1>${tr.invoicesPage.title}</h1>
+      <p>${tr.invoicesPage.subtitle}</p>
     </div>
 
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Total Invoices</div>
+        <div class="stat-label">${tr.invoicesPage.totalInvoices}</div>
         <div class="stat-value">${invoices.length}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Sales Invoices</div>
+        <div class="stat-label">${tr.invoicesPage.issued}</div>
         <div class="stat-value">${issuedCount}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Bills (Received)</div>
+        <div class="stat-label">${tr.invoicesPage.received}</div>
         <div class="stat-value">${receivedCount}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Unpaid</div>
+        <div class="stat-label">${tr.invoicesPage.unpaid}</div>
         <div class="stat-value" style="color: var(--color-warning)">${unpaidCount}</div>
       </div>
     </div>
@@ -1740,38 +1763,38 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
     <div class="card">
       <div class="card-header">
         <div class="tabs" style="border: none; margin: 0;">
-          <a href="/company/${companyId}/data/invoices" class="tab ${typeFilter === 'all' ? 'active' : ''}">All</a>
-          <a href="/company/${companyId}/data/invoices?type=issued" class="tab ${typeFilter === 'issued' ? 'active' : ''}">Sales</a>
-          <a href="/company/${companyId}/data/invoices?type=received" class="tab ${typeFilter === 'received' ? 'active' : ''}">Bills</a>
+          <a href="/company/${companyId}/data/invoices" class="tab ${typeFilter === 'all' ? 'active' : ''}">${tr.invoicesPage.all}</a>
+          <a href="/company/${companyId}/data/invoices?type=issued" class="tab ${typeFilter === 'issued' ? 'active' : ''}">${tr.invoicesPage.issued}</a>
+          <a href="/company/${companyId}/data/invoices?type=received" class="tab ${typeFilter === 'received' ? 'active' : ''}">${tr.invoicesPage.received}</a>
         </div>
       </div>
       <div class="table-wrapper">
         <table>
           <thead>
             <tr>
-              <th>Number</th>
-              <th>Type</th>
-              <th>Date</th>
-              <th>Due Date</th>
-              <th>Customer/Vendor</th>
-              <th style="text-align:right">Amount</th>
-              <th style="text-align:right">Balance</th>
-              <th>Status</th>
+              <th>${tr.invoicesPage.invoiceNumber}</th>
+              <th>${tr.invoicesPage.type}</th>
+              <th>${tr.invoicesPage.issueDate}</th>
+              <th>${tr.invoicesPage.dueDate}</th>
+              <th>${tr.invoicesPage.customer}/${tr.invoicesPage.vendor}</th>
+              <th style="text-align:right">${tr.invoicesPage.amount}</th>
+              <th style="text-align:right">${tr.accountsPage.balance}</th>
+              <th>${tr.invoicesPage.status}</th>
             </tr>
           </thead>
           <tbody>
             ${filteredInvoices.length > 0 ? filteredInvoices.map((inv: any) => `
               <tr>
                 <td><strong>${inv.invoice_number || '-'}</strong></td>
-                <td><span class="badge ${inv.invoice_type === 'issued' ? 'badge-info' : 'badge-warning'}">${inv.invoice_type === 'issued' ? 'Invoice' : 'Bill'}</span></td>
+                <td><span class="badge ${inv.invoice_type === 'issued' ? 'badge-info' : 'badge-warning'}">${inv.invoice_type === 'issued' ? tr.invoicesPage.issued : tr.invoicesPage.received}</span></td>
                 <td>${inv.issue_date || '-'}</td>
                 <td>${inv.due_date || '-'}</td>
                 <td>${inv.customer_name || '-'}</td>
                 <td style="text-align:right">${formatCurrency(inv.total_amount)}</td>
                 <td style="text-align:right">${formatCurrency(inv.balance_due)}</td>
-                <td><span class="badge ${inv.status === 'paid' ? 'badge-success' : 'badge-error'}">${inv.status || '-'}</span></td>
+                <td><span class="badge ${inv.status === 'paid' ? 'badge-success' : 'badge-error'}">${inv.status === 'paid' ? tr.invoicesPage.paid : tr.invoicesPage.unpaid}</span></td>
               </tr>
-            `).join('') : '<tr><td colspan="8" class="empty-state">No invoices found</td></tr>'}
+            `).join('') : `<tr><td colspan="8" class="empty-state">${tr.invoicesPage.noInvoices}</td></tr>`}
           </tbody>
         </table>
       </div>
@@ -1779,7 +1802,7 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
   `;
 
   res.send(renderAppPage({
-    title: 'Invoices',
+    title: tr.invoicesPage.title,
     content,
     companyId,
     companyName: company.name,
@@ -1798,10 +1821,12 @@ app.get('/company/:id/data/accounts', requireAuth, (req: Request, res: Response)
   }
 
   const accounts = db.getAccountsByCompany(companyId);
+  const tr = t(req);
+  const lang = getLang(req);
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return 'N/A';
-    return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+    return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
   };
 
   // Group accounts by type
@@ -1817,21 +1842,21 @@ app.get('/company/:id/data/accounts', requireAuth, (req: Request, res: Response)
 
   const content = `
     <div class="page-header">
-      <h1>Chart of Accounts</h1>
-      <p>Your synced accounts and current balances</p>
+      <h1>${tr.accountsPage.title}</h1>
+      <p>${tr.accountsPage.subtitle}</p>
     </div>
 
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Total Accounts</div>
+        <div class="stat-label">${tr.accountsPage.totalAccounts}</div>
         <div class="stat-value">${accounts.length}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Total Assets</div>
+        <div class="stat-label">${tr.accountsPage.assets}</div>
         <div class="stat-value" style="color: var(--color-success)">${formatCurrency(totalAssets)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Total Liabilities</div>
+        <div class="stat-label">${tr.accountsPage.liabilities}</div>
         <div class="stat-value" style="color: var(--color-error)">${formatCurrency(totalLiabilities)}</div>
       </div>
     </div>
@@ -1840,16 +1865,16 @@ app.get('/company/:id/data/accounts', requireAuth, (req: Request, res: Response)
       <div class="card" style="margin-bottom: 20px;">
         <div class="card-header">
           <span class="card-title">${type}</span>
-          <span class="badge badge-info">${accs.length} accounts</span>
+          <span class="badge badge-info">${accs.length}</span>
         </div>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>Account #</th>
-                <th>Name</th>
-                <th>Sub Type</th>
-                <th style="text-align:right">Balance</th>
+                <th>${tr.accountsPage.accountNumber}</th>
+                <th>${tr.accountsPage.accountName}</th>
+                <th>${tr.accountsPage.type}</th>
+                <th style="text-align:right">${tr.accountsPage.balance}</th>
               </tr>
             </thead>
             <tbody>
@@ -1869,11 +1894,11 @@ app.get('/company/:id/data/accounts', requireAuth, (req: Request, res: Response)
       </div>
     `).join('')}
 
-    ${accounts.length === 0 ? '<div class="card"><div class="empty-state"><div class="empty-state-icon">&#128179;</div><p>No accounts synced yet</p></div></div>' : ''}
+    ${accounts.length === 0 ? `<div class="card"><div class="empty-state"><div class="empty-state-icon">&#128179;</div><p>${tr.accountsPage.noAccounts}</p></div></div>` : ''}
   `;
 
   res.send(renderAppPage({
-    title: 'Chart of Accounts',
+    title: tr.accountsPage.title,
     content,
     companyId,
     companyName: company.name,
@@ -1892,10 +1917,12 @@ app.get('/company/:id/data/transactions', requireAuth, (req: Request, res: Respo
   }
 
   const transactions = db.getBankTransactionsByCompany(companyId, 100);
+  const tr = t(req);
+  const lang = getLang(req);
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return 'N/A';
-    return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+    return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
   };
 
   const deposits = transactions.filter((t: any) => t.amount > 0);
@@ -1905,42 +1932,42 @@ app.get('/company/:id/data/transactions', requireAuth, (req: Request, res: Respo
 
   const content = `
     <div class="page-header">
-      <h1>Bank Transactions</h1>
-      <p>Recent bank account activity</p>
+      <h1>${tr.transactionsPage.title}</h1>
+      <p>${tr.transactionsPage.subtitle}</p>
     </div>
 
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Total Transactions</div>
+        <div class="stat-label">${tr.transactionsPage.totalTransactions}</div>
         <div class="stat-value">${transactions.length}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Money In</div>
+        <div class="stat-label">${tr.transactionsPage.income}</div>
         <div class="stat-value" style="color: var(--color-success)">${formatCurrency(totalIn)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Money Out</div>
+        <div class="stat-label">${tr.transactionsPage.expenses}</div>
         <div class="stat-value" style="color: var(--color-error)">${formatCurrency(totalOut)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Net Flow</div>
+        <div class="stat-label">${tr.transactionsPage.netFlow}</div>
         <div class="stat-value" style="color: ${totalIn - totalOut >= 0 ? 'var(--color-success)' : 'var(--color-error)'}">${formatCurrency(totalIn - totalOut)}</div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Recent Transactions</span>
+        <span class="card-title">${tr.transactionsPage.title}</span>
       </div>
       <div class="table-wrapper">
         <table>
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Description</th>
-              <th>Payee</th>
-              <th>Category</th>
-              <th style="text-align:right">Amount</th>
+              <th>${tr.transactionsPage.date}</th>
+              <th>${tr.transactionsPage.description}</th>
+              <th>${tr.transactionsPage.payee}</th>
+              <th>${tr.transactionsPage.category}</th>
+              <th style="text-align:right">${tr.transactionsPage.amount}</th>
             </tr>
           </thead>
           <tbody>
@@ -1954,7 +1981,7 @@ app.get('/company/:id/data/transactions', requireAuth, (req: Request, res: Respo
                   ${txn.amount >= 0 ? '+' : ''}${formatCurrency(txn.amount)}
                 </td>
               </tr>
-            `).join('') : '<tr><td colspan="5" class="empty-state">No transactions found</td></tr>'}
+            `).join('') : `<tr><td colspan="5" class="empty-state">${tr.transactionsPage.noTransactions}</td></tr>`}
           </tbody>
         </table>
       </div>
@@ -1962,7 +1989,7 @@ app.get('/company/:id/data/transactions', requireAuth, (req: Request, res: Respo
   `;
 
   res.send(renderAppPage({
-    title: 'Transactions',
+    title: tr.transactionsPage.title,
     content,
     companyId,
     companyName: company.name,
@@ -1983,10 +2010,12 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
   const metrics = db.getLatestMetrics(companyId);
   const metricsHistory = db.getMetricsHistory(companyId, 12);
   const invoices = db.getInvoicesByCompany(companyId);
+  const tr = t(req);
+  const lang = getLang(req);
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return 'N/A';
-    return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+    return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
   };
 
   // Calculate additional metrics
@@ -2012,7 +2041,7 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
   const topVendors = Object.entries(vendorExpenses).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
   // Monthly data for charts
-  const chartLabels = metricsHistory.map((m: any) => new Date(m.metric_date).toLocaleDateString('cs-CZ', { month: 'short' }));
+  const chartLabels = metricsHistory.map((m: any) => tr.monthsShort[new Date(m.metric_date).getMonth()]);
   const revenueData = metricsHistory.map((m: any) => Math.round((m.revenue || 0) / 1000));
   const expensesData = metricsHistory.map((m: any) => Math.round((m.expenses || 0) / 1000));
   const profitData = metricsHistory.map((m: any) => Math.round((m.net_income || 0) / 1000));
@@ -2020,121 +2049,121 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
 
   const content = `
     <div class="page-header">
-      <h1>Reports & Analytics</h1>
-      <p>Financial insights and performance analysis</p>
+      <h1>${tr.reportsPage.title}</h1>
+      <p>${tr.reportsPage.subtitle}</p>
     </div>
 
     <!-- Profitability Section -->
-    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128200; Profitability</h2>
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128200; ${tr.reportsPage.profitability}</h2>
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Total Revenue</div>
+        <div class="stat-label">${tr.common.total} ${tr.overview.revenue}</div>
         <div class="stat-value">${formatCurrency(totalRevenue)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Total Expenses</div>
+        <div class="stat-label">${tr.common.total} ${tr.overview.expenses}</div>
         <div class="stat-value">${formatCurrency(totalExpenses)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Net Profit</div>
+        <div class="stat-label">${tr.overview.netIncome}</div>
         <div class="stat-value" style="color: ${(totalRevenue - totalExpenses) >= 0 ? 'var(--color-success)' : 'var(--color-error)'}">${formatCurrency(totalRevenue - totalExpenses)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Profit Margin</div>
+        <div class="stat-label">${tr.reportsPage.netMarginPercent}</div>
         <div class="stat-value">${totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue * 100).toFixed(1) : 0}%</div>
       </div>
     </div>
 
     <div class="grid-2">
       <div class="card">
-        <div class="card-header"><span class="card-title">Revenue vs Expenses (in thousands)</span></div>
+        <div class="card-header"><span class="card-title">${tr.overview.revenueVsExpenses}</span></div>
         <div class="card-body"><canvas id="revenueChart" height="200"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">Net Profit Trend (in thousands)</span></div>
+        <div class="card-header"><span class="card-title">${tr.overview.netIncome}</span></div>
         <div class="card-body"><canvas id="profitChart" height="200"></canvas></div>
       </div>
     </div>
 
     <!-- Liquidity Section -->
-    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128176; Liquidity & Cash Flow</h2>
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128176; ${tr.reportsPage.liquidity}</h2>
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Cash Balance</div>
+        <div class="stat-label">${tr.overview.cashBalance}</div>
         <div class="stat-value">${formatCurrency(metrics?.cash_balance)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Current Ratio</div>
+        <div class="stat-label">${tr.reportsPage.currentRatio}</div>
         <div class="stat-value">${metrics?.current_ratio?.toFixed(2) || 'N/A'}</div>
-        <div class="stat-change ${metrics?.current_ratio >= 1.5 ? 'positive' : 'negative'}">${metrics?.current_ratio >= 1.5 ? 'Healthy' : 'Needs attention'}</div>
+        <div class="stat-change ${metrics?.current_ratio >= 1.5 ? 'positive' : 'negative'}">${metrics?.current_ratio >= 1.5 ? (lang === 'cs' ? 'Zdravé' : lang === 'sk' ? 'Zdravé' : 'Healthy') : (lang === 'cs' ? 'Vyžaduje pozornost' : lang === 'sk' ? 'Vyžaduje pozornosť' : 'Needs attention')}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Quick Ratio</div>
+        <div class="stat-label">${tr.reportsPage.quickRatio}</div>
         <div class="stat-value">${metrics?.quick_ratio?.toFixed(2) || 'N/A'}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Working Capital</div>
+        <div class="stat-label">${lang === 'cs' ? 'Pracovní kapitál' : lang === 'sk' ? 'Pracovný kapitál' : 'Working Capital'}</div>
         <div class="stat-value">${formatCurrency((metrics?.current_assets || 0) - (metrics?.current_liabilities || 0))}</div>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="card-title">Cash Balance Trend (in thousands)</span></div>
+      <div class="card-header"><span class="card-title">${tr.reportsPage.cashTrend}</span></div>
       <div class="card-body"><canvas id="cashChart" height="150"></canvas></div>
     </div>
 
     <!-- Receivables & Payables Section -->
-    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128203; Receivables & Payables</h2>
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128203; ${tr.reportsPage.receivablesPayables}</h2>
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Accounts Receivable</div>
+        <div class="stat-label">${tr.overview.accountsReceivable}</div>
         <div class="stat-value">${formatCurrency(metrics?.accounts_receivable)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">DSO (Days Sales Outstanding)</div>
-        <div class="stat-value">${metrics?.dso_days?.toFixed(0) || 'N/A'} days</div>
-        <div class="stat-change ${metrics?.dso_days <= 30 ? 'positive' : 'negative'}">${metrics?.dso_days <= 30 ? 'Good collection' : 'Slow collection'}</div>
+        <div class="stat-label">${tr.reportsPage.dso}</div>
+        <div class="stat-value">${metrics?.dso_days?.toFixed(0) || 'N/A'} ${tr.common.days}</div>
+        <div class="stat-change ${metrics?.dso_days <= 30 ? 'positive' : 'negative'}">${metrics?.dso_days <= 30 ? (lang === 'cs' ? 'Dobré inkaso' : lang === 'sk' ? 'Dobré inkaso' : 'Good collection') : (lang === 'cs' ? 'Pomalé inkaso' : lang === 'sk' ? 'Pomalé inkaso' : 'Slow collection')}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Accounts Payable</div>
+        <div class="stat-label">${tr.overview.accountsPayable}</div>
         <div class="stat-value">${formatCurrency(metrics?.accounts_payable)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">DPO (Days Payable Outstanding)</div>
-        <div class="stat-value">${metrics?.dpo_days?.toFixed(0) || 'N/A'} days</div>
+        <div class="stat-label">${tr.reportsPage.dpo}</div>
+        <div class="stat-value">${metrics?.dpo_days?.toFixed(0) || 'N/A'} ${tr.common.days}</div>
       </div>
     </div>
 
     <!-- Leverage Section -->
-    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#9878; Financial Structure</h2>
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#9878; ${tr.reportsPage.financialStructure}</h2>
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Total Assets</div>
+        <div class="stat-label">${tr.reportsPage.totalAssets}</div>
         <div class="stat-value">${formatCurrency(metrics?.total_assets)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Total Liabilities</div>
+        <div class="stat-label">${tr.reportsPage.totalLiabilities}</div>
         <div class="stat-value">${formatCurrency(metrics?.total_liabilities)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Total Equity</div>
+        <div class="stat-label">${tr.reportsPage.totalEquity}</div>
         <div class="stat-value">${formatCurrency(metrics?.total_equity)}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Debt to Equity</div>
+        <div class="stat-label">${tr.reportsPage.debtToEquity}</div>
         <div class="stat-value">${metrics?.debt_to_equity?.toFixed(2) || 'N/A'}</div>
-        <div class="stat-change ${metrics?.debt_to_equity < 1 ? 'positive' : 'negative'}">${metrics?.debt_to_equity < 1 ? 'Low leverage' : 'High leverage'}</div>
+        <div class="stat-change ${metrics?.debt_to_equity < 1 ? 'positive' : 'negative'}">${metrics?.debt_to_equity < 1 ? (lang === 'cs' ? 'Nízká páka' : lang === 'sk' ? 'Nízka páka' : 'Low leverage') : (lang === 'cs' ? 'Vysoká páka' : lang === 'sk' ? 'Vysoká páka' : 'High leverage')}</div>
       </div>
     </div>
 
     <!-- Top Customers & Vendors -->
-    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128101; Customer & Vendor Analysis</h2>
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">&#128101; ${tr.reportsPage.customerAnalysis}</h2>
     <div class="grid-2">
       <div class="card">
-        <div class="card-header"><span class="card-title">Top Customers by Revenue</span></div>
+        <div class="card-header"><span class="card-title">${tr.reportsPage.topCustomers}</span></div>
         <div class="table-wrapper">
           <table>
-            <thead><tr><th>Customer</th><th style="text-align:right">Revenue</th><th style="text-align:right">% of Total</th></tr></thead>
+            <thead><tr><th>${tr.reportsPage.customer}</th><th style="text-align:right">${tr.overview.revenue}</th><th style="text-align:right">%</th></tr></thead>
             <tbody>
               ${topCustomers.map(([name, amount]) => `
                 <tr>
@@ -2142,16 +2171,16 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
                   <td style="text-align:right">${formatCurrency(amount)}</td>
                   <td style="text-align:right">${totalRevenue > 0 ? (amount / totalRevenue * 100).toFixed(1) : 0}%</td>
                 </tr>
-              `).join('') || '<tr><td colspan="3" class="empty-state">No data</td></tr>'}
+              `).join('') || `<tr><td colspan="3" class="empty-state">${tr.common.noData}</td></tr>`}
             </tbody>
           </table>
         </div>
       </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">Top Vendors by Spend</span></div>
+        <div class="card-header"><span class="card-title">${tr.reportsPage.topVendors}</span></div>
         <div class="table-wrapper">
           <table>
-            <thead><tr><th>Vendor</th><th style="text-align:right">Spend</th><th style="text-align:right">% of Total</th></tr></thead>
+            <thead><tr><th>${tr.reportsPage.vendor}</th><th style="text-align:right">${tr.overview.expenses}</th><th style="text-align:right">%</th></tr></thead>
             <tbody>
               ${topVendors.map(([name, amount]) => `
                 <tr>
@@ -2159,7 +2188,7 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
                   <td style="text-align:right">${formatCurrency(amount)}</td>
                   <td style="text-align:right">${totalExpenses > 0 ? (amount / totalExpenses * 100).toFixed(1) : 0}%</td>
                 </tr>
-              `).join('') || '<tr><td colspan="3" class="empty-state">No data</td></tr>'}
+              `).join('') || `<tr><td colspan="3" class="empty-state">${tr.common.noData}</td></tr>`}
             </tbody>
           </table>
         </div>
@@ -2173,8 +2202,8 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
         data: {
           labels: ${JSON.stringify(chartLabels)},
           datasets: [
-            { label: 'Revenue', data: ${JSON.stringify(revenueData)}, backgroundColor: '#10b981', borderRadius: 4 },
-            { label: 'Expenses', data: ${JSON.stringify(expensesData)}, backgroundColor: '#ef4444', borderRadius: 4 }
+            { label: '${tr.overview.revenue}', data: ${JSON.stringify(revenueData)}, backgroundColor: '#10b981', borderRadius: 4 },
+            { label: '${tr.overview.expenses}', data: ${JSON.stringify(expensesData)}, backgroundColor: '#ef4444', borderRadius: 4 }
           ]
         },
         options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
@@ -2185,7 +2214,7 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
         type: 'line',
         data: {
           labels: ${JSON.stringify(chartLabels)},
-          datasets: [{ label: 'Net Profit', data: ${JSON.stringify(profitData)}, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3 }]
+          datasets: [{ label: '${tr.overview.netIncome}', data: ${JSON.stringify(profitData)}, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3 }]
         },
         options: { responsive: true, plugins: { legend: { display: false } } }
       });
@@ -2195,7 +2224,7 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
         type: 'line',
         data: {
           labels: ${JSON.stringify(chartLabels)},
-          datasets: [{ label: 'Cash', data: ${JSON.stringify(cashData)}, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3 }]
+          datasets: [{ label: '${tr.overview.cashBalance}', data: ${JSON.stringify(cashData)}, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3 }]
         },
         options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
       });
@@ -2203,7 +2232,7 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
   `;
 
   res.send(renderAppPage({
-    title: 'Reports & Analytics',
+    title: tr.reportsPage.title,
     content,
     companyId,
     companyName: company.name,
