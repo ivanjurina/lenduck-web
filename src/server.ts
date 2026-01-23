@@ -1614,7 +1614,7 @@ app.get('/api/fakturoid/callback', async (req: Request, res: Response) => {
     }
 
     // Use the first account (or let user choose if multiple)
-    const accountSlug = accounts[0].subdomain;
+    const accountSlug = accounts[0].slug;
 
     // Save the OAuth credentials
     fakturoid.saveOAuthCredentials(

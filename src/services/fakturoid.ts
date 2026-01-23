@@ -888,25 +888,41 @@ export async function fullSync(companyId: number): Promise<{
 
 /**
  * Fetch user's accounts (to get available account slugs after OAuth)
+ * Uses the /user.json endpoint which returns accounts array
  */
 export async function fetchUserAccounts(accessToken: string): Promise<Array<{
-  subdomain: string;
+  slug: string;
   name: string;
 }>> {
-  const url = `${FAKTUROID_API_BASE}/accounts.json`;
+  const url = `${FAKTUROID_API_BASE}/user.json`;
 
   const response = await fetch(url, {
     headers: {
       'Authorization': `Bearer ${accessToken}`,
       'User-Agent': 'Lenduck/1.0 (podpora@lenduck.com)',
+      'Accept': 'application/json',
     },
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch user accounts: ${response.status}`);
+    const error = await response.text();
+    throw new Error(`Failed to fetch user info: ${response.status} - ${error}`);
   }
 
-  return response.json() as Promise<Array<{ subdomain: string; name: string }>>;
+  const userData = await response.json() as {
+    id: number;
+    full_name: string;
+    email: string;
+    default_account: string;
+    accounts: Array<{
+      slug: string;
+      name: string;
+      registration_no?: string;
+      permission: string;
+    }>;
+  };
+
+  return userData.accounts || [];
 }
 
 /**
