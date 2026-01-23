@@ -204,6 +204,38 @@ db.exec(`
     completed_at TEXT,
     FOREIGN KEY (company_id) REFERENCES companies(id)
   );
+
+  -- Company Lender Exposure (visibility to lenders)
+  CREATE TABLE IF NOT EXISTS company_lender_exposure (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL UNIQUE,
+    is_visible INTEGER DEFAULT 0,
+    financing_needs TEXT,
+    desired_amount REAL,
+    purpose TEXT,
+    enabled_at TEXT,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+  );
+
+  -- Financing Offers from Lenders
+  CREATE TABLE IF NOT EXISTS financing_offers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    lender_name TEXT NOT NULL,
+    lender_logo TEXT,
+    offer_type TEXT NOT NULL,
+    amount_min REAL,
+    amount_max REAL,
+    interest_rate REAL,
+    term_months INTEGER,
+    monthly_payment REAL,
+    requirements TEXT,
+    status TEXT DEFAULT 'pending',
+    expires_at TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+  );
 `);
 
 // Password hashing
@@ -741,6 +773,110 @@ export function updateSyncLog(id: number, data: {
 export function getRecentSyncLogs(companyId: number, limit: number = 10) {
   const stmt = db.prepare('SELECT * FROM sync_logs WHERE company_id = ? ORDER BY started_at DESC LIMIT ?');
   return stmt.all(companyId, limit) as any[];
+}
+
+// Company Lender Exposure functions
+export function getCompanyExposure(companyId: number) {
+  const stmt = db.prepare('SELECT * FROM company_lender_exposure WHERE company_id = ?');
+  return stmt.get(companyId) as any;
+}
+
+export function setCompanyExposure(companyId: number, data: {
+  is_visible: boolean;
+  financing_needs?: string;
+  desired_amount?: number;
+  purpose?: string;
+}) {
+  const existing = getCompanyExposure(companyId);
+  if (existing) {
+    const stmt = db.prepare(`
+      UPDATE company_lender_exposure
+      SET is_visible = ?, financing_needs = ?, desired_amount = ?, purpose = ?,
+          enabled_at = CASE WHEN ? = 1 AND enabled_at IS NULL THEN CURRENT_TIMESTAMP ELSE enabled_at END,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE company_id = ?
+    `);
+    return stmt.run(
+      data.is_visible ? 1 : 0,
+      data.financing_needs || null,
+      data.desired_amount || null,
+      data.purpose || null,
+      data.is_visible ? 1 : 0,
+      companyId
+    );
+  } else {
+    const stmt = db.prepare(`
+      INSERT INTO company_lender_exposure (company_id, is_visible, financing_needs, desired_amount, purpose, enabled_at)
+      VALUES (?, ?, ?, ?, ?, CASE WHEN ? = 1 THEN CURRENT_TIMESTAMP ELSE NULL END)
+    `);
+    return stmt.run(
+      companyId,
+      data.is_visible ? 1 : 0,
+      data.financing_needs || null,
+      data.desired_amount || null,
+      data.purpose || null,
+      data.is_visible ? 1 : 0
+    );
+  }
+}
+
+// Financing Offers functions
+export function getFinancingOffers(companyId: number) {
+  const stmt = db.prepare('SELECT * FROM financing_offers WHERE company_id = ? ORDER BY created_at DESC');
+  return stmt.all(companyId) as any[];
+}
+
+export function getActiveFinancingOffers(companyId: number) {
+  const stmt = db.prepare(`
+    SELECT * FROM financing_offers
+    WHERE company_id = ? AND status IN ('pending', 'approved')
+    AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+    ORDER BY created_at DESC
+  `);
+  return stmt.all(companyId) as any[];
+}
+
+export function createFinancingOffer(data: {
+  company_id: number;
+  lender_name: string;
+  lender_logo?: string;
+  offer_type: string;
+  amount_min?: number;
+  amount_max?: number;
+  interest_rate?: number;
+  term_months?: number;
+  monthly_payment?: number;
+  requirements?: string;
+  expires_at?: string;
+}) {
+  const stmt = db.prepare(`
+    INSERT INTO financing_offers (company_id, lender_name, lender_logo, offer_type, amount_min, amount_max,
+      interest_rate, term_months, monthly_payment, requirements, expires_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  return stmt.run(
+    data.company_id,
+    data.lender_name,
+    data.lender_logo || null,
+    data.offer_type,
+    data.amount_min || null,
+    data.amount_max || null,
+    data.interest_rate || null,
+    data.term_months || null,
+    data.monthly_payment || null,
+    data.requirements || null,
+    data.expires_at || null
+  );
+}
+
+export function updateOfferStatus(offerId: number, status: string) {
+  const stmt = db.prepare('UPDATE financing_offers SET status = ? WHERE id = ?');
+  return stmt.run(status, offerId);
+}
+
+export function getOfferById(offerId: number) {
+  const stmt = db.prepare('SELECT * FROM financing_offers WHERE id = ?');
+  return stmt.get(offerId) as any;
 }
 
 // Add unique constraint for upsert operations (run once)

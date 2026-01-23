@@ -233,7 +233,7 @@ interface AppPageOptions {
   content: string;
   companyId?: number;
   companyName?: string;
-  activePage?: 'overview' | 'data' | 'invoices' | 'accounts' | 'transactions' | 'reports' | 'settings' | 'admin' | 'dashboard';
+  activePage?: 'overview' | 'data' | 'invoices' | 'accounts' | 'transactions' | 'reports' | 'offers' | 'settings' | 'admin' | 'dashboard';
   req: Request;
 }
 
@@ -743,6 +743,7 @@ function renderAppPage(options: AppPageOptions): string {
                 <div class="nav-section-title">${tr.nav.overview}</div>
                 ${navItem(`/company/${companyId}/overview`, tr.nav.overview, 'overview')}
                 ${navItem(`/company/${companyId}/reports`, tr.nav.reports, 'reports')}
+                ${navItem(`/company/${companyId}/offers`, tr.nav.offers, 'offers')}
             </div>
             <div class="nav-section">
                 <div class="nav-section-title">${tr.nav.data}</div>
@@ -1878,11 +1879,12 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
     <!-- Health Score Banner -->
     <div class="card" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; margin-bottom: 24px;">
       <div class="card-body health-banner">
-        <div>
+        <div style="flex: 1;">
           <h2 style="color: white; margin-bottom: 8px; font-size: 1.1rem;">${tr.overview.healthScore}</h2>
-          <p style="color: #94a3b8; margin: 0; font-size: 0.9rem;">${healthScore >= 70 ? (lang === 'cs' ? 'Výborně! Způsobilý pro konkurenční úrokové sazby.' : lang === 'sk' ? 'Výborne! Spôsobilý pre konkurenčné úrokové sadzby.' : 'Excellent! Eligible for competitive financing rates.') : healthScore >= 50 ? (lang === 'cs' ? 'Dobrý stav. K dispozici více možností financování.' : lang === 'sk' ? 'Dobrý stav. K dispozícii viac možností financovania.' : 'Good standing. Multiple financing options available.') : (lang === 'cs' ? 'Pomůžeme vám zlepšit vaši finanční pozici.' : lang === 'sk' ? 'Pomôžeme vám zlepšiť vašu finančnú pozíciu.' : 'We can help improve your financial position.')}</p>
+          <p style="color: #94a3b8; margin: 0 0 16px 0; font-size: 0.9rem;">${healthScore >= 70 ? (lang === 'cs' ? 'Výborně! Způsobilý pro konkurenční úrokové sazby.' : lang === 'sk' ? 'Výborne! Spôsobilý pre konkurenčné úrokové sadzby.' : 'Excellent! Eligible for competitive financing rates.') : healthScore >= 50 ? (lang === 'cs' ? 'Dobrý stav. K dispozici více možností financování.' : lang === 'sk' ? 'Dobrý stav. K dispozícii viac možností financovania.' : 'Good standing. Multiple financing options available.') : (lang === 'cs' ? 'Pomůžeme vám zlepšit vaši finanční pozici.' : lang === 'sk' ? 'Pomôžeme vám zlepšiť vašu finančnú pozíciu.' : 'We can help improve your financial position.')}</p>
+          <a href="/company/${companyId}/offers" class="btn" style="background: #10b981; color: white; border: none; padding: 10px 20px; font-weight: 600;">${tr.offersPage.getOffers}</a>
         </div>
-        <div style="text-align: center;">
+        <div style="text-align: center; min-width: 80px;">
           <div class="health-score" style="color: ${healthScore >= 70 ? '#10b981' : healthScore >= 50 ? '#f59e0b' : '#ef4444'};">${healthScore}</div>
           <div style="font-size: 0.85rem; color: #94a3b8;">${lang === 'cs' ? 'ze 100' : lang === 'sk' ? 'zo 100' : 'out of 100'}</div>
         </div>
@@ -3440,6 +3442,227 @@ app.get('/company/:id/reports', requireAuth, (req: Request, res: Response) => {
     activePage: 'reports',
     req
   }));
+});
+
+// Financing Offers Page
+app.get('/company/:id/offers', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const tr = t(req);
+  const lang = getLang(req);
+  const exposure = db.getCompanyExposure(companyId);
+  const offers = db.getActiveFinancingOffers(companyId);
+  const metrics = db.getLatestMetrics(companyId);
+
+  // Calculate health score
+  let healthScore = 50;
+  if (metrics) {
+    if (metrics.current_ratio >= 1.5) healthScore += 15;
+    else if (metrics.current_ratio >= 1) healthScore += 5;
+    if (metrics.dso_days <= 30) healthScore += 10;
+    if (metrics.net_income > 0) healthScore += 15;
+    if (metrics.debt_to_equity < 1) healthScore += 10;
+  }
+  healthScore = Math.min(100, healthScore);
+
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null || amount === undefined) return 'N/A';
+    return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { maximumFractionDigits: 0 }).format(amount) + ' ' + (company.currency || 'CZK');
+  };
+
+  const getOfferTypeLabel = (type: string) => {
+    const types: Record<string, string> = {
+      loan: tr.offersPage.offerTypes.loan,
+      creditLine: tr.offersPage.offerTypes.creditLine,
+      factoring: tr.offersPage.offerTypes.factoring,
+      leasing: tr.offersPage.offerTypes.leasing,
+    };
+    return types[type] || type;
+  };
+
+  const content = `
+    <div class="page-header">
+      <h1>${tr.offersPage.title}</h1>
+      <p>${tr.offersPage.subtitle}</p>
+    </div>
+
+    <!-- Visibility Settings -->
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header">
+        <span class="card-title">${tr.offersPage.financingNeeds}</span>
+      </div>
+      <div class="card-body">
+        <form method="POST" action="/company/${companyId}/offers/preferences">
+          <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding: 16px; background: ${exposure?.is_visible ? 'rgba(16, 185, 129, 0.1)' : 'rgba(100, 116, 139, 0.1)'}; border-radius: 8px; border: 1px solid ${exposure?.is_visible ? 'rgba(16, 185, 129, 0.3)' : 'rgba(100, 116, 139, 0.3)'};">
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1;">
+              <input type="checkbox" name="is_visible" value="1" ${exposure?.is_visible ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: #10b981;">
+              <div>
+                <div style="font-weight: 600; color: var(--color-text-primary);">${tr.offersPage.enableVisibility}</div>
+                <div style="font-size: 0.85rem; color: var(--color-text-secondary);">${exposure?.is_visible ? tr.offersPage.visibilityEnabled : tr.offersPage.visibilityDisabled}</div>
+              </div>
+            </label>
+            <div style="text-align: center; padding: 8px 16px; background: rgba(255,255,255,0.5); border-radius: 8px;">
+              <div style="font-size: 0.75rem; color: var(--color-text-secondary);">${tr.overview.healthScore}</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: ${healthScore >= 70 ? '#10b981' : healthScore >= 50 ? '#f59e0b' : '#ef4444'};">${healthScore}</div>
+            </div>
+          </div>
+
+          <div class="grid-2" style="gap: 16px; margin-bottom: 20px;">
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-weight: 500;">${tr.offersPage.desiredAmount}</label>
+              <input type="number" name="desired_amount" value="${exposure?.desired_amount || ''}" placeholder="500000" class="form-input" style="width: 100%;">
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-weight: 500;">${tr.offersPage.purpose}</label>
+              <select name="purpose" class="form-input" style="width: 100%;">
+                <option value="">${lang === 'cs' ? 'Vyberte účel' : lang === 'sk' ? 'Vyberte účel' : 'Select purpose'}</option>
+                <option value="workingCapital" ${exposure?.purpose === 'workingCapital' ? 'selected' : ''}>${tr.offersPage.purposeOptions.workingCapital}</option>
+                <option value="equipment" ${exposure?.purpose === 'equipment' ? 'selected' : ''}>${tr.offersPage.purposeOptions.equipment}</option>
+                <option value="expansion" ${exposure?.purpose === 'expansion' ? 'selected' : ''}>${tr.offersPage.purposeOptions.expansion}</option>
+                <option value="inventory" ${exposure?.purpose === 'inventory' ? 'selected' : ''}>${tr.offersPage.purposeOptions.inventory}</option>
+                <option value="other" ${exposure?.purpose === 'other' ? 'selected' : ''}>${tr.offersPage.purposeOptions.other}</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 6px; font-weight: 500;">${tr.offersPage.financingNeeds}</label>
+            <textarea name="financing_needs" rows="3" class="form-input" style="width: 100%; resize: vertical;" placeholder="${lang === 'cs' ? 'Popište vaše potřeby financování...' : lang === 'sk' ? 'Popíšte vaše potreby financovania...' : 'Describe your financing needs...'}">${exposure?.financing_needs || ''}</textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">${tr.offersPage.savePreferences}</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Available Offers -->
+    <h2 style="font-size: 1.1rem; margin: 32px 0 16px; color: var(--color-text-secondary);">${tr.offersPage.pendingOffers}</h2>
+    ${offers.length > 0 ? `
+      <div class="grid-2" style="gap: 16px;">
+        ${offers.map((offer: any) => `
+          <div class="card" style="border: 2px solid ${offer.status === 'approved' ? '#10b981' : '#3b82f6'};">
+            <div class="card-header" style="background: ${offer.status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)'};">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                ${offer.lender_logo ? `<img src="${offer.lender_logo}" alt="${offer.lender_name}" style="height: 32px;">` : ''}
+                <div>
+                  <span class="card-title">${offer.lender_name}</span>
+                  <div style="font-size: 0.8rem; color: var(--color-text-secondary);">${getOfferTypeLabel(offer.offer_type)}</div>
+                </div>
+              </div>
+              <span class="badge ${offer.status === 'approved' ? 'badge-success' : 'badge-info'}">${offer.status === 'approved' ? (lang === 'cs' ? 'Schváleno' : lang === 'sk' ? 'Schválené' : 'Approved') : (lang === 'cs' ? 'Čeká' : lang === 'sk' ? 'Čaká' : 'Pending')}</span>
+            </div>
+            <div class="card-body">
+              <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px;">
+                <div class="stat-card" style="padding: 12px;">
+                  <div class="stat-label">${tr.offersPage.amount}</div>
+                  <div class="stat-value" style="font-size: 1.1rem;">${offer.amount_min && offer.amount_max ? `${formatCurrency(offer.amount_min)} - ${formatCurrency(offer.amount_max)}` : formatCurrency(offer.amount_max || offer.amount_min)}</div>
+                </div>
+                <div class="stat-card" style="padding: 12px;">
+                  <div class="stat-label">${tr.offersPage.interestRate}</div>
+                  <div class="stat-value" style="font-size: 1.1rem;">${offer.interest_rate ? offer.interest_rate + '%' : 'N/A'}</div>
+                </div>
+                <div class="stat-card" style="padding: 12px;">
+                  <div class="stat-label">${tr.offersPage.term}</div>
+                  <div class="stat-value" style="font-size: 1.1rem;">${offer.term_months ? offer.term_months + ' ' + tr.common.months : 'N/A'}</div>
+                </div>
+                <div class="stat-card" style="padding: 12px;">
+                  <div class="stat-label">${tr.offersPage.monthlyPayment}</div>
+                  <div class="stat-value" style="font-size: 1.1rem;">${offer.monthly_payment ? formatCurrency(offer.monthly_payment) : 'N/A'}</div>
+                </div>
+              </div>
+              ${offer.requirements ? `<p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 16px;"><strong>${tr.offersPage.requirements}:</strong> ${offer.requirements}</p>` : ''}
+              ${offer.expires_at ? `<p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 16px;">${tr.offersPage.expiresAt}: ${new Date(offer.expires_at).toLocaleDateString(lang === 'en' ? 'en-US' : 'cs-CZ')}</p>` : ''}
+              <div style="display: flex; gap: 12px;">
+                <a href="/company/${companyId}/offers/${offer.id}/apply" class="btn btn-primary" style="flex: 1; text-align: center;">${tr.offersPage.apply}</a>
+                <a href="/company/${companyId}/offers/${offer.id}/decline" class="btn btn-secondary" style="text-align: center;">${tr.offersPage.decline}</a>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    ` : `
+      <div class="card">
+        <div class="card-body" style="text-align: center; padding: 48px 24px;">
+          <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.3;">📋</div>
+          <h3 style="margin-bottom: 8px; color: var(--color-text-primary);">${tr.offersPage.noOffers}</h3>
+          <p style="color: var(--color-text-secondary); max-width: 400px; margin: 0 auto;">${tr.offersPage.noOffersDesc}</p>
+        </div>
+      </div>
+    `}
+  `;
+
+  res.send(renderAppPage({
+    title: tr.offersPage.title,
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'offers',
+    req
+  }));
+});
+
+// Save financing preferences
+app.post('/company/:id/offers/preferences', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const { is_visible, desired_amount, purpose, financing_needs } = req.body;
+
+  db.setCompanyExposure(companyId, {
+    is_visible: is_visible === '1',
+    desired_amount: desired_amount ? parseFloat(desired_amount) : undefined,
+    purpose: purpose || undefined,
+    financing_needs: financing_needs || undefined,
+  });
+
+  res.redirect(`/company/${companyId}/offers?success=preferences_updated`);
+});
+
+// Apply for offer
+app.get('/company/:id/offers/:offerId/apply', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const offerId = parseInt(req.params.offerId);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const offer = db.getOfferById(offerId);
+  if (!offer || offer.company_id !== companyId) {
+    return res.redirect(`/company/${companyId}/offers`);
+  }
+
+  db.updateOfferStatus(offerId, 'applied');
+  res.redirect(`/company/${companyId}/offers?success=applied`);
+});
+
+// Decline offer
+app.get('/company/:id/offers/:offerId/decline', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const offerId = parseInt(req.params.offerId);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const offer = db.getOfferById(offerId);
+  if (!offer || offer.company_id !== companyId) {
+    return res.redirect(`/company/${companyId}/offers`);
+  }
+
+  db.updateOfferStatus(offerId, 'declined');
+  res.redirect(`/company/${companyId}/offers`);
 });
 
 // Admin Dashboard

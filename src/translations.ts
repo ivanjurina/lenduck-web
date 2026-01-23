@@ -11,6 +11,7 @@ export interface Translations {
     accounts: string;
     transactions: string;
     reports: string;
+    offers: string;
     settings: string;
     logout: string;
     switchCompany: string;
@@ -241,6 +242,51 @@ export interface Translations {
     connect: string;
     requestIntegration: string;
   };
+  // Offers page
+  offersPage: {
+    title: string;
+    subtitle: string;
+    getOffers: string;
+    viewOffers: string;
+    noOffers: string;
+    noOffersDesc: string;
+    enableVisibility: string;
+    visibilityEnabled: string;
+    visibilityDisabled: string;
+    financingNeeds: string;
+    desiredAmount: string;
+    purpose: string;
+    purposeOptions: {
+      workingCapital: string;
+      equipment: string;
+      expansion: string;
+      inventory: string;
+      other: string;
+    };
+    savePreferences: string;
+    offerDetails: string;
+    lender: string;
+    offerType: string;
+    amount: string;
+    interestRate: string;
+    term: string;
+    monthlyPayment: string;
+    requirements: string;
+    expiresAt: string;
+    apply: string;
+    decline: string;
+    offerTypes: {
+      loan: string;
+      creditLine: string;
+      factoring: string;
+      leasing: string;
+    };
+    pendingOffers: string;
+    activeOffers: string;
+    expiredOffers: string;
+    applySuccess: string;
+    preferencesUpdated: string;
+  };
   // Common
   common: {
     loading: string;
@@ -278,6 +324,7 @@ export const translations: Record<Language, Translations> = {
       accounts: 'Accounts',
       transactions: 'Transactions',
       reports: 'Reports',
+      offers: 'Offers',
       settings: 'Settings',
       logout: 'Logout',
       switchCompany: 'Switch Company',
@@ -496,6 +543,50 @@ export const translations: Record<Language, Translations> = {
       connect: 'Connect',
       requestIntegration: 'Request Integration',
     },
+    offersPage: {
+      title: 'Financing Offers',
+      subtitle: 'View and compare financing offers from our partner lenders',
+      getOffers: 'Get Financing Offers',
+      viewOffers: 'View Offers',
+      noOffers: 'No offers yet',
+      noOffersDesc: 'Enable visibility to lenders to start receiving personalized financing offers based on your financial health.',
+      enableVisibility: 'Enable Visibility to Lenders',
+      visibilityEnabled: 'Your company is visible to lenders',
+      visibilityDisabled: 'Your company is hidden from lenders',
+      financingNeeds: 'Financing Needs',
+      desiredAmount: 'Desired Amount',
+      purpose: 'Purpose',
+      purposeOptions: {
+        workingCapital: 'Working Capital',
+        equipment: 'Equipment Purchase',
+        expansion: 'Business Expansion',
+        inventory: 'Inventory',
+        other: 'Other',
+      },
+      savePreferences: 'Save Preferences',
+      offerDetails: 'Offer Details',
+      lender: 'Lender',
+      offerType: 'Offer Type',
+      amount: 'Amount',
+      interestRate: 'Interest Rate',
+      term: 'Term',
+      monthlyPayment: 'Monthly Payment',
+      requirements: 'Requirements',
+      expiresAt: 'Expires',
+      apply: 'Apply Now',
+      decline: 'Decline',
+      offerTypes: {
+        loan: 'Business Loan',
+        creditLine: 'Credit Line',
+        factoring: 'Invoice Factoring',
+        leasing: 'Leasing',
+      },
+      pendingOffers: 'Pending Offers',
+      activeOffers: 'Active Offers',
+      expiredOffers: 'Expired Offers',
+      applySuccess: 'Application submitted successfully',
+      preferencesUpdated: 'Preferences updated successfully',
+    },
     common: {
       loading: 'Loading...',
       error: 'Error',
@@ -528,6 +619,7 @@ export const translations: Record<Language, Translations> = {
       accounts: 'Účty',
       transactions: 'Transakce',
       reports: 'Reporty',
+      offers: 'Nabídky',
       settings: 'Nastavení',
       logout: 'Odhlásit',
       switchCompany: 'Změnit firmu',
@@ -746,6 +838,50 @@ export const translations: Record<Language, Translations> = {
       connect: 'Připojit',
       requestIntegration: 'Požádat o integraci',
     },
+    offersPage: {
+      title: 'Nabídky financování',
+      subtitle: 'Prohlédněte a porovnejte nabídky financování od našich partnerských věřitelů',
+      getOffers: 'Získat nabídky financování',
+      viewOffers: 'Zobrazit nabídky',
+      noOffers: 'Zatím žádné nabídky',
+      noOffersDesc: 'Povolte viditelnost pro věřitele a začněte dostávat personalizované nabídky financování na základě vašeho finančního zdraví.',
+      enableVisibility: 'Povolit viditelnost pro věřitele',
+      visibilityEnabled: 'Vaše firma je viditelná pro věřitele',
+      visibilityDisabled: 'Vaše firma je skrytá před věřiteli',
+      financingNeeds: 'Potřeby financování',
+      desiredAmount: 'Požadovaná částka',
+      purpose: 'Účel',
+      purposeOptions: {
+        workingCapital: 'Provozní kapitál',
+        equipment: 'Nákup vybavení',
+        expansion: 'Rozšíření podnikání',
+        inventory: 'Zásoby',
+        other: 'Jiné',
+      },
+      savePreferences: 'Uložit preference',
+      offerDetails: 'Detaily nabídky',
+      lender: 'Věřitel',
+      offerType: 'Typ nabídky',
+      amount: 'Částka',
+      interestRate: 'Úroková sazba',
+      term: 'Doba splácení',
+      monthlyPayment: 'Měsíční splátka',
+      requirements: 'Požadavky',
+      expiresAt: 'Platnost do',
+      apply: 'Požádat nyní',
+      decline: 'Odmítnout',
+      offerTypes: {
+        loan: 'Podnikatelský úvěr',
+        creditLine: 'Úvěrový rámec',
+        factoring: 'Faktoring faktur',
+        leasing: 'Leasing',
+      },
+      pendingOffers: 'Čekající nabídky',
+      activeOffers: 'Aktivní nabídky',
+      expiredOffers: 'Vypršelé nabídky',
+      applySuccess: 'Žádost byla úspěšně odeslána',
+      preferencesUpdated: 'Preference byly úspěšně aktualizovány',
+    },
     common: {
       loading: 'Načítání...',
       error: 'Chyba',
@@ -778,6 +914,7 @@ export const translations: Record<Language, Translations> = {
       accounts: 'Účty',
       transactions: 'Transakcie',
       reports: 'Reporty',
+      offers: 'Ponuky',
       settings: 'Nastavenia',
       logout: 'Odhlásiť',
       switchCompany: 'Zmeniť firmu',
@@ -995,6 +1132,50 @@ export const translations: Record<Language, Translations> = {
       comingSoon: 'Už čoskoro',
       connect: 'Pripojiť',
       requestIntegration: 'Požiadať o integráciu',
+    },
+    offersPage: {
+      title: 'Ponuky financovania',
+      subtitle: 'Prehliadnite a porovnajte ponuky financovania od našich partnerských veriteľov',
+      getOffers: 'Získať ponuky financovania',
+      viewOffers: 'Zobraziť ponuky',
+      noOffers: 'Zatiaľ žiadne ponuky',
+      noOffersDesc: 'Povoľte viditeľnosť pre veriteľov a začnite dostávať personalizované ponuky financovania na základe vášho finančného zdravia.',
+      enableVisibility: 'Povoliť viditeľnosť pre veriteľov',
+      visibilityEnabled: 'Vaša firma je viditeľná pre veriteľov',
+      visibilityDisabled: 'Vaša firma je skrytá pred veriteľmi',
+      financingNeeds: 'Potreby financovania',
+      desiredAmount: 'Požadovaná suma',
+      purpose: 'Účel',
+      purposeOptions: {
+        workingCapital: 'Prevádzkový kapitál',
+        equipment: 'Nákup vybavenia',
+        expansion: 'Rozšírenie podnikania',
+        inventory: 'Zásoby',
+        other: 'Iné',
+      },
+      savePreferences: 'Uložiť preferencie',
+      offerDetails: 'Detaily ponuky',
+      lender: 'Veriteľ',
+      offerType: 'Typ ponuky',
+      amount: 'Suma',
+      interestRate: 'Úroková sadzba',
+      term: 'Doba splácania',
+      monthlyPayment: 'Mesačná splátka',
+      requirements: 'Požiadavky',
+      expiresAt: 'Platnosť do',
+      apply: 'Požiadať teraz',
+      decline: 'Odmietnuť',
+      offerTypes: {
+        loan: 'Podnikateľský úver',
+        creditLine: 'Úverový rámec',
+        factoring: 'Faktoring faktúr',
+        leasing: 'Leasing',
+      },
+      pendingOffers: 'Čakajúce ponuky',
+      activeOffers: 'Aktívne ponuky',
+      expiredOffers: 'Vypršané ponuky',
+      applySuccess: 'Žiadosť bola úspešne odoslaná',
+      preferencesUpdated: 'Preferencie boli úspešne aktualizované',
     },
     common: {
       loading: 'Načítava sa...',
