@@ -1851,10 +1851,39 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
   }
   healthScore = Math.min(100, healthScore);
 
-  // Chart data
-  const chartLabels = metricsHistory.map((m: any) => tr.monthsShort[new Date(m.metric_date).getMonth()]);
-  const revenueData = metricsHistory.map((m: any) => Math.round((m.revenue || 0) / 1000));
-  const expensesData = metricsHistory.map((m: any) => Math.round((m.expenses || 0) / 1000));
+  // Calculate chart data from actual invoices (last 6 months)
+  const monthlyData: Record<string, { revenue: number; expenses: number; }> = {};
+  const now = new Date();
+
+  // Initialize last 6 months
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthlyData[key] = { revenue: 0, expenses: 0 };
+  }
+
+  // Process invoices and group by month
+  invoices.forEach((inv: any) => {
+    const date = new Date(inv.issue_date || inv.created_at);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+    if (monthlyData[monthKey]) {
+      if (inv.invoice_type === 'issued') {
+        monthlyData[monthKey].revenue += (inv.total_amount || 0);
+      } else {
+        monthlyData[monthKey].expenses += (inv.total_amount || 0);
+      }
+    }
+  });
+
+  // Sort months chronologically and prepare chart data
+  const sortedMonths = Object.keys(monthlyData).sort();
+  const chartLabels = sortedMonths.map(key => {
+    const month = parseInt(key.split('-')[1]) - 1;
+    return tr.monthsShort[month];
+  });
+  const revenueData = sortedMonths.map(key => Math.round(monthlyData[key].revenue / 1000));
+  const expensesData = sortedMonths.map(key => Math.round(monthlyData[key].expenses / 1000));
 
   // Invoice counts
   const unpaidReceivables = invoices.filter((i: any) => i.invoice_type === 'issued' && i.status !== 'paid');
@@ -2989,7 +3018,7 @@ app.get('/company/:id/data/invoices/export/json', requireAuth, (req: Request, re
   res.send(JSON.stringify(exportData, null, 2));
 });
 
-// Data: Chart of Accounts
+// Data: Chart of Accounts / Contacts
 app.get('/company/:id/data/accounts', requireAuth, (req: Request, res: Response) => {
   const companyId = parseInt(req.params.id);
   const company = db.getCompanyById(companyId);
@@ -2999,12 +3028,40 @@ app.get('/company/:id/data/accounts', requireAuth, (req: Request, res: Response)
   }
 
   const accounts = db.getAccountsByCompany(companyId);
+  const connection = db.getAccountingConnection(companyId);
+  const isFakturoid = connection?.software_type === 'fakturoid';
   const tr = t(req);
   const lang = getLang(req);
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return 'N/A';
     return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+  };
+
+  // Friendly type labels for Fakturoid
+  const getTypeLabel = (type: string) => {
+    if (isFakturoid) {
+      const labels: Record<string, Record<string, string>> = {
+        'Accounts Receivable': { en: 'Customers', cs: 'Zákazníci', sk: 'Zákazníci' },
+        'Accounts Payable': { en: 'Suppliers', cs: 'Dodavatelé', sk: 'Dodávatelia' },
+        'Bank': { en: 'Bank Accounts', cs: 'Bankovní účty', sk: 'Bankové účty' },
+        'Other': { en: 'Other', cs: 'Ostatní', sk: 'Ostatné' },
+      };
+      return labels[type]?.[lang] || type;
+    }
+    return type;
+  };
+
+  const getSubTypeLabel = (subType: string) => {
+    if (isFakturoid) {
+      const labels: Record<string, Record<string, string>> = {
+        'customer': { en: 'Customer', cs: 'Zákazník', sk: 'Zákazník' },
+        'supplier': { en: 'Supplier', cs: 'Dodavatel', sk: 'Dodávateľ' },
+        'both': { en: 'Customer & Supplier', cs: 'Zákazník i dodavatel', sk: 'Zákazník aj dodávateľ' },
+      };
+      return labels[subType]?.[lang] || subType || '-';
+    }
+    return subType || '-';
   };
 
   // Group accounts by type
@@ -3015,44 +3072,72 @@ app.get('/company/:id/data/accounts', requireAuth, (req: Request, res: Response)
     accountsByType[type].push(acc);
   });
 
+  // For Fakturoid, count customers and suppliers
+  const customers = accounts.filter((a: any) => a.account_type === 'Accounts Receivable').length;
+  const suppliers = accounts.filter((a: any) => a.account_type === 'Accounts Payable').length;
+  const bankAccounts = accounts.filter((a: any) => a.account_type === 'Bank').length;
+
   const totalAssets = accounts.filter((a: any) => ['Bank', 'Accounts Receivable', 'Fixed Asset', 'Other Current Asset'].includes(a.account_type)).reduce((sum: number, a: any) => sum + (a.current_balance || 0), 0);
   const totalLiabilities = accounts.filter((a: any) => ['Accounts Payable', 'Credit Card', 'Long Term Liability', 'Other Current Liability'].includes(a.account_type)).reduce((sum: number, a: any) => sum + (a.current_balance || 0), 0);
 
+  // Page title based on software
+  const pageTitle = isFakturoid
+    ? (lang === 'cs' ? 'Kontakty' : lang === 'sk' ? 'Kontakty' : 'Contacts')
+    : tr.accountsPage.title;
+  const pageSubtitle = isFakturoid
+    ? (lang === 'cs' ? 'Zákazníci a dodavatelé z Fakturoidu' : lang === 'sk' ? 'Zákazníci a dodávatelia z Fakturoidu' : 'Customers and suppliers from Fakturoid')
+    : tr.accountsPage.subtitle;
+
   const content = `
     <div class="page-header">
-      <h1>${tr.accountsPage.title}</h1>
-      <p>${tr.accountsPage.subtitle}</p>
+      <h1>${pageTitle}</h1>
+      <p>${pageSubtitle}</p>
     </div>
 
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">${tr.accountsPage.totalAccounts}</div>
-        <div class="stat-value">${accounts.length}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">${tr.accountsPage.assets}</div>
-        <div class="stat-value" style="color: var(--color-success)">${formatCurrency(totalAssets)}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">${tr.accountsPage.liabilities}</div>
-        <div class="stat-value" style="color: var(--color-error)">${formatCurrency(totalLiabilities)}</div>
-      </div>
+      ${isFakturoid ? `
+        <div class="stat-card">
+          <div class="stat-label">${lang === 'cs' ? 'Zákazníci' : lang === 'sk' ? 'Zákazníci' : 'Customers'}</div>
+          <div class="stat-value">${customers}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">${lang === 'cs' ? 'Dodavatelé' : lang === 'sk' ? 'Dodávatelia' : 'Suppliers'}</div>
+          <div class="stat-value">${suppliers}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">${lang === 'cs' ? 'Bankovní účty' : lang === 'sk' ? 'Bankové účty' : 'Bank Accounts'}</div>
+          <div class="stat-value">${bankAccounts}</div>
+        </div>
+      ` : `
+        <div class="stat-card">
+          <div class="stat-label">${tr.accountsPage.totalAccounts}</div>
+          <div class="stat-value">${accounts.length}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">${tr.accountsPage.assets}</div>
+          <div class="stat-value" style="color: var(--color-success)">${formatCurrency(totalAssets)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">${tr.accountsPage.liabilities}</div>
+          <div class="stat-value" style="color: var(--color-error)">${formatCurrency(totalLiabilities)}</div>
+        </div>
+      `}
     </div>
 
     ${Object.entries(accountsByType).map(([type, accs]) => `
       <div class="card" style="margin-bottom: 20px;">
         <div class="card-header">
-          <span class="card-title">${type}</span>
+          <span class="card-title">${getTypeLabel(type)}</span>
           <span class="badge badge-info">${accs.length}</span>
         </div>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>${tr.accountsPage.accountNumber}</th>
-                <th>${tr.accountsPage.accountName}</th>
+                <th>${isFakturoid ? (lang === 'cs' ? 'IČO' : lang === 'sk' ? 'IČO' : 'ID') : tr.accountsPage.accountNumber}</th>
+                <th>${isFakturoid ? (lang === 'cs' ? 'Název' : lang === 'sk' ? 'Názov' : 'Name') : tr.accountsPage.accountName}</th>
                 <th>${tr.accountsPage.type}</th>
-                <th style="text-align:right">${tr.accountsPage.balance}</th>
+                ${!isFakturoid ? `<th style="text-align:right">${tr.accountsPage.balance}</th>` : ''}
               </tr>
             </thead>
             <tbody>
@@ -3060,10 +3145,8 @@ app.get('/company/:id/data/accounts', requireAuth, (req: Request, res: Response)
                 <tr>
                   <td><strong>${acc.account_number || '-'}</strong></td>
                   <td>${acc.name}</td>
-                  <td>${acc.account_sub_type || '-'}</td>
-                  <td style="text-align:right; font-weight: 600; color: ${acc.current_balance >= 0 ? 'var(--color-success)' : 'var(--color-error)'}">
-                    ${formatCurrency(acc.current_balance)}
-                  </td>
+                  <td>${getSubTypeLabel(acc.account_sub_type)}</td>
+                  ${!isFakturoid ? `<td style="text-align:right; font-weight: 600; color: ${acc.current_balance >= 0 ? 'var(--color-success)' : 'var(--color-error)'}">${formatCurrency(acc.current_balance)}</td>` : ''}
                 </tr>
               `).join('')}
             </tbody>
