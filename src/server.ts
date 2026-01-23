@@ -1330,67 +1330,56 @@ app.get('/company/:id/connect', requireAuth, (req: Request, res: Response) => {
 
   const error = req.query.error as string;
   const success = req.query.success as string;
+  const tr = t(req);
 
   const softwareOptions = [
-    { value: 'fakturoid', name: 'Fakturoid', description: 'Czech invoicing & accounting, OAuth2 API', available: true },
-    { value: 'quickbooks', name: 'QuickBooks Online', description: 'Popular in US/UK, REST API with OAuth2', available: true },
-    { value: 'profit365', name: 'Profit365', description: 'Slovak/Czech accounting, REST API', available: true },
-    { value: 'idoklad', name: 'iDoklad', description: 'Czech invoicing system, REST API', available: false },
-    { value: 'flexibee', name: 'ABRA FlexiBee', description: 'Popular in Czech Republic, REST API', available: false },
-    { value: 'pohoda', name: 'Pohoda', description: 'Most popular in Czech Republic, XML API', available: false },
-    { value: 'xero', name: 'Xero', description: 'Cloud accounting, REST API', available: false },
-    { value: 'other', name: 'Other', description: 'Tell us what you use', available: true },
+    { value: 'fakturoid', name: 'Fakturoid', description: 'Czech invoicing & accounting', available: true },
+    { value: 'profit365', name: 'Profit365', description: 'Slovak/Czech accounting', available: true },
+    { value: 'quickbooks', name: 'QuickBooks Online', description: 'Popular in US/UK', available: true },
+    { value: 'idoklad', name: 'iDoklad', description: 'Czech invoicing system', available: false },
+    { value: 'flexibee', name: 'ABRA FlexiBee', description: 'Popular in Czech Republic', available: false },
+    { value: 'pohoda', name: 'Pohoda', description: 'Most popular in Czech Republic', available: false },
+    { value: 'xero', name: 'Xero', description: 'Cloud accounting', available: false },
+    { value: 'other', name: tr.connectPage.other, description: 'Tell us what you use', available: true },
   ];
 
   const softwareCards = softwareOptions.map(sw => `
-    <div class="software-card ${sw.available ? '' : 'disabled'}">
-      <div class="software-card-content">
-        <h3>${sw.name}</h3>
-        <p>${sw.description}</p>
-        ${!sw.available ? '<span class="badge badge-coming">Coming Soon</span>' : ''}
+    <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; ${sw.available ? '' : 'opacity: 0.6;'}">
+      <div>
+        <h3 style="margin: 0 0 4px 0; font-size: 1rem;">${sw.name}</h3>
+        <p style="margin: 0; color: var(--color-text-secondary); font-size: 0.85rem;">${sw.description}</p>
       </div>
       ${sw.available ? `
-        <form method="POST" action="/company/${companyId}/connect">
+        <form method="POST" action="/company/${companyId}/connect" style="margin: 0;">
           <input type="hidden" name="software_type" value="${sw.value}">
-          <button type="submit" class="btn btn-primary">Connect</button>
+          <button type="submit" class="btn btn-primary btn-sm">${tr.connectPage.connect}</button>
         </form>
-      ` : ''}
+      ` : `<span class="badge badge-info">${tr.connectPage.comingSoon || 'Coming Soon'}</span>`}
     </div>
   `).join('');
 
   const content = `
-    <div class="dashboard-header">
-      <div class="container">
-        <h1 class="dashboard-title">Connect Accounting Software</h1>
-        <p class="dashboard-subtitle">for ${company.name}</p>
-      </div>
+    <div class="page-header">
+      <h1>${tr.connectPage.title}</h1>
+      <p>${tr.connectPage.subtitle}</p>
     </div>
-    <div class="dashboard-content">
-      <div class="container" style="max-width: 800px;">
-        ${error ? `<div class="flash flash-error">${error}</div>` : ''}
-        ${success ? `<div class="flash flash-success">${success}</div>` : ''}
-        <p style="margin-bottom: 24px; color: var(--color-text-light);">
-          Select your accounting software to connect. We'll securely access your financial data to provide you with the best financing options.
-        </p>
-        <div class="software-grid">
-          ${softwareCards}
-        </div>
-        <div style="margin-top: 32px; text-align: center;">
-          <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
-        </div>
-      </div>
+
+    ${error ? `<div class="alert alert-error">${error}</div>` : ''}
+    ${success ? `<div class="alert alert-success">${success}</div>` : ''}
+
+    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 600px;">
+      ${softwareCards}
     </div>
-    <style>
-      .software-grid { display: grid; gap: 16px; }
-      .software-card { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: white; border: 1px solid var(--color-border); border-radius: 12px; }
-      .software-card.disabled { opacity: 0.6; }
-      .software-card-content h3 { margin: 0 0 4px 0; color: var(--color-forest-dark); }
-      .software-card-content p { margin: 0; color: var(--color-text-light); font-size: 0.9rem; }
-      .badge-coming { background: var(--color-sage); color: white; font-size: 0.75rem; margin-left: 8px; }
-    </style>
   `;
 
-  res.send(renderPage('Connect Accounting', content, req));
+  res.send(renderAppPage({
+    title: tr.connectPage.title,
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'settings',
+    req
+  }));
 });
 
 app.post('/company/:id/connect', requireAuth, (req: Request, res: Response) => {
@@ -1443,32 +1432,42 @@ app.get('/company/:id/connect/other', requireAuth, (req: Request, res: Response)
     return res.redirect('/dashboard');
   }
 
+  const tr = t(req);
+
   const content = `
-    <div class="auth-container">
-      <div class="auth-card" style="max-width: 500px;">
-        <div class="auth-header">
-          <h1>Request New Integration</h1>
-          <p>Tell us what accounting software you use</p>
-        </div>
+    <div class="page-header">
+      <h1>${tr.connectPage.requestIntegration}</h1>
+      <p>Tell us what accounting software you use</p>
+    </div>
+
+    <div class="card" style="max-width: 500px;">
+      <div class="card-body">
         <form method="POST" action="/company/${companyId}/connect/other">
           <div class="form-group">
             <label for="software_name">Software Name *</label>
-            <input type="text" id="software_name" name="software_name" required placeholder="e.g., Money S3, ABRA Gen, etc.">
+            <input type="text" id="software_name" name="software_name" required placeholder="e.g., Money S3, ABRA Gen, etc." style="width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: var(--radius);">
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-top: 16px;">
             <label for="additional_info">Additional Information</label>
-            <textarea id="additional_info" name="additional_info" rows="3" placeholder="Any additional details about your setup..."></textarea>
+            <textarea id="additional_info" name="additional_info" rows="3" placeholder="Any additional details..." style="width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: var(--radius);"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary btn-full">Submit Request</button>
+          <div style="display: flex; gap: 12px; margin-top: 20px;">
+            <a href="/company/${companyId}/connect" class="btn btn-secondary">${tr.common.back}</a>
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Submit Request</button>
+          </div>
         </form>
-        <div class="auth-footer">
-          <a href="/company/${companyId}/connect">Back to Software Selection</a>
-        </div>
       </div>
     </div>
   `;
 
-  res.send(renderPage('Request Integration', content, req));
+  res.send(renderAppPage({
+    title: tr.connectPage.requestIntegration,
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'settings',
+    req
+  }));
 });
 
 app.post('/company/:id/connect/other', requireAuth, (req: Request, res: Response) => {
@@ -1505,45 +1504,54 @@ app.get('/company/:id/connect/profit365', requireAuth, (req: Request, res: Respo
   }
 
   const error = req.query.error as string;
+  const tr = t(req);
 
   const content = `
-    <div class="auth-container">
-      <div class="auth-card" style="max-width: 540px;">
-        <div class="auth-header">
-          <h1>Connect Profit365</h1>
-          <p>Enter your Profit365 API credentials</p>
-        </div>
-        ${error ? `<div class="flash flash-error">${error}</div>` : ''}
-        <div class="info-box" style="background: var(--color-sage-pale); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
-          <p style="margin: 0; font-size: 0.9rem; color: var(--color-text);">
+    <div class="page-header">
+      <h1>${tr.connectPage.connect} Profit365</h1>
+      <p>Enter your API credentials</p>
+    </div>
+
+    ${error ? `<div class="alert alert-error">${error}</div>` : ''}
+
+    <div class="card" style="max-width: 500px;">
+      <div class="card-body">
+        <div style="background: var(--color-bg); padding: 16px; border-radius: var(--radius); margin-bottom: 20px;">
+          <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-secondary);">
             <strong>Where to find your API credentials:</strong><br>
-            In Profit365, go to <strong>Company &gt; Security &gt; API Keys</strong> to generate your Client ID and Client Secret.
-            The Company ID can be found in your account settings.
+            In Profit365, go to Company > Security > API Keys to generate your Client ID and Client Secret.
           </p>
         </div>
         <form method="POST" action="/company/${companyId}/connect/profit365">
           <div class="form-group">
             <label for="client_id">Client ID *</label>
-            <input type="text" id="client_id" name="client_id" required placeholder="Your Profit365 Client ID">
+            <input type="text" id="client_id" name="client_id" required placeholder="Your Profit365 Client ID" style="width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: var(--radius);">
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-top: 16px;">
             <label for="client_secret">Client Secret *</label>
-            <input type="password" id="client_secret" name="client_secret" required placeholder="Your Profit365 Client Secret">
+            <input type="password" id="client_secret" name="client_secret" required placeholder="Your Profit365 Client Secret" style="width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: var(--radius);">
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-top: 16px;">
             <label for="profit365_company_id">Profit365 Company ID *</label>
-            <input type="text" id="profit365_company_id" name="profit365_company_id" required placeholder="Your company ID in Profit365">
+            <input type="text" id="profit365_company_id" name="profit365_company_id" required placeholder="Your company ID in Profit365" style="width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: var(--radius);">
           </div>
-          <button type="submit" class="btn btn-primary btn-full">Connect</button>
+          <div style="display: flex; gap: 12px; margin-top: 20px;">
+            <a href="/company/${companyId}/connect" class="btn btn-secondary">${tr.common.back}</a>
+            <button type="submit" class="btn btn-primary" style="flex: 1;">${tr.connectPage.connect}</button>
+          </div>
         </form>
-        <div class="auth-footer">
-          <a href="/company/${companyId}/connect">Back to Software Selection</a>
-        </div>
       </div>
     </div>
   `;
 
-  res.send(renderPage('Connect Profit365', content, req));
+  res.send(renderAppPage({
+    title: tr.connectPage.connect + ' Profit365',
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'settings',
+    req
+  }));
 });
 
 app.post('/company/:id/connect/profit365', requireAuth, async (req: Request, res: Response) => {
@@ -1606,38 +1614,28 @@ app.get('/company/:id/connect/fakturoid', requireAuth, (req: Request, res: Respo
   } catch (e) {
     // OAuth not configured - show error
     const content = `
-      <div class="auth-container">
-        <div class="auth-card" style="max-width: 540px;">
-          <div class="auth-header">
-            <h1>${tr.connectPage.connect} Fakturoid</h1>
-          </div>
-          <div class="flash flash-error">Fakturoid integration is not configured. Please contact support.</div>
-          <div class="auth-footer">
-            <a href="/company/${companyId}/connect">${tr.common.back}</a>
-          </div>
-        </div>
+      <div class="page-header">
+        <h1>${tr.connectPage.connect} Fakturoid</h1>
       </div>
+      <div class="alert alert-error">Fakturoid integration is not configured. Please contact support.</div>
+      <a href="/company/${companyId}/connect" class="btn btn-secondary">${tr.common.back}</a>
     `;
-    return res.send(renderPage('Connect Fakturoid', content, req));
+    return res.send(renderAppPage({ title: 'Connect Fakturoid', content, companyId, companyName: company.name, activePage: 'settings', req }));
   }
 
   if (error) {
     // Show error from callback
     const content = `
-      <div class="auth-container">
-        <div class="auth-card" style="max-width: 540px;">
-          <div class="auth-header">
-            <h1>${tr.connectPage.connect} Fakturoid</h1>
-          </div>
-          <div class="flash flash-error">${error}</div>
-          <a href="/company/${companyId}/connect/fakturoid" class="btn btn-primary btn-full" style="margin-top: 16px;">Try Again</a>
-          <div class="auth-footer">
-            <a href="/company/${companyId}/connect">${tr.common.back}</a>
-          </div>
-        </div>
+      <div class="page-header">
+        <h1>${tr.connectPage.connect} Fakturoid</h1>
+      </div>
+      <div class="alert alert-error">${error}</div>
+      <div style="display: flex; gap: 12px; margin-top: 16px;">
+        <a href="/company/${companyId}/connect" class="btn btn-secondary">${tr.common.back}</a>
+        <a href="/company/${companyId}/connect/fakturoid" class="btn btn-primary">Try Again</a>
       </div>
     `;
-    return res.send(renderPage('Connect Fakturoid', content, req));
+    return res.send(renderAppPage({ title: 'Connect Fakturoid', content, companyId, companyName: company.name, activePage: 'settings', req }));
   }
 
   // Create or update connection record
