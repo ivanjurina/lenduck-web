@@ -297,6 +297,7 @@ export async function exchangeCodeForTokens(code: string): Promise<{
     headers: {
       'Authorization': `Basic ${basicAuth}`,
       'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json',
     },
     body: new URLSearchParams({
       grant_type: 'authorization_code',
@@ -340,6 +341,7 @@ async function refreshAccessToken(refreshToken: string): Promise<{
     headers: {
       'Authorization': `Basic ${basicAuth}`,
       'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json',
     },
     body: new URLSearchParams({
       grant_type: 'refresh_token',
