@@ -2167,11 +2167,12 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
   const content = `
     <style>
       .filter-panel {
-        background: var(--color-sage-pale);
-        border: 1px solid var(--color-sage-light);
+        background: white;
+        border: 1px solid var(--color-border);
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
       }
       .filter-header {
         display: flex;
@@ -2179,16 +2180,13 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
         align-items: center;
         margin-bottom: 16px;
         padding-bottom: 12px;
-        border-bottom: 1px solid var(--color-sage-light);
+        border-bottom: 1px solid var(--color-border);
       }
       .filter-header h3 {
         margin: 0;
-        font-size: 0.95rem;
+        font-size: 1rem;
         font-weight: 600;
         color: var(--color-text);
-        display: flex;
-        align-items: center;
-        gap: 8px;
       }
       .filter-grid {
         display: grid;
@@ -2302,13 +2300,12 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
     <!-- Filter Panel -->
     <div class="filter-panel">
       <div class="filter-header">
-        <h3>&#128269; ${tr.invoicesPage.filters}</h3>
+        <h3>${tr.invoicesPage.filters}</h3>
         ${hasFilters ? `<a href="/company/${companyId}/data/invoices" class="btn btn-secondary btn-sm">${tr.invoicesPage.clearFilters}</a>` : ''}
       </div>
 
       <!-- Quick Date Presets -->
-      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--color-sage-light);">
-        <span style="font-size: 0.8rem; color: var(--color-text-muted); margin-right: 8px; display: flex; align-items: center;">&#128197;</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border);">
         <a href="/company/${companyId}/data/invoices?dateFrom=${datePresets.lastMonth.from}&dateTo=${datePresets.lastMonth.to}" class="preset-btn ${dateFrom === datePresets.lastMonth.from && dateTo === datePresets.lastMonth.to ? 'active' : ''}">${tr.invoicesPage.lastMonth}</a>
         <a href="/company/${companyId}/data/invoices?dateFrom=${datePresets.lastQuarter.from}&dateTo=${datePresets.lastQuarter.to}" class="preset-btn ${dateFrom === datePresets.lastQuarter.from && dateTo === datePresets.lastQuarter.to ? 'active' : ''}">${tr.invoicesPage.lastQuarter}</a>
         <a href="/company/${companyId}/data/invoices?dateFrom=${datePresets.lastYear.from}&dateTo=${datePresets.lastYear.to}" class="preset-btn ${dateFrom === datePresets.lastYear.from && dateTo === datePresets.lastYear.to ? 'active' : ''}">${tr.invoicesPage.lastYear}</a>
@@ -2389,12 +2386,12 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
     <div class="currency-totals">
       ${currenciesWithTotals.map(([cur, totals]) => `
         <div class="currency-total-card">
-          <h4><span style="font-size: 1.2em;">&#128176;</span> ${cur} <span style="font-weight: normal; font-size: 0.85em;">(${totals.count} ${tr.invoicesPage.invoicesCount})</span></h4>
+          <h4>${cur} <span style="font-weight: normal; font-size: 0.85em;">(${totals.count} ${tr.invoicesPage.invoicesCount})</span></h4>
           <div class="amount">${formatCurrency(totals.total, cur)}</div>
           <div class="sub-amounts">
-            <span><span style="color: var(--color-success);">&#10003;</span> ${formatCurrency(totals.paid, cur)}</span>
-            <span><span style="color: var(--color-error);">&#10007;</span> ${formatCurrency(totals.unpaid, cur)}</span>
-            <span style="color: var(--color-text-muted);">&#8594; ${formatCurrency(totals.balance, cur)}</span>
+            <span style="color: var(--color-success);">${tr.invoicesPage.paid}: ${formatCurrency(totals.paid, cur)}</span>
+            <span style="color: var(--color-error);">${tr.invoicesPage.unpaid}: ${formatCurrency(totals.unpaid, cur)}</span>
+            <span style="color: var(--color-text-muted);">${tr.accountsPage.balance}: ${formatCurrency(totals.balance, cur)}</span>
           </div>
         </div>
       `).join('')}
@@ -2547,15 +2544,13 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
               <div style="font-size: 0.65rem; color: var(--color-text-muted);">${tr.invoicesPage.days}</div>
             </div>
             <div style="flex: 1;">
-              <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 1rem;">&#10003;</span>
+              <div style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
                 <span style="font-size: 0.85rem;">${tr.invoicesPage.onTime}</span>
-                <span style="font-weight: 600; color: var(--color-success); margin-left: auto;">${onTimeCount}</span>
+                <span style="font-weight: 600; color: var(--color-success);">${onTimeCount}</span>
               </div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 1rem;">&#10007;</span>
+              <div style="display: flex; align-items: center; justify-content: space-between;">
                 <span style="font-size: 0.85rem;">${tr.invoicesPage.overdue}</span>
-                <span style="font-weight: 600; color: var(--color-error); margin-left: auto;">${overdueCount}</span>
+                <span style="font-weight: 600; color: var(--color-error);">${overdueCount}</span>
               </div>
             </div>
           </div>
