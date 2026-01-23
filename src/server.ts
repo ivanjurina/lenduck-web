@@ -1976,6 +1976,26 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
     return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
   };
 
+  // Format date based on locale (dd.mm.yyyy for CS/SK, mm/dd/yyyy for EN)
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return '-';
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return dateStr;
+      if (lang === 'en') {
+        return date.toLocaleDateString('en-US');
+      } else {
+        // Czech/Slovak format: dd.mm.yyyy
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}.${month}.${year}`;
+      }
+    } catch {
+      return dateStr;
+    }
+  };
+
   // Calculate totals for filtered invoices
   const filteredTotalAmount = filteredInvoices.reduce((sum: number, i: any) => sum + (i.total_amount || 0), 0);
   const filteredTotalBalance = filteredInvoices.reduce((sum: number, i: any) => sum + (i.balance_due || 0), 0);
@@ -2007,49 +2027,129 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
   };
 
   const content = `
+    <style>
+      .filter-panel {
+        background: var(--color-sage-pale);
+        border: 1px solid var(--color-sage-light);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+      .filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--color-sage-light);
+      }
+      .filter-header h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--color-text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 16px;
+        align-items: end;
+      }
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .filter-group label {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .filter-group input,
+      .filter-group select {
+        padding: 10px 12px;
+        border: 1px solid var(--color-sage);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        background: white;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      .filter-group input:focus,
+      .filter-group select:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(139, 168, 138, 0.2);
+      }
+      .filter-actions {
+        display: flex;
+        gap: 8px;
+        align-items: end;
+      }
+      .filter-actions .btn {
+        height: 42px;
+        white-space: nowrap;
+      }
+      @media (max-width: 768px) {
+        .filter-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .filter-actions {
+          grid-column: 1 / -1;
+          justify-content: flex-start;
+        }
+      }
+    </style>
+
     <div class="page-header">
       <h1>${tr.invoicesPage.title}</h1>
       <p>${tr.invoicesPage.subtitle}</p>
     </div>
 
     <!-- Filter Panel -->
-    <div class="card" style="margin-bottom: 24px;">
-      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="margin: 0; font-size: 1rem;">${tr.invoicesPage.filters}</h3>
+    <div class="filter-panel">
+      <div class="filter-header">
+        <h3>&#128269; ${tr.invoicesPage.filters}</h3>
         ${hasFilters ? `<a href="/company/${companyId}/data/invoices" class="btn btn-secondary btn-sm">${tr.invoicesPage.clearFilters}</a>` : ''}
       </div>
-      <form method="GET" action="/company/${companyId}/data/invoices" style="padding: 20px;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 16px;">
-          <div class="form-group" style="margin: 0;">
-            <label for="dateFrom" style="font-size: 0.85rem; margin-bottom: 4px;">${tr.invoicesPage.dateFrom}</label>
-            <input type="date" id="dateFrom" name="dateFrom" value="${dateFrom}" class="form-control">
+      <form method="GET" action="/company/${companyId}/data/invoices">
+        <div class="filter-grid">
+          <div class="filter-group">
+            <label for="dateFrom">${tr.invoicesPage.dateFrom}</label>
+            <input type="date" id="dateFrom" name="dateFrom" value="${dateFrom}">
           </div>
-          <div class="form-group" style="margin: 0;">
-            <label for="dateTo" style="font-size: 0.85rem; margin-bottom: 4px;">${tr.invoicesPage.dateTo}</label>
-            <input type="date" id="dateTo" name="dateTo" value="${dateTo}" class="form-control">
+          <div class="filter-group">
+            <label for="dateTo">${tr.invoicesPage.dateTo}</label>
+            <input type="date" id="dateTo" name="dateTo" value="${dateTo}">
           </div>
-          <div class="form-group" style="margin: 0;">
-            <label for="type" style="font-size: 0.85rem; margin-bottom: 4px;">${tr.invoicesPage.type}</label>
-            <select id="type" name="type" class="form-control">
+          <div class="filter-group">
+            <label for="type">${tr.invoicesPage.type}</label>
+            <select id="type" name="type">
               <option value="all" ${typeFilter === 'all' ? 'selected' : ''}>${tr.invoicesPage.all}</option>
               <option value="issued" ${typeFilter === 'issued' ? 'selected' : ''}>${tr.invoicesPage.issued}</option>
               <option value="received" ${typeFilter === 'received' ? 'selected' : ''}>${tr.invoicesPage.received}</option>
             </select>
           </div>
-          <div class="form-group" style="margin: 0;">
-            <label for="status" style="font-size: 0.85rem; margin-bottom: 4px;">${tr.invoicesPage.status}</label>
-            <select id="status" name="status" class="form-control">
+          <div class="filter-group">
+            <label for="status">${tr.invoicesPage.status}</label>
+            <select id="status" name="status">
               <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>${tr.invoicesPage.all}</option>
               <option value="paid" ${statusFilter === 'paid' ? 'selected' : ''}>${tr.invoicesPage.paid}</option>
               <option value="unpaid" ${statusFilter === 'unpaid' ? 'selected' : ''}>${tr.invoicesPage.unpaid}</option>
             </select>
           </div>
-          <div class="form-group" style="margin: 0;">
-            <label for="customer" style="font-size: 0.85rem; margin-bottom: 4px;">${tr.invoicesPage.searchCustomer}</label>
-            <input type="text" id="customer" name="customer" value="${customerSearch}" placeholder="${tr.invoicesPage.searchCustomer}" class="form-control">
+          <div class="filter-group">
+            <label for="customer">${tr.invoicesPage.searchCustomer}</label>
+            <input type="text" id="customer" name="customer" value="${customerSearch}" placeholder="...">
+          </div>
+          <div class="filter-actions">
+            <button type="submit" class="btn btn-primary">${tr.invoicesPage.applyFilters}</button>
           </div>
         </div>
-        <button type="submit" class="btn btn-primary">${tr.invoicesPage.applyFilters}</button>
       </form>
     </div>
 
@@ -2126,8 +2226,8 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
               <tr>
                 <td><strong>${inv.invoice_number || '-'}</strong></td>
                 <td><span class="badge ${inv.invoice_type === 'issued' ? 'badge-info' : 'badge-warning'}">${inv.invoice_type === 'issued' ? tr.invoicesPage.issued : tr.invoicesPage.received}</span></td>
-                <td>${inv.issue_date || '-'}</td>
-                <td>${inv.due_date || '-'}</td>
+                <td>${formatDate(inv.issue_date)}</td>
+                <td>${formatDate(inv.due_date)}</td>
                 <td>${inv.customer_name || '-'}</td>
                 <td style="text-align:right">${formatCurrency(inv.total_amount)}</td>
                 <td style="text-align:right">${formatCurrency(inv.balance_due)}</td>
