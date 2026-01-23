@@ -1926,23 +1926,85 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
   }
 
   const invoices = db.getInvoicesByCompany(companyId);
-  const typeFilter = req.query.type as string || 'all';
   const tr = t(req);
   const lang = getLang(req);
 
-  const filteredInvoices = typeFilter === 'all'
-    ? invoices
-    : invoices.filter((i: any) => i.invoice_type === typeFilter);
+  // Get filter parameters
+  const typeFilter = req.query.type as string || 'all';
+  const statusFilter = req.query.status as string || 'all';
+  const dateFrom = req.query.dateFrom as string || '';
+  const dateTo = req.query.dateTo as string || '';
+  const customerSearch = req.query.customer as string || '';
+
+  // Check if any filters are active
+  const hasFilters = typeFilter !== 'all' || statusFilter !== 'all' || dateFrom || dateTo || customerSearch;
+
+  // Apply filters
+  let filteredInvoices = invoices;
+
+  // Type filter
+  if (typeFilter !== 'all') {
+    filteredInvoices = filteredInvoices.filter((i: any) => i.invoice_type === typeFilter);
+  }
+
+  // Status filter
+  if (statusFilter !== 'all') {
+    filteredInvoices = filteredInvoices.filter((i: any) => i.status === statusFilter);
+  }
+
+  // Date from filter (issue date)
+  if (dateFrom) {
+    filteredInvoices = filteredInvoices.filter((i: any) => i.issue_date && i.issue_date >= dateFrom);
+  }
+
+  // Date to filter (issue date)
+  if (dateTo) {
+    filteredInvoices = filteredInvoices.filter((i: any) => i.issue_date && i.issue_date <= dateTo);
+  }
+
+  // Customer/vendor search
+  if (customerSearch) {
+    const search = customerSearch.toLowerCase();
+    filteredInvoices = filteredInvoices.filter((i: any) =>
+      (i.customer_name && i.customer_name.toLowerCase().includes(search)) ||
+      (i.invoice_number && i.invoice_number.toLowerCase().includes(search))
+    );
+  }
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return 'N/A';
     return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
   };
 
-  const issuedCount = invoices.filter((i: any) => i.invoice_type === 'issued').length;
-  const receivedCount = invoices.filter((i: any) => i.invoice_type === 'received').length;
-  const paidCount = invoices.filter((i: any) => i.status === 'paid').length;
-  const unpaidCount = invoices.filter((i: any) => i.status === 'unpaid').length;
+  // Calculate totals for filtered invoices
+  const filteredTotalAmount = filteredInvoices.reduce((sum: number, i: any) => sum + (i.total_amount || 0), 0);
+  const filteredTotalBalance = filteredInvoices.reduce((sum: number, i: any) => sum + (i.balance_due || 0), 0);
+  const filteredPaidAmount = filteredInvoices.filter((i: any) => i.status === 'paid').reduce((sum: number, i: any) => sum + (i.total_amount || 0), 0);
+  const filteredUnpaidAmount = filteredInvoices.filter((i: any) => i.status !== 'paid').reduce((sum: number, i: any) => sum + (i.total_amount || 0), 0);
+
+  // Counts for stats
+  const filteredIssuedCount = filteredInvoices.filter((i: any) => i.invoice_type === 'issued').length;
+  const filteredReceivedCount = filteredInvoices.filter((i: any) => i.invoice_type === 'received').length;
+  const filteredPaidCount = filteredInvoices.filter((i: any) => i.status === 'paid').length;
+  const filteredUnpaidCount = filteredInvoices.filter((i: any) => i.status !== 'paid').length;
+
+  // Build query string for preserving filters in tabs
+  const buildQueryString = (overrides: Record<string, string> = {}) => {
+    const params = new URLSearchParams();
+    const values: Record<string, string> = {
+      type: typeFilter,
+      status: statusFilter,
+      dateFrom,
+      dateTo,
+      customer: customerSearch,
+      ...overrides
+    };
+    Object.entries(values).forEach(([key, value]) => {
+      if (value && value !== 'all') params.set(key, value);
+    });
+    const qs = params.toString();
+    return qs ? `?${qs}` : '';
+  };
 
   const content = `
     <div class="page-header">
@@ -1950,6 +2012,72 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
       <p>${tr.invoicesPage.subtitle}</p>
     </div>
 
+    <!-- Filter Panel -->
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-size: 1rem;">${tr.invoicesPage.filters}</h3>
+        ${hasFilters ? `<a href="/company/${companyId}/data/invoices" class="btn btn-secondary btn-sm">${tr.invoicesPage.clearFilters}</a>` : ''}
+      </div>
+      <form method="GET" action="/company/${companyId}/data/invoices" style="padding: 20px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 16px;">
+          <div class="form-group" style="margin: 0;">
+            <label for="dateFrom" style="font-size: 0.85rem; margin-bottom: 4px;">${tr.invoicesPage.dateFrom}</label>
+            <input type="date" id="dateFrom" name="dateFrom" value="${dateFrom}" class="form-control">
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label for="dateTo" style="font-size: 0.85rem; margin-bottom: 4px;">${tr.invoicesPage.dateTo}</label>
+            <input type="date" id="dateTo" name="dateTo" value="${dateTo}" class="form-control">
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label for="type" style="font-size: 0.85rem; margin-bottom: 4px;">${tr.invoicesPage.type}</label>
+            <select id="type" name="type" class="form-control">
+              <option value="all" ${typeFilter === 'all' ? 'selected' : ''}>${tr.invoicesPage.all}</option>
+              <option value="issued" ${typeFilter === 'issued' ? 'selected' : ''}>${tr.invoicesPage.issued}</option>
+              <option value="received" ${typeFilter === 'received' ? 'selected' : ''}>${tr.invoicesPage.received}</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label for="status" style="font-size: 0.85rem; margin-bottom: 4px;">${tr.invoicesPage.status}</label>
+            <select id="status" name="status" class="form-control">
+              <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>${tr.invoicesPage.all}</option>
+              <option value="paid" ${statusFilter === 'paid' ? 'selected' : ''}>${tr.invoicesPage.paid}</option>
+              <option value="unpaid" ${statusFilter === 'unpaid' ? 'selected' : ''}>${tr.invoicesPage.unpaid}</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label for="customer" style="font-size: 0.85rem; margin-bottom: 4px;">${tr.invoicesPage.searchCustomer}</label>
+            <input type="text" id="customer" name="customer" value="${customerSearch}" placeholder="${tr.invoicesPage.searchCustomer}" class="form-control">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">${tr.invoicesPage.applyFilters}</button>
+      </form>
+    </div>
+
+    <!-- Filtered Results Summary -->
+    ${hasFilters ? `
+    <div class="stats-grid" style="margin-bottom: 24px;">
+      <div class="stat-card" style="background: linear-gradient(135deg, var(--color-sage-light), var(--color-sage-pale));">
+        <div class="stat-label">${tr.invoicesPage.filteredResults}</div>
+        <div class="stat-value">${filteredInvoices.length} <span style="font-size: 0.5em; font-weight: normal;">/ ${invoices.length}</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${tr.invoicesPage.totalAmount}</div>
+        <div class="stat-value" style="font-size: 1.3rem;">${formatCurrency(filteredTotalAmount)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${tr.invoicesPage.totalBalance}</div>
+        <div class="stat-value" style="font-size: 1.3rem; color: var(--color-warning);">${formatCurrency(filteredTotalBalance)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${tr.invoicesPage.paid} / ${tr.invoicesPage.unpaid}</div>
+        <div class="stat-value" style="font-size: 1.1rem;">
+          <span style="color: var(--color-success)">${formatCurrency(filteredPaidAmount)}</span>
+          <span style="font-size: 0.7em; color: var(--color-text-muted);"> / </span>
+          <span style="color: var(--color-error)">${formatCurrency(filteredUnpaidAmount)}</span>
+        </div>
+      </div>
+    </div>
+    ` : `
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">${tr.invoicesPage.totalInvoices}</div>
@@ -1957,25 +2085,27 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
       </div>
       <div class="stat-card">
         <div class="stat-label">${tr.invoicesPage.issued}</div>
-        <div class="stat-value">${issuedCount}</div>
+        <div class="stat-value">${filteredIssuedCount}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">${tr.invoicesPage.received}</div>
-        <div class="stat-value">${receivedCount}</div>
+        <div class="stat-value">${filteredReceivedCount}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">${tr.invoicesPage.unpaid}</div>
-        <div class="stat-value" style="color: var(--color-warning)">${unpaidCount}</div>
+        <div class="stat-value" style="color: var(--color-warning)">${filteredUnpaidCount}</div>
       </div>
     </div>
+    `}
 
     <div class="card">
-      <div class="card-header">
+      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <div class="tabs" style="border: none; margin: 0;">
-          <a href="/company/${companyId}/data/invoices" class="tab ${typeFilter === 'all' ? 'active' : ''}">${tr.invoicesPage.all}</a>
-          <a href="/company/${companyId}/data/invoices?type=issued" class="tab ${typeFilter === 'issued' ? 'active' : ''}">${tr.invoicesPage.issued}</a>
-          <a href="/company/${companyId}/data/invoices?type=received" class="tab ${typeFilter === 'received' ? 'active' : ''}">${tr.invoicesPage.received}</a>
+          <a href="/company/${companyId}/data/invoices${buildQueryString({ type: 'all' })}" class="tab ${typeFilter === 'all' ? 'active' : ''}">${tr.invoicesPage.all} (${invoices.length})</a>
+          <a href="/company/${companyId}/data/invoices${buildQueryString({ type: 'issued' })}" class="tab ${typeFilter === 'issued' ? 'active' : ''}">${tr.invoicesPage.issued} (${invoices.filter((i: any) => i.invoice_type === 'issued').length})</a>
+          <a href="/company/${companyId}/data/invoices${buildQueryString({ type: 'received' })}" class="tab ${typeFilter === 'received' ? 'active' : ''}">${tr.invoicesPage.received} (${invoices.filter((i: any) => i.invoice_type === 'received').length})</a>
         </div>
+        ${hasFilters ? `<span style="font-size: 0.85rem; color: var(--color-text-muted);">${tr.invoicesPage.showingOf.replace('%count%', String(filteredInvoices.length)).replace('%total%', String(invoices.length))}</span>` : ''}
       </div>
       <div class="table-wrapper">
         <table>
@@ -2005,6 +2135,16 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
               </tr>
             `).join('') : `<tr><td colspan="8" class="empty-state">${tr.invoicesPage.noInvoices}</td></tr>`}
           </tbody>
+          ${filteredInvoices.length > 0 ? `
+          <tfoot style="background: var(--color-sage-pale); font-weight: 600;">
+            <tr>
+              <td colspan="5" style="text-align: right;">${tr.invoicesPage.totalAmount}:</td>
+              <td style="text-align: right;">${formatCurrency(filteredTotalAmount)}</td>
+              <td style="text-align: right;">${formatCurrency(filteredTotalBalance)}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+          ` : ''}
         </table>
       </div>
     </div>

@@ -74,6 +74,19 @@ export interface Translations {
     amount: string;
     status: string;
     noInvoices: string;
+    // Filter translations
+    filters: string;
+    dateFrom: string;
+    dateTo: string;
+    searchCustomer: string;
+    clearFilters: string;
+    applyFilters: string;
+    filteredResults: string;
+    showingOf: string;
+    totalAmount: string;
+    totalBalance: string;
+    totalPaid: string;
+    totalUnpaid: string;
   };
   // Accounts page
   accountsPage: {
@@ -279,6 +292,18 @@ export const translations: Record<Language, Translations> = {
       amount: 'Amount',
       status: 'Status',
       noInvoices: 'No invoices found',
+      filters: 'Filters',
+      dateFrom: 'Date from',
+      dateTo: 'Date to',
+      searchCustomer: 'Search customer/vendor',
+      clearFilters: 'Clear filters',
+      applyFilters: 'Apply filters',
+      filteredResults: 'Filtered results',
+      showingOf: 'Showing %count% of %total% invoices',
+      totalAmount: 'Total amount',
+      totalBalance: 'Total balance due',
+      totalPaid: 'Total paid',
+      totalUnpaid: 'Total unpaid',
     },
     accountsPage: {
       title: 'Chart of Accounts',
@@ -474,6 +499,18 @@ export const translations: Record<Language, Translations> = {
       amount: 'Částka',
       status: 'Stav',
       noInvoices: 'Žádné faktury nenalezeny',
+      filters: 'Filtry',
+      dateFrom: 'Datum od',
+      dateTo: 'Datum do',
+      searchCustomer: 'Hledat zákazníka/dodavatele',
+      clearFilters: 'Vymazat filtry',
+      applyFilters: 'Použít filtry',
+      filteredResults: 'Filtrované výsledky',
+      showingOf: 'Zobrazeno %count% z %total% faktur',
+      totalAmount: 'Celková částka',
+      totalBalance: 'Celkový zůstatek k úhradě',
+      totalPaid: 'Celkem zaplaceno',
+      totalUnpaid: 'Celkem nezaplaceno',
     },
     accountsPage: {
       title: 'Účtová osnova',
@@ -669,6 +706,18 @@ export const translations: Record<Language, Translations> = {
       amount: 'Suma',
       status: 'Stav',
       noInvoices: 'Žiadne faktúry nenájdené',
+      filters: 'Filtre',
+      dateFrom: 'Dátum od',
+      dateTo: 'Dátum do',
+      searchCustomer: 'Hľadať zákazníka/dodávateľa',
+      clearFilters: 'Vymazať filtre',
+      applyFilters: 'Použiť filtre',
+      filteredResults: 'Filtrované výsledky',
+      showingOf: 'Zobrazených %count% z %total% faktúr',
+      totalAmount: 'Celková suma',
+      totalBalance: 'Celkový zostatok na úhradu',
+      totalPaid: 'Celkom zaplatené',
+      totalUnpaid: 'Celkom nezaplatené',
     },
     accountsPage: {
       title: 'Účtová osnova',
