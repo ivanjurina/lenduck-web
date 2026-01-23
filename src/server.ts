@@ -2018,7 +2018,12 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
   const formatCurrency = (amount: number | null, currency?: string) => {
     if (amount === null || amount === undefined) return 'N/A';
     const cur = currency || company.currency || 'CZK';
-    return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: cur, maximumFractionDigits: 0 }).format(amount);
+    // Format number without currency symbol, then append currency code
+    const formattedNumber = new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+    return `${formattedNumber} ${cur}`;
   };
 
   // Format date based on locale (dd.mm.yyyy for CS/SK, mm/dd/yyyy for EN)
@@ -2712,7 +2717,7 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
               beginAtZero: true,
               ticks: {
                 callback: function(value) {
-                  return new Intl.NumberFormat('${lang === 'en' ? 'en-US' : 'cs-CZ'}', { style: 'currency', currency: '${company.currency || 'CZK'}', maximumFractionDigits: 0 }).format(value);
+                  return new Intl.NumberFormat('${lang === 'en' ? 'en-US' : 'cs-CZ'}', { maximumFractionDigits: 0 }).format(value) + ' ${company.currency || 'CZK'}';
                 }
               }
             }
