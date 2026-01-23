@@ -2067,7 +2067,8 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
   let nativePaidSum = 0;
   let nativeUnpaidSum = 0;
   enrichedInvoices.forEach((inv: any) => {
-    const nativeTotal = inv.extra?.native_total || inv.total_amount || 0;
+    const rawNative = inv.extra?.native_total;
+    const nativeTotal = typeof rawNative === 'number' && !isNaN(rawNative) ? rawNative : (parseFloat(inv.total_amount) || 0);
     nativeTotalSum += nativeTotal;
     if (inv.status === 'paid') {
       nativePaidSum += nativeTotal;
@@ -2090,22 +2091,26 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
   const filteredUnpaidCount = filteredInvoices.filter((i: any) => i.status !== 'paid').length;
 
   // Analytics data calculations
-  // Top customers (by total amount for issued invoices)
+  // Top customers (by total amount in CZK for issued invoices)
   const customerTotals: Record<string, { name: string; total: number; count: number }> = {};
-  filteredInvoices.filter((i: any) => i.invoice_type === 'issued').forEach((inv: any) => {
+  enrichedInvoices.filter((i: any) => i.invoice_type === 'issued').forEach((inv: any) => {
     const name = inv.customer_name || 'Unknown';
     if (!customerTotals[name]) customerTotals[name] = { name, total: 0, count: 0 };
-    customerTotals[name].total += inv.total_amount || 0;
+    const rawNative = inv.extra?.native_total;
+    const nativeTotal = typeof rawNative === 'number' && !isNaN(rawNative) ? rawNative : (parseFloat(inv.total_amount) || 0);
+    customerTotals[name].total += nativeTotal;
     customerTotals[name].count++;
   });
   const topCustomers = Object.values(customerTotals).sort((a, b) => b.total - a.total).slice(0, 5);
 
-  // Top suppliers (by total amount for received invoices)
+  // Top suppliers (by total amount in CZK for received invoices)
   const supplierTotals: Record<string, { name: string; total: number; count: number }> = {};
-  filteredInvoices.filter((i: any) => i.invoice_type === 'received').forEach((inv: any) => {
+  enrichedInvoices.filter((i: any) => i.invoice_type === 'received').forEach((inv: any) => {
     const name = inv.customer_name || 'Unknown';
     if (!supplierTotals[name]) supplierTotals[name] = { name, total: 0, count: 0 };
-    supplierTotals[name].total += inv.total_amount || 0;
+    const rawNative = inv.extra?.native_total;
+    const nativeTotal = typeof rawNative === 'number' && !isNaN(rawNative) ? rawNative : (parseFloat(inv.total_amount) || 0);
+    supplierTotals[name].total += nativeTotal;
     supplierTotals[name].count++;
   });
   const topSuppliers = Object.values(supplierTotals).sort((a, b) => b.total - a.total).slice(0, 5);
