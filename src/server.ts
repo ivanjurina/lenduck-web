@@ -5,6 +5,7 @@ import path from 'path';
 import * as db from './database';
 import * as quickbooks from './services/quickbooks';
 import * as profit365 from './services/profit365';
+import * as fakturoid from './services/fakturoid';
 import { Language, Translations, translations, getTranslations, detectLanguage } from './translations';
 
 // Extend session type
@@ -1230,12 +1231,13 @@ app.get('/company/:id/connect', requireAuth, (req: Request, res: Response) => {
   const success = req.query.success as string;
 
   const softwareOptions = [
+    { value: 'fakturoid', name: 'Fakturoid', description: 'Czech invoicing & accounting, OAuth2 API', available: true },
     { value: 'quickbooks', name: 'QuickBooks Online', description: 'Popular in US/UK, REST API with OAuth2', available: true },
-    { value: 'xero', name: 'Xero', description: 'Cloud accounting, REST API', available: false },
+    { value: 'profit365', name: 'Profit365', description: 'Slovak/Czech accounting, REST API', available: true },
+    { value: 'idoklad', name: 'iDoklad', description: 'Czech invoicing system, REST API', available: false },
     { value: 'flexibee', name: 'ABRA FlexiBee', description: 'Popular in Czech Republic, REST API', available: false },
     { value: 'pohoda', name: 'Pohoda', description: 'Most popular in Czech Republic, XML API', available: false },
-    { value: 'idoklad', name: 'iDoklad', description: 'Czech invoicing system, REST API', available: false },
-    { value: 'profit365', name: 'Profit365', description: 'Slovak/Czech accounting, REST API', available: true },
+    { value: 'xero', name: 'Xero', description: 'Cloud accounting, REST API', available: false },
     { value: 'other', name: 'Other', description: 'Tell us what you use', available: true },
   ];
 
@@ -1315,6 +1317,11 @@ app.post('/company/:id/connect', requireAuth, (req: Request, res: Response) => {
   if (software_type === 'quickbooks') {
     const authUrl = quickbooks.getAuthorizationUrl(companyId);
     return res.redirect(authUrl);
+  }
+
+  // Fakturoid uses OAuth2 Client Credentials, redirect to credentials form
+  if (software_type === 'fakturoid') {
+    return res.redirect(`/company/${companyId}/connect/fakturoid`);
   }
 
   // Profit365 uses API key authentication, redirect to credentials form
@@ -1480,6 +1487,107 @@ app.post('/company/:id/connect/profit365', requireAuth, async (req: Request, res
   }
 });
 
+// Fakturoid credentials form
+app.get('/company/:id/connect/fakturoid', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const error = req.query.error as string;
+
+  const content = `
+    <div class="auth-container">
+      <div class="auth-card" style="max-width: 540px;">
+        <div class="auth-header">
+          <h1>Connect Fakturoid</h1>
+          <p>Enter your Fakturoid OAuth credentials</p>
+        </div>
+        ${error ? `<div class="flash flash-error">${error}</div>` : ''}
+        <div class="info-box" style="background: var(--color-sage-pale); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+          <p style="margin: 0; font-size: 0.9rem; color: var(--color-text);">
+            <strong>How to get your API credentials:</strong><br>
+            1. In Fakturoid, go to <strong>Settings &gt; Connect other apps &gt; OAuth 2 for app developers</strong><br>
+            2. Create a new integration to get your Client ID and Client Secret<br>
+            3. Your Account Slug is the part after <code>app.fakturoid.cz/</code> in your Fakturoid URL
+          </p>
+        </div>
+        <form method="POST" action="/company/${companyId}/connect/fakturoid">
+          <div class="form-group">
+            <label for="client_id">Client ID *</label>
+            <input type="text" id="client_id" name="client_id" required placeholder="Your Fakturoid Client ID">
+          </div>
+          <div class="form-group">
+            <label for="client_secret">Client Secret *</label>
+            <input type="password" id="client_secret" name="client_secret" required placeholder="Your Fakturoid Client Secret">
+          </div>
+          <div class="form-group">
+            <label for="account_slug">Account Slug *</label>
+            <input type="text" id="account_slug" name="account_slug" required placeholder="e.g., vasefirma">
+            <small style="color: var(--color-text-muted);">The URL identifier of your account (app.fakturoid.cz/<strong>vasefirma</strong>)</small>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Connect</button>
+        </form>
+        <div class="auth-footer">
+          <a href="/company/${companyId}/connect">Back to Software Selection</a>
+        </div>
+      </div>
+    </div>
+  `;
+
+  res.send(renderPage('Connect Fakturoid', content, req));
+});
+
+app.post('/company/:id/connect/fakturoid', requireAuth, async (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+  const { client_id, client_secret, account_slug } = req.body;
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  if (!client_id || !client_secret || !account_slug) {
+    return res.redirect(`/company/${companyId}/connect/fakturoid?error=` + encodeURIComponent('All fields are required.'));
+  }
+
+  try {
+    // Check if connection already exists
+    const existingConnection = db.getAccountingConnection(companyId);
+    if (!existingConnection) {
+      db.createAccountingConnection({
+        company_id: companyId,
+        software_type: 'fakturoid',
+        status: 'pending',
+      });
+    } else {
+      // Update existing connection type
+      db.updateAccountingConnection(companyId, { status: 'pending' });
+    }
+
+    // Save credentials
+    fakturoid.saveCredentials(companyId, client_id, client_secret, account_slug);
+
+    // Test the connection
+    const isValid = await fakturoid.testConnection(companyId);
+
+    if (!isValid) {
+      return res.redirect(`/company/${companyId}/connect/fakturoid?error=` + encodeURIComponent('Could not connect to Fakturoid. Please check your credentials.'));
+    }
+
+    // Update connection status
+    db.updateAccountingConnection(companyId, { status: 'connected' });
+
+    // Trigger initial sync
+    res.redirect(`/company/${companyId}/sync?initial=true`);
+  } catch (e: any) {
+    console.error('Fakturoid connection error:', e);
+    res.redirect(`/company/${companyId}/connect/fakturoid?error=` + encodeURIComponent('Failed to connect: ' + e.message));
+  }
+});
+
 // QuickBooks OAuth callback
 app.get('/api/quickbooks/callback', async (req: Request, res: Response) => {
   const { code, state, realmId, error } = req.query;
@@ -1535,20 +1643,31 @@ app.get('/company/:id/sync', requireAuth, async (req: Request, res: Response) =>
   }
 
   try {
-    let result: { accounts: number; invoices: number; metrics: any };
+    let totalRecords = 0;
+    let message = '';
 
     // Call the appropriate sync function based on software type
-    if (connection.software_type === 'profit365') {
-      result = await profit365.fullSync(companyId);
+    if (connection.software_type === 'fakturoid') {
+      const result = await fakturoid.fullSync(companyId);
+      totalRecords = result.invoices + result.expenses + result.subjects + result.bankAccounts + result.inventory;
+      message = isInitial
+        ? `Successfully connected! Synced ${result.invoices} invoices, ${result.expenses} expenses, ${result.subjects} contacts, ${result.bankAccounts} bank accounts, and ${result.inventory} inventory items.`
+        : `Sync complete! Updated ${totalRecords} records from Fakturoid.`;
+    } else if (connection.software_type === 'profit365') {
+      const result = await profit365.fullSync(companyId);
+      totalRecords = result.accounts + result.invoices;
+      message = isInitial
+        ? `Successfully connected! Synced ${result.accounts} accounts and ${result.invoices} invoices.`
+        : `Sync complete! Updated ${result.accounts} accounts and ${result.invoices} invoices.`;
     } else if (connection.software_type === 'quickbooks') {
-      result = await quickbooks.fullSync(companyId);
+      const result = await quickbooks.fullSync(companyId);
+      totalRecords = result.accounts + result.invoices;
+      message = isInitial
+        ? `Successfully connected! Synced ${result.accounts} accounts and ${result.invoices} invoices.`
+        : `Sync complete! Updated ${result.accounts} accounts and ${result.invoices} invoices.`;
     } else {
       throw new Error(`Sync not supported for ${connection.software_type}`);
     }
-
-    const message = isInitial
-      ? `Successfully connected! Synced ${result.accounts} accounts and ${result.invoices} invoices.`
-      : `Sync complete! Updated ${result.accounts} accounts and ${result.invoices} invoices.`;
 
     res.redirect(`/company/${companyId}/overview?success=` + encodeURIComponent(message));
   } catch (e: any) {

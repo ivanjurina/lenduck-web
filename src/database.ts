@@ -385,7 +385,7 @@ export function getCompanyWithConnection(companyId: number) {
 }
 
 // Accounting Connection functions
-export type SoftwareType = 'quickbooks' | 'xero' | 'flexibee' | 'pohoda' | 'idoklad' | 'profit365' | 'other';
+export type SoftwareType = 'quickbooks' | 'xero' | 'flexibee' | 'pohoda' | 'idoklad' | 'profit365' | 'fakturoid' | 'other';
 
 export function createAccountingConnection(data: {
   company_id: number;
