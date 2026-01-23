@@ -18,19 +18,25 @@
 
 import * as db from '../database';
 
-// Fakturoid API Base URL
+// Fakturoid OAuth URLs
 const FAKTUROID_API_BASE = 'https://app.fakturoid.cz/api/v3';
-const FAKTUROID_OAUTH_URL = `${FAKTUROID_API_BASE}/oauth/token`;
+const FAKTUROID_AUTH_URL = 'https://app.fakturoid.cz/api/v3/oauth';
+const FAKTUROID_TOKEN_URL = `${FAKTUROID_AUTH_URL}/token`;
+
+// OAuth app credentials (from environment or config)
+const FAKTUROID_CLIENT_ID = process.env.FAKTUROID_CLIENT_ID || '';
+const FAKTUROID_CLIENT_SECRET = process.env.FAKTUROID_CLIENT_SECRET || '';
+const FAKTUROID_REDIRECT_URI = process.env.FAKTUROID_REDIRECT_URI || 'https://lenduck.com/api/fakturoid/callback';
 
 /**
- * Credentials interface for Fakturoid API (OAuth 2.0)
+ * Credentials interface for Fakturoid API (OAuth 2.0 Authorization Code flow)
+ * Each user authorizes access to their own Fakturoid account
  */
 interface FakturoidCredentials {
-  clientId: string;
-  clientSecret: string;
   accountSlug: string; // The account "slug" (URL identifier)
-  accessToken?: string;
-  tokenExpiresAt?: number;
+  accessToken: string;
+  refreshToken: string;
+  tokenExpiresAt: number;
 }
 
 /**
@@ -247,6 +253,120 @@ interface FakturoidAccount {
 }
 
 /**
+ * Get OAuth app credentials
+ */
+export function getOAuthConfig() {
+  if (!FAKTUROID_CLIENT_ID || !FAKTUROID_CLIENT_SECRET) {
+    throw new Error('Fakturoid OAuth credentials not configured. Set FAKTUROID_CLIENT_ID and FAKTUROID_CLIENT_SECRET environment variables.');
+  }
+  return {
+    clientId: FAKTUROID_CLIENT_ID,
+    clientSecret: FAKTUROID_CLIENT_SECRET,
+    redirectUri: FAKTUROID_REDIRECT_URI,
+  };
+}
+
+/**
+ * Generate OAuth authorization URL for user to authorize Fakturoid access
+ * @param state - State parameter to prevent CSRF (should include companyId)
+ */
+export function getAuthorizationUrl(state: string): string {
+  const config = getOAuthConfig();
+  const params = new URLSearchParams({
+    client_id: config.clientId,
+    redirect_uri: config.redirectUri,
+    response_type: 'code',
+    state: state,
+  });
+  return `${FAKTUROID_AUTH_URL}?${params.toString()}`;
+}
+
+/**
+ * Exchange authorization code for access and refresh tokens
+ */
+export async function exchangeCodeForTokens(code: string): Promise<{
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}> {
+  const config = getOAuthConfig();
+  const basicAuth = Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
+
+  const response = await fetch(FAKTUROID_TOKEN_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${basicAuth}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: config.redirectUri,
+    }).toString(),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Fakturoid OAuth token exchange failed: ${response.status} - ${error}`);
+  }
+
+  const data = await response.json() as {
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+    token_type: string;
+  };
+
+  return {
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token,
+    expiresIn: data.expires_in || 7200,
+  };
+}
+
+/**
+ * Refresh access token using refresh token
+ */
+async function refreshAccessToken(refreshToken: string): Promise<{
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}> {
+  const config = getOAuthConfig();
+  const basicAuth = Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
+
+  const response = await fetch(FAKTUROID_TOKEN_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${basicAuth}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+    }).toString(),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Fakturoid token refresh failed: ${response.status} - ${error}`);
+  }
+
+  const data = await response.json() as {
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+    token_type: string;
+  };
+
+  return {
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token,
+    expiresIn: data.expires_in || 7200,
+  };
+}
+
+/**
  * Get stored credentials for a company from database
  */
 export function getCredentials(companyId: number): FakturoidCredentials {
@@ -262,59 +382,69 @@ export function getCredentials(companyId: number): FakturoidCredentials {
 
   const credentials = JSON.parse(connection.api_credentials);
 
-  if (!credentials.clientId || !credentials.clientSecret || !credentials.accountSlug) {
-    throw new Error('Incomplete Fakturoid credentials');
+  if (!credentials.accessToken || !credentials.refreshToken || !credentials.accountSlug) {
+    throw new Error('Incomplete Fakturoid credentials - user needs to authorize');
   }
 
   return {
-    clientId: credentials.clientId,
-    clientSecret: credentials.clientSecret,
     accountSlug: credentials.accountSlug,
     accessToken: credentials.accessToken,
-    tokenExpiresAt: credentials.tokenExpiresAt,
+    refreshToken: credentials.refreshToken,
+    tokenExpiresAt: credentials.tokenExpiresAt || 0,
   };
 }
 
 /**
- * Get OAuth access token using Client Credentials flow
+ * Get valid access token, refreshing if needed
+ * @param companyId - Company ID to update tokens in database if refreshed
  */
-async function getAccessToken(credentials: FakturoidCredentials): Promise<string> {
-  // Check if we have a valid cached token
-  if (credentials.accessToken && credentials.tokenExpiresAt) {
-    const now = Date.now();
-    // Token is valid if it expires more than 5 minutes from now
-    if (credentials.tokenExpiresAt > now + 5 * 60 * 1000) {
-      return credentials.accessToken;
-    }
+async function getAccessToken(credentials: FakturoidCredentials, companyId?: number): Promise<string> {
+  const now = Date.now();
+
+  // Token is valid if it expires more than 5 minutes from now
+  if (credentials.tokenExpiresAt > now + 5 * 60 * 1000) {
+    return credentials.accessToken;
   }
 
-  // Request new token
-  const basicAuth = Buffer.from(`${credentials.clientId}:${credentials.clientSecret}`).toString('base64');
+  // Token expired or expiring soon - refresh it
+  const tokens = await refreshAccessToken(credentials.refreshToken);
 
-  const response = await fetch(FAKTUROID_OAUTH_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Basic ${basicAuth}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: 'grant_type=client_credentials',
+  // Update credentials in memory
+  credentials.accessToken = tokens.accessToken;
+  credentials.refreshToken = tokens.refreshToken;
+  credentials.tokenExpiresAt = Date.now() + tokens.expiresIn * 1000;
+
+  // Update tokens in database if companyId provided
+  if (companyId) {
+    updateStoredTokens(companyId, {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      tokenExpiresAt: credentials.tokenExpiresAt,
+    });
+  }
+
+  return credentials.accessToken;
+}
+
+/**
+ * Update stored tokens in database
+ */
+function updateStoredTokens(companyId: number, tokens: {
+  accessToken: string;
+  refreshToken: string;
+  tokenExpiresAt: number;
+}): void {
+  const connection = db.getAccountingConnection(companyId);
+  if (!connection || !connection.api_credentials) return;
+
+  const credentials = JSON.parse(connection.api_credentials);
+  credentials.accessToken = tokens.accessToken;
+  credentials.refreshToken = tokens.refreshToken;
+  credentials.tokenExpiresAt = tokens.tokenExpiresAt;
+
+  db.updateAccountingConnection(companyId, {
+    api_credentials: JSON.stringify(credentials),
   });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Fakturoid OAuth error: ${response.status} - ${error}`);
-  }
-
-  const data = await response.json() as { access_token: string; expires_in?: number };
-  const accessToken = data.access_token;
-  const expiresIn = data.expires_in || 7200; // Default 2 hours
-  const tokenExpiresAt = Date.now() + expiresIn * 1000;
-
-  // Cache the token (update in memory for this session)
-  credentials.accessToken = accessToken;
-  credentials.tokenExpiresAt = tokenExpiresAt;
-
-  return accessToken;
 }
 
 /**
@@ -324,9 +454,10 @@ async function makeApiRequest(
   credentials: FakturoidCredentials,
   endpoint: string,
   method: string = 'GET',
-  body?: any
+  body?: any,
+  companyId?: number
 ): Promise<any> {
-  const accessToken = await getAccessToken(credentials);
+  const accessToken = await getAccessToken(credentials, companyId);
   const url = `${FAKTUROID_API_BASE}/accounts/${credentials.accountSlug}/${endpoint}`;
 
   const headers: Record<string, string> = {
@@ -364,6 +495,7 @@ async function makeApiRequest(
 async function fetchPaginated<T>(
   credentials: FakturoidCredentials,
   endpoint: string,
+  companyId: number,
   maxPages: number = 50
 ): Promise<T[]> {
   const allItems: T[] = [];
@@ -372,7 +504,7 @@ async function fetchPaginated<T>(
 
   while (hasMore && page <= maxPages) {
     const separator = endpoint.includes('?') ? '&' : '?';
-    const items = await makeApiRequest(credentials, `${endpoint}${separator}page=${page}`);
+    const items = await makeApiRequest(credentials, `${endpoint}${separator}page=${page}`, 'GET', undefined, companyId);
 
     if (!items || items.length === 0) {
       hasMore = false;
@@ -396,7 +528,7 @@ async function fetchPaginated<T>(
 export async function testConnection(companyId: number): Promise<boolean> {
   try {
     const credentials = getCredentials(companyId);
-    await getAccessToken(credentials);
+    await getAccessToken(credentials, companyId);
     return true;
   } catch (error) {
     return false;
@@ -408,8 +540,7 @@ export async function testConnection(companyId: number): Promise<boolean> {
  */
 export async function fetchAccountInfo(companyId: number): Promise<FakturoidAccount> {
   const credentials = getCredentials(companyId);
-  // Account info is at a slightly different endpoint
-  const accessToken = await getAccessToken(credentials);
+  const accessToken = await getAccessToken(credentials, companyId);
   const url = `${FAKTUROID_API_BASE}/accounts/${credentials.accountSlug}.json`;
 
   const response = await fetch(url, {
@@ -431,7 +562,7 @@ export async function fetchAccountInfo(companyId: number): Promise<FakturoidAcco
  */
 export async function fetchInvoices(companyId: number): Promise<FakturoidInvoice[]> {
   const credentials = getCredentials(companyId);
-  return fetchPaginated<FakturoidInvoice>(credentials, 'invoices.json');
+  return fetchPaginated<FakturoidInvoice>(credentials, 'invoices.json', companyId);
 }
 
 /**
@@ -439,7 +570,7 @@ export async function fetchInvoices(companyId: number): Promise<FakturoidInvoice
  */
 export async function fetchExpenses(companyId: number): Promise<FakturoidExpense[]> {
   const credentials = getCredentials(companyId);
-  return fetchPaginated<FakturoidExpense>(credentials, 'expenses.json');
+  return fetchPaginated<FakturoidExpense>(credentials, 'expenses.json', companyId);
 }
 
 /**
@@ -447,7 +578,7 @@ export async function fetchExpenses(companyId: number): Promise<FakturoidExpense
  */
 export async function fetchSubjects(companyId: number): Promise<FakturoidSubject[]> {
   const credentials = getCredentials(companyId);
-  return fetchPaginated<FakturoidSubject>(credentials, 'subjects.json');
+  return fetchPaginated<FakturoidSubject>(credentials, 'subjects.json', companyId);
 }
 
 /**
@@ -455,7 +586,7 @@ export async function fetchSubjects(companyId: number): Promise<FakturoidSubject
  */
 export async function fetchBankAccounts(companyId: number): Promise<FakturoidBankAccount[]> {
   const credentials = getCredentials(companyId);
-  return makeApiRequest(credentials, 'bank_accounts.json') || [];
+  return makeApiRequest(credentials, 'bank_accounts.json', 'GET', undefined, companyId) || [];
 }
 
 /**
@@ -463,7 +594,7 @@ export async function fetchBankAccounts(companyId: number): Promise<FakturoidBan
  */
 export async function fetchEvents(companyId: number): Promise<FakturoidEvent[]> {
   const credentials = getCredentials(companyId);
-  return fetchPaginated<FakturoidEvent>(credentials, 'events.json');
+  return fetchPaginated<FakturoidEvent>(credentials, 'events.json', companyId);
 }
 
 /**
@@ -471,7 +602,7 @@ export async function fetchEvents(companyId: number): Promise<FakturoidEvent[]> 
  */
 export async function fetchInventoryItems(companyId: number): Promise<FakturoidInventoryItem[]> {
   const credentials = getCredentials(companyId);
-  return fetchPaginated<FakturoidInventoryItem>(credentials, 'inventory_items.json');
+  return fetchPaginated<FakturoidInventoryItem>(credentials, 'inventory_items.json', companyId);
 }
 
 /**
@@ -754,22 +885,49 @@ export async function fullSync(companyId: number): Promise<{
 }
 
 /**
- * Save API credentials for a company
+ * Fetch user's accounts (to get available account slugs after OAuth)
  */
-export function saveCredentials(
+export async function fetchUserAccounts(accessToken: string): Promise<Array<{
+  subdomain: string;
+  name: string;
+}>> {
+  const url = `${FAKTUROID_API_BASE}/accounts.json`;
+
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'User-Agent': 'Lenduck/1.0 (podpora@lenduck.com)',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch user accounts: ${response.status}`);
+  }
+
+  return response.json() as Promise<Array<{ subdomain: string; name: string }>>;
+}
+
+/**
+ * Save OAuth tokens for a company after successful authorization
+ */
+export function saveOAuthCredentials(
   companyId: number,
-  clientId: string,
-  clientSecret: string,
-  accountSlug: string
+  accountSlug: string,
+  accessToken: string,
+  refreshToken: string,
+  expiresIn: number
 ): void {
+  const tokenExpiresAt = Date.now() + expiresIn * 1000;
+
   const credentials = JSON.stringify({
-    clientId,
-    clientSecret,
     accountSlug,
+    accessToken,
+    refreshToken,
+    tokenExpiresAt,
   });
 
   db.updateAccountingConnection(companyId, {
     api_credentials: credentials,
-    status: 'pending',
+    status: 'connected',
   });
 }

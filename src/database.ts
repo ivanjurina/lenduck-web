@@ -426,6 +426,7 @@ export function updateAccountingConnection(companyId: number, data: {
   realm_id?: string;
   api_credentials?: string;
   last_sync_at?: string;
+  software_type?: SoftwareType;
 }) {
   const fields: string[] = [];
   const values: any[] = [];
@@ -437,12 +438,18 @@ export function updateAccountingConnection(companyId: number, data: {
   if (data.realm_id !== undefined) { fields.push('realm_id = ?'); values.push(data.realm_id); }
   if (data.api_credentials !== undefined) { fields.push('api_credentials = ?'); values.push(data.api_credentials); }
   if (data.last_sync_at !== undefined) { fields.push('last_sync_at = ?'); values.push(data.last_sync_at); }
+  if (data.software_type !== undefined) { fields.push('software_type = ?'); values.push(data.software_type); }
 
   fields.push('updated_at = CURRENT_TIMESTAMP');
   values.push(companyId);
 
   const stmt = db.prepare(`UPDATE accounting_connections SET ${fields.join(', ')} WHERE company_id = ?`);
   return stmt.run(...values);
+}
+
+export function deleteAccountingConnection(companyId: number) {
+  const stmt = db.prepare('DELETE FROM accounting_connections WHERE company_id = ?');
+  return stmt.run(companyId);
 }
 
 // Software Request (for "Other" option)

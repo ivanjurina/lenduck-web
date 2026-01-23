@@ -14,6 +14,9 @@ declare module 'express-session' {
     userId?: number;
     isAdmin?: boolean;
     language?: Language;
+    // Fakturoid OAuth state
+    fakturoidOAuthState?: string;
+    fakturoidCompanyId?: number;
   }
 }
 
@@ -1487,7 +1490,7 @@ app.post('/company/:id/connect/profit365', requireAuth, async (req: Request, res
   }
 });
 
-// Fakturoid credentials form
+// Fakturoid OAuth - redirect to authorization page
 app.get('/company/:id/connect/fakturoid', requireAuth, (req: Request, res: Response) => {
   const companyId = parseInt(req.params.id);
   const company = db.getCompanyById(companyId);
@@ -1497,93 +1500,139 @@ app.get('/company/:id/connect/fakturoid', requireAuth, (req: Request, res: Respo
   }
 
   const error = req.query.error as string;
+  const tr = t(req);
 
-  const content = `
-    <div class="auth-container">
-      <div class="auth-card" style="max-width: 540px;">
-        <div class="auth-header">
-          <h1>Connect Fakturoid</h1>
-          <p>Enter your Fakturoid OAuth credentials</p>
-        </div>
-        ${error ? `<div class="flash flash-error">${error}</div>` : ''}
-        <div class="info-box" style="background: var(--color-sage-pale); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
-          <p style="margin: 0; font-size: 0.9rem; color: var(--color-text);">
-            <strong>How to get your API credentials:</strong><br>
-            1. In Fakturoid, go to <strong>Settings &gt; Connect other apps &gt; OAuth 2 for app developers</strong><br>
-            2. Create a new integration to get your Client ID and Client Secret<br>
-            3. Your Account Slug is the part after <code>app.fakturoid.cz/</code> in your Fakturoid URL
-          </p>
-        </div>
-        <form method="POST" action="/company/${companyId}/connect/fakturoid">
-          <div class="form-group">
-            <label for="client_id">Client ID *</label>
-            <input type="text" id="client_id" name="client_id" required placeholder="Your Fakturoid Client ID">
+  // Check if OAuth credentials are configured
+  try {
+    fakturoid.getOAuthConfig();
+  } catch (e) {
+    // OAuth not configured - show error
+    const content = `
+      <div class="auth-container">
+        <div class="auth-card" style="max-width: 540px;">
+          <div class="auth-header">
+            <h1>${tr.connectPage.connect} Fakturoid</h1>
           </div>
-          <div class="form-group">
-            <label for="client_secret">Client Secret *</label>
-            <input type="password" id="client_secret" name="client_secret" required placeholder="Your Fakturoid Client Secret">
+          <div class="flash flash-error">Fakturoid integration is not configured. Please contact support.</div>
+          <div class="auth-footer">
+            <a href="/company/${companyId}/connect">${tr.common.back}</a>
           </div>
-          <div class="form-group">
-            <label for="account_slug">Account Slug *</label>
-            <input type="text" id="account_slug" name="account_slug" required placeholder="e.g., vasefirma">
-            <small style="color: var(--color-text-muted);">The URL identifier of your account (app.fakturoid.cz/<strong>vasefirma</strong>)</small>
-          </div>
-          <button type="submit" class="btn btn-primary btn-full">Connect</button>
-        </form>
-        <div class="auth-footer">
-          <a href="/company/${companyId}/connect">Back to Software Selection</a>
         </div>
       </div>
-    </div>
-  `;
+    `;
+    return res.send(renderPage('Connect Fakturoid', content, req));
+  }
 
-  res.send(renderPage('Connect Fakturoid', content, req));
+  if (error) {
+    // Show error from callback
+    const content = `
+      <div class="auth-container">
+        <div class="auth-card" style="max-width: 540px;">
+          <div class="auth-header">
+            <h1>${tr.connectPage.connect} Fakturoid</h1>
+          </div>
+          <div class="flash flash-error">${error}</div>
+          <a href="/company/${companyId}/connect/fakturoid" class="btn btn-primary btn-full" style="margin-top: 16px;">Try Again</a>
+          <div class="auth-footer">
+            <a href="/company/${companyId}/connect">${tr.common.back}</a>
+          </div>
+        </div>
+      </div>
+    `;
+    return res.send(renderPage('Connect Fakturoid', content, req));
+  }
+
+  // Create or update connection record
+  const existingConnection = db.getAccountingConnection(companyId);
+  if (!existingConnection) {
+    db.createAccountingConnection({
+      company_id: companyId,
+      software_type: 'fakturoid',
+      status: 'pending',
+    });
+  } else if (existingConnection.software_type !== 'fakturoid') {
+    // Delete old connection and create new one with correct type
+    db.deleteAccountingConnection(companyId);
+    db.createAccountingConnection({
+      company_id: companyId,
+      software_type: 'fakturoid',
+      status: 'pending',
+    });
+  } else {
+    db.updateAccountingConnection(companyId, { status: 'pending' });
+  }
+
+  // Generate state parameter with companyId for CSRF protection
+  const state = `company_${companyId}_${Date.now()}`;
+  req.session.fakturoidOAuthState = state;
+  req.session.fakturoidCompanyId = companyId;
+
+  // Redirect to Fakturoid authorization
+  const authUrl = fakturoid.getAuthorizationUrl(state);
+  res.redirect(authUrl);
 });
 
-app.post('/company/:id/connect/fakturoid', requireAuth, async (req: Request, res: Response) => {
-  const companyId = parseInt(req.params.id);
-  const company = db.getCompanyById(companyId);
-  const { client_id, client_secret, account_slug } = req.body;
+// Fakturoid OAuth callback
+app.get('/api/fakturoid/callback', async (req: Request, res: Response) => {
+  const { code, state, error, error_description } = req.query;
 
-  if (!company || company.user_id !== req.session.userId) {
-    return res.redirect('/dashboard');
+  if (error) {
+    const errorMsg = error_description || error;
+    const companyId = req.session.fakturoidCompanyId;
+    if (companyId) {
+      return res.redirect(`/company/${companyId}/connect/fakturoid?error=` + encodeURIComponent(`Authorization denied: ${errorMsg}`));
+    }
+    return res.redirect('/dashboard?error=' + encodeURIComponent(`Fakturoid authorization failed: ${errorMsg}`));
   }
 
-  if (!client_id || !client_secret || !account_slug) {
-    return res.redirect(`/company/${companyId}/connect/fakturoid?error=` + encodeURIComponent('All fields are required.'));
+  if (!code || !state) {
+    return res.redirect('/dashboard?error=' + encodeURIComponent('Invalid Fakturoid callback.'));
   }
+
+  // Verify state matches to prevent CSRF
+  if (state !== req.session.fakturoidOAuthState) {
+    return res.redirect('/dashboard?error=' + encodeURIComponent('Invalid state parameter. Please try again.'));
+  }
+
+  // Extract company ID from state
+  const stateMatch = (state as string).match(/^company_(\d+)_/);
+  if (!stateMatch) {
+    return res.redirect('/dashboard?error=' + encodeURIComponent('Invalid state format.'));
+  }
+
+  const companyId = parseInt(stateMatch[1]);
 
   try {
-    // Check if connection already exists
-    const existingConnection = db.getAccountingConnection(companyId);
-    if (!existingConnection) {
-      db.createAccountingConnection({
-        company_id: companyId,
-        software_type: 'fakturoid',
-        status: 'pending',
-      });
-    } else {
-      // Update existing connection type
-      db.updateAccountingConnection(companyId, { status: 'pending' });
+    // Exchange code for tokens
+    const tokens = await fakturoid.exchangeCodeForTokens(code as string);
+
+    // Fetch user's accounts to get the account slug
+    const accounts = await fakturoid.fetchUserAccounts(tokens.accessToken);
+
+    if (!accounts || accounts.length === 0) {
+      return res.redirect(`/company/${companyId}/connect/fakturoid?error=` + encodeURIComponent('No Fakturoid accounts found for this user.'));
     }
 
-    // Save credentials
-    fakturoid.saveCredentials(companyId, client_id, client_secret, account_slug);
+    // Use the first account (or let user choose if multiple)
+    const accountSlug = accounts[0].subdomain;
 
-    // Test the connection
-    const isValid = await fakturoid.testConnection(companyId);
+    // Save the OAuth credentials
+    fakturoid.saveOAuthCredentials(
+      companyId,
+      accountSlug,
+      tokens.accessToken,
+      tokens.refreshToken,
+      tokens.expiresIn
+    );
 
-    if (!isValid) {
-      return res.redirect(`/company/${companyId}/connect/fakturoid?error=` + encodeURIComponent('Could not connect to Fakturoid. Please check your credentials.'));
-    }
-
-    // Update connection status
-    db.updateAccountingConnection(companyId, { status: 'connected' });
+    // Clear OAuth session state
+    delete req.session.fakturoidOAuthState;
+    delete req.session.fakturoidCompanyId;
 
     // Trigger initial sync
     res.redirect(`/company/${companyId}/sync?initial=true`);
   } catch (e: any) {
-    console.error('Fakturoid connection error:', e);
+    console.error('Fakturoid OAuth callback error:', e);
     res.redirect(`/company/${companyId}/connect/fakturoid?error=` + encodeURIComponent('Failed to connect: ' + e.message));
   }
 });
