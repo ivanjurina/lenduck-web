@@ -432,6 +432,31 @@ function renderAppPage(options: AppPageOptions): string {
             gap: 12px;
         }
 
+        .lang-switcher {
+            display: flex;
+            gap: 4px;
+            margin-left: 8px;
+            padding-left: 12px;
+            border-left: 1px solid var(--color-border);
+        }
+        .lang-option {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .lang-option:hover {
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+        .lang-option.active {
+            background: var(--color-primary);
+            color: white;
+        }
+
         .main-content {
             padding: 32px;
         }
@@ -679,6 +704,11 @@ function renderAppPage(options: AppPageOptions): string {
             <h1 class="page-title">${title}</h1>
             <div class="header-actions">
                 ${companyId ? `<a href="/company/${companyId}/sync" class="btn btn-secondary btn-sm">&#8635; ${tr.overview.syncNow}</a>` : ''}
+                <div class="lang-switcher">
+                    <a href="/set-language/en" class="lang-option ${lang === 'en' ? 'active' : ''}">EN</a>
+                    <a href="/set-language/cs" class="lang-option ${lang === 'cs' ? 'active' : ''}">CZ</a>
+                    <a href="/set-language/sk" class="lang-option ${lang === 'sk' ? 'active' : ''}">SK</a>
+                </div>
             </div>
         </header>
         <main class="main-content">
@@ -833,6 +863,17 @@ app.get('/logout', (req: Request, res: Response) => {
   req.session.destroy(() => {
     res.redirect('/');
   });
+});
+
+// Language switching
+app.get('/set-language/:lang', (req: Request, res: Response) => {
+  const lang = req.params.lang as Language;
+  if (['en', 'cs', 'sk'].includes(lang)) {
+    req.session.language = lang;
+  }
+  // Redirect back to referring page or dashboard
+  const referer = req.headers.referer || '/dashboard';
+  res.redirect(referer);
 });
 
 // Dashboard - Shows user's companies
