@@ -103,6 +103,31 @@ export interface Translations {
     onTime: string;
     paymentTiming: string;
     invoicesCount: string;
+    // Quick date presets
+    lastMonth: string;
+    lastQuarter: string;
+    lastYear: string;
+    currentMonth: string;
+    currentQuarter: string;
+    currentYear: string;
+    // Extra columns
+    paidOn: string;
+    sentAt: string;
+    variableSymbol: string;
+    subtotal: string;
+    paymentMethod: string;
+    documentType: string;
+    invoice: string;
+    proforma: string;
+    correction: string;
+    taxDocument: string;
+    sent: string;
+    cancelled: string;
+    open: string;
+    amountFrom: string;
+    amountTo: string;
+    currency: string;
+    byCurrency: string;
   };
   // Accounts page
   accountsPage: {
@@ -335,6 +360,29 @@ export const translations: Record<Language, Translations> = {
       onTime: 'On Time',
       paymentTiming: 'Payment Timing',
       invoicesCount: 'invoices',
+      lastMonth: 'Last Month',
+      lastQuarter: 'Last Quarter',
+      lastYear: 'Last Year',
+      currentMonth: 'This Month',
+      currentQuarter: 'This Quarter',
+      currentYear: 'This Year',
+      paidOn: 'Paid On',
+      sentAt: 'Sent',
+      variableSymbol: 'Var. Symbol',
+      subtotal: 'Subtotal',
+      paymentMethod: 'Payment',
+      documentType: 'Doc Type',
+      invoice: 'Invoice',
+      proforma: 'Proforma',
+      correction: 'Correction',
+      taxDocument: 'Tax Doc',
+      sent: 'Sent',
+      cancelled: 'Cancelled',
+      open: 'Open',
+      amountFrom: 'Amount from',
+      amountTo: 'Amount to',
+      currency: 'Currency',
+      byCurrency: 'By currency',
     },
     accountsPage: {
       title: 'Chart of Accounts',
@@ -557,6 +605,29 @@ export const translations: Record<Language, Translations> = {
       onTime: 'Včas',
       paymentTiming: 'Časování plateb',
       invoicesCount: 'faktur',
+      lastMonth: 'Minulý měsíc',
+      lastQuarter: 'Minulé čtvrtletí',
+      lastYear: 'Minulý rok',
+      currentMonth: 'Tento měsíc',
+      currentQuarter: 'Toto čtvrtletí',
+      currentYear: 'Tento rok',
+      paidOn: 'Zaplaceno',
+      sentAt: 'Odesláno',
+      variableSymbol: 'Var. symbol',
+      subtotal: 'Bez DPH',
+      paymentMethod: 'Platba',
+      documentType: 'Typ dok.',
+      invoice: 'Faktura',
+      proforma: 'Proforma',
+      correction: 'Opravný',
+      taxDocument: 'Daň. dokl.',
+      sent: 'Odesláno',
+      cancelled: 'Storno',
+      open: 'Otevřeno',
+      amountFrom: 'Částka od',
+      amountTo: 'Částka do',
+      currency: 'Měna',
+      byCurrency: 'Podle měny',
     },
     accountsPage: {
       title: 'Účtová osnova',
@@ -779,6 +850,29 @@ export const translations: Record<Language, Translations> = {
       onTime: 'Včas',
       paymentTiming: 'Časovanie platieb',
       invoicesCount: 'faktúr',
+      lastMonth: 'Minulý mesiac',
+      lastQuarter: 'Minulý štvrťrok',
+      lastYear: 'Minulý rok',
+      currentMonth: 'Tento mesiac',
+      currentQuarter: 'Tento štvrťrok',
+      currentYear: 'Tento rok',
+      paidOn: 'Zaplatené',
+      sentAt: 'Odoslané',
+      variableSymbol: 'Var. symbol',
+      subtotal: 'Bez DPH',
+      paymentMethod: 'Platba',
+      documentType: 'Typ dok.',
+      invoice: 'Faktúra',
+      proforma: 'Proforma',
+      correction: 'Opravný',
+      taxDocument: 'Daň. dokl.',
+      sent: 'Odoslané',
+      cancelled: 'Storno',
+      open: 'Otvorené',
+      amountFrom: 'Suma od',
+      amountTo: 'Suma do',
+      currency: 'Mena',
+      byCurrency: 'Podľa meny',
     },
     accountsPage: {
       title: 'Účtová osnova',

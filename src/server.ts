@@ -1935,9 +1935,37 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
   const dateFrom = req.query.dateFrom as string || '';
   const dateTo = req.query.dateTo as string || '';
   const customerSearch = req.query.customer as string || '';
+  const currencyFilter = req.query.currency as string || 'all';
+
+  // Quick date preset helper
+  const now = new Date();
+  const getDatePresets = () => {
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+    const lastQuarter = new Date(now.getFullYear(), Math.floor((now.getMonth() - 1) / 3) * 3 - 2, 1);
+    const lastQuarterEnd = new Date(now.getFullYear(), Math.floor((now.getMonth() - 1) / 3) * 3 + 1, 0);
+    const lastYear = new Date(now.getFullYear() - 1, 0, 1);
+    const lastYearEnd = new Date(now.getFullYear() - 1, 11, 31);
+    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const currentQuarter = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+    const currentYear = new Date(now.getFullYear(), 0, 1);
+    const fmt = (d: Date) => d.toISOString().split('T')[0];
+    return {
+      lastMonth: { from: fmt(lastMonth), to: fmt(lastMonthEnd) },
+      lastQuarter: { from: fmt(lastQuarter), to: fmt(lastQuarterEnd) },
+      lastYear: { from: fmt(lastYear), to: fmt(lastYearEnd) },
+      currentMonth: { from: fmt(currentMonth), to: fmt(now) },
+      currentQuarter: { from: fmt(currentQuarter), to: fmt(now) },
+      currentYear: { from: fmt(currentYear), to: fmt(now) },
+    };
+  };
+  const datePresets = getDatePresets();
+
+  // Get unique currencies from all invoices
+  const allCurrencies = [...new Set(invoices.map((i: any) => i.currency || 'CZK'))].sort();
 
   // Check if any filters are active
-  const hasFilters = typeFilter !== 'all' || statusFilter !== 'all' || dateFrom || dateTo || customerSearch;
+  const hasFilters = typeFilter !== 'all' || statusFilter !== 'all' || dateFrom || dateTo || customerSearch || currencyFilter !== 'all';
 
   // Apply filters
   let filteredInvoices = invoices;
@@ -1971,6 +1999,22 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
     );
   }
 
+  // Currency filter
+  if (currencyFilter !== 'all') {
+    filteredInvoices = filteredInvoices.filter((i: any) => (i.currency || 'CZK') === currencyFilter);
+  }
+
+  // Parse raw_data to get extra fields
+  const enrichedInvoices = filteredInvoices.map((inv: any) => {
+    let extra: any = {};
+    if (inv.raw_data) {
+      try {
+        extra = JSON.parse(inv.raw_data);
+      } catch {}
+    }
+    return { ...inv, extra };
+  });
+
   const formatCurrency = (amount: number | null, currency?: string) => {
     if (amount === null || amount === undefined) return 'N/A';
     const cur = currency || company.currency || 'CZK';
@@ -1997,11 +2041,28 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
     }
   };
 
-  // Calculate totals for filtered invoices
-  const filteredTotalAmount = filteredInvoices.reduce((sum: number, i: any) => sum + (i.total_amount || 0), 0);
-  const filteredTotalBalance = filteredInvoices.reduce((sum: number, i: any) => sum + (i.balance_due || 0), 0);
-  const filteredPaidAmount = filteredInvoices.filter((i: any) => i.status === 'paid').reduce((sum: number, i: any) => sum + (i.total_amount || 0), 0);
-  const filteredUnpaidAmount = filteredInvoices.filter((i: any) => i.status !== 'paid').reduce((sum: number, i: any) => sum + (i.total_amount || 0), 0);
+  // Calculate totals grouped by currency
+  const totalsByCurrency: Record<string, { total: number; balance: number; paid: number; unpaid: number; count: number }> = {};
+  filteredInvoices.forEach((i: any) => {
+    const cur = i.currency || 'CZK';
+    if (!totalsByCurrency[cur]) totalsByCurrency[cur] = { total: 0, balance: 0, paid: 0, unpaid: 0, count: 0 };
+    totalsByCurrency[cur].total += i.total_amount || 0;
+    totalsByCurrency[cur].balance += i.balance_due || 0;
+    totalsByCurrency[cur].count++;
+    if (i.status === 'paid') {
+      totalsByCurrency[cur].paid += i.total_amount || 0;
+    } else {
+      totalsByCurrency[cur].unpaid += i.total_amount || 0;
+    }
+  });
+  const currenciesWithTotals = Object.entries(totalsByCurrency).sort((a, b) => b[1].total - a[1].total);
+
+  // For charts, use primary currency (most used) or sum if single currency
+  const primaryCurrency = currenciesWithTotals[0]?.[0] || 'CZK';
+  const filteredTotalAmount = totalsByCurrency[primaryCurrency]?.total || 0;
+  const filteredTotalBalance = totalsByCurrency[primaryCurrency]?.balance || 0;
+  const filteredPaidAmount = totalsByCurrency[primaryCurrency]?.paid || 0;
+  const filteredUnpaidAmount = totalsByCurrency[primaryCurrency]?.unpaid || 0;
 
   // Counts for stats
   const filteredIssuedCount = filteredInvoices.filter((i: any) => i.invoice_type === 'issued').length;
@@ -2032,7 +2093,6 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
 
   // Monthly overview (last 6 months)
   const monthlyData: Record<string, { issued: number; received: number; issuedCount: number; receivedCount: number }> = {};
-  const now = new Date();
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -2176,6 +2236,57 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
           justify-content: flex-start;
         }
       }
+      .preset-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        background: white;
+        border: 1px solid var(--color-sage);
+        border-radius: 16px;
+        color: var(--color-text);
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+      .preset-btn:hover {
+        background: var(--color-sage-light);
+        border-color: var(--color-sage);
+      }
+      .preset-btn.active {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+        color: white;
+      }
+      .currency-totals {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .currency-total-card {
+        flex: 1;
+        min-width: 200px;
+        background: white;
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+        padding: 16px;
+      }
+      .currency-total-card h4 {
+        margin: 0 0 12px;
+        font-size: 0.9rem;
+        color: var(--color-text-muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .currency-total-card .amount {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+      .currency-total-card .sub-amounts {
+        display: flex;
+        gap: 16px;
+        margin-top: 8px;
+        font-size: 0.85rem;
+      }
     </style>
 
     <div class="page-header">
@@ -2189,6 +2300,19 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
         <h3>&#128269; ${tr.invoicesPage.filters}</h3>
         ${hasFilters ? `<a href="/company/${companyId}/data/invoices" class="btn btn-secondary btn-sm">${tr.invoicesPage.clearFilters}</a>` : ''}
       </div>
+
+      <!-- Quick Date Presets -->
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--color-sage-light);">
+        <span style="font-size: 0.8rem; color: var(--color-text-muted); margin-right: 8px; display: flex; align-items: center;">&#128197;</span>
+        <a href="/company/${companyId}/data/invoices?dateFrom=${datePresets.lastMonth.from}&dateTo=${datePresets.lastMonth.to}" class="preset-btn ${dateFrom === datePresets.lastMonth.from && dateTo === datePresets.lastMonth.to ? 'active' : ''}">${tr.invoicesPage.lastMonth}</a>
+        <a href="/company/${companyId}/data/invoices?dateFrom=${datePresets.lastQuarter.from}&dateTo=${datePresets.lastQuarter.to}" class="preset-btn ${dateFrom === datePresets.lastQuarter.from && dateTo === datePresets.lastQuarter.to ? 'active' : ''}">${tr.invoicesPage.lastQuarter}</a>
+        <a href="/company/${companyId}/data/invoices?dateFrom=${datePresets.lastYear.from}&dateTo=${datePresets.lastYear.to}" class="preset-btn ${dateFrom === datePresets.lastYear.from && dateTo === datePresets.lastYear.to ? 'active' : ''}">${tr.invoicesPage.lastYear}</a>
+        <span style="color: var(--color-sage); margin: 0 4px;">|</span>
+        <a href="/company/${companyId}/data/invoices?dateFrom=${datePresets.currentMonth.from}&dateTo=${datePresets.currentMonth.to}" class="preset-btn ${dateFrom === datePresets.currentMonth.from ? 'active' : ''}">${tr.invoicesPage.currentMonth}</a>
+        <a href="/company/${companyId}/data/invoices?dateFrom=${datePresets.currentQuarter.from}&dateTo=${datePresets.currentQuarter.to}" class="preset-btn ${dateFrom === datePresets.currentQuarter.from ? 'active' : ''}">${tr.invoicesPage.currentQuarter}</a>
+        <a href="/company/${companyId}/data/invoices?dateFrom=${datePresets.currentYear.from}&dateTo=${datePresets.currentYear.to}" class="preset-btn ${dateFrom === datePresets.currentYear.from ? 'active' : ''}">${tr.invoicesPage.currentYear}</a>
+      </div>
+
       <form method="GET" action="/company/${companyId}/data/invoices">
         <div class="filter-grid">
           <div class="filter-group">
@@ -2215,6 +2339,15 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
               <option value="unpaid" ${statusFilter === 'unpaid' ? 'selected' : ''}>${tr.invoicesPage.unpaid}</option>
             </select>
           </div>
+          ${allCurrencies.length > 1 ? `
+          <div class="filter-group">
+            <label for="currency">${tr.invoicesPage.currency}</label>
+            <select id="currency" name="currency">
+              <option value="all" ${currencyFilter === 'all' ? 'selected' : ''}>${tr.invoicesPage.all}</option>
+              ${allCurrencies.map(c => `<option value="${c}" ${currencyFilter === c ? 'selected' : ''}>${c}</option>`).join('')}
+            </select>
+          </div>
+          ` : ''}
           <div class="filter-group">
             <label for="customer">${tr.invoicesPage.searchCustomer}</label>
             <input type="text" id="customer" name="customer" value="${customerSearch}" placeholder="...">
@@ -2226,35 +2359,11 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
       </form>
     </div>
 
-    <!-- Filtered Results Summary -->
-    ${hasFilters ? `
-    <div class="stats-grid" style="margin-bottom: 24px;">
+    <!-- Stats Summary -->
+    <div class="stats-grid" style="margin-bottom: 16px;">
       <div class="stat-card" style="background: linear-gradient(135deg, var(--color-sage-light), var(--color-sage-pale));">
-        <div class="stat-label">${tr.invoicesPage.filteredResults}</div>
-        <div class="stat-value">${filteredInvoices.length} <span style="font-size: 0.5em; font-weight: normal;">/ ${invoices.length}</span></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">${tr.invoicesPage.totalAmount}</div>
-        <div class="stat-value" style="font-size: 1.3rem;">${formatCurrency(filteredTotalAmount)}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">${tr.invoicesPage.totalBalance}</div>
-        <div class="stat-value" style="font-size: 1.3rem; color: var(--color-warning);">${formatCurrency(filteredTotalBalance)}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">${tr.invoicesPage.paid} / ${tr.invoicesPage.unpaid}</div>
-        <div class="stat-value" style="font-size: 1.1rem;">
-          <span style="color: var(--color-success)">${formatCurrency(filteredPaidAmount)}</span>
-          <span style="font-size: 0.7em; color: var(--color-text-muted);"> / </span>
-          <span style="color: var(--color-error)">${formatCurrency(filteredUnpaidAmount)}</span>
-        </div>
-      </div>
-    </div>
-    ` : `
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">${tr.invoicesPage.totalInvoices}</div>
-        <div class="stat-value">${invoices.length}</div>
+        <div class="stat-label">${hasFilters ? tr.invoicesPage.filteredResults : tr.invoicesPage.totalInvoices}</div>
+        <div class="stat-value">${filteredInvoices.length}${hasFilters ? ` <span style="font-size: 0.5em; font-weight: normal;">/ ${invoices.length}</span>` : ''}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">${tr.invoicesPage.issued}</div>
@@ -2265,11 +2374,27 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
         <div class="stat-value">${filteredReceivedCount}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">${tr.invoicesPage.unpaid}</div>
-        <div class="stat-value" style="color: var(--color-warning)">${filteredUnpaidCount}</div>
+        <div class="stat-label">${tr.invoicesPage.paid} / ${tr.invoicesPage.unpaid}</div>
+        <div class="stat-value">${filteredPaidCount} <span style="font-size: 0.6em; color: var(--color-text-muted);">/</span> <span style="color: var(--color-warning)">${filteredUnpaidCount}</span></div>
       </div>
     </div>
-    `}
+
+    <!-- Totals by Currency -->
+    ${currenciesWithTotals.length > 0 ? `
+    <div class="currency-totals">
+      ${currenciesWithTotals.map(([cur, totals]) => `
+        <div class="currency-total-card">
+          <h4><span style="font-size: 1.2em;">&#128176;</span> ${cur} <span style="font-weight: normal; font-size: 0.85em;">(${totals.count} ${tr.invoicesPage.invoicesCount})</span></h4>
+          <div class="amount">${formatCurrency(totals.total, cur)}</div>
+          <div class="sub-amounts">
+            <span><span style="color: var(--color-success);">&#10003;</span> ${formatCurrency(totals.paid, cur)}</span>
+            <span><span style="color: var(--color-error);">&#10007;</span> ${formatCurrency(totals.unpaid, cur)}</span>
+            <span style="color: var(--color-text-muted);">&#8594; ${formatCurrency(totals.balance, cur)}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    ` : ''}
 
     <!-- Collapsible Invoice List -->
     <div class="card" style="margin-bottom: 24px;">
@@ -2286,46 +2411,60 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
         </div>
       </div>
       <div id="invoiceTableContent" class="collapsible-content">
-        <div class="table-wrapper">
-          <table>
+        <div class="table-wrapper" style="overflow-x: auto;">
+          <table style="min-width: 1200px;">
             <thead>
               <tr>
                 <th>${tr.invoicesPage.invoiceNumber}</th>
-                <th>${tr.invoicesPage.type}</th>
+                <th>${tr.invoicesPage.variableSymbol}</th>
+                <th>${tr.invoicesPage.documentType}</th>
                 <th>${tr.invoicesPage.customer}/${tr.invoicesPage.vendor}</th>
                 <th>${tr.invoicesPage.issueDate}</th>
                 <th>${tr.invoicesPage.dueDate}</th>
-                <th style="text-align:center">&#128176;</th>
+                <th>${tr.invoicesPage.paidOn}</th>
+                <th style="text-align:right">${tr.invoicesPage.subtotal}</th>
                 <th style="text-align:right">${tr.invoicesPage.amount}</th>
                 <th style="text-align:right">${tr.accountsPage.balance}</th>
+                <th>${tr.invoicesPage.paymentMethod}</th>
                 <th>${tr.invoicesPage.status}</th>
               </tr>
             </thead>
             <tbody>
-              ${filteredInvoices.length > 0 ? filteredInvoices.map((inv: any) => `
+              ${enrichedInvoices.length > 0 ? enrichedInvoices.map((inv: any) => {
+                const docType = inv.extra?.document_type || (inv.invoice_type === 'issued' ? 'invoice' : 'expense');
+                const docTypeLabel = docType === 'invoice' ? tr.invoicesPage.invoice :
+                  docType === 'proforma' ? tr.invoicesPage.proforma :
+                  docType === 'correction' ? tr.invoicesPage.correction :
+                  docType === 'tax_document' ? tr.invoicesPage.taxDocument : docType;
+                const varSymbol = inv.extra?.variable_symbol || '-';
+                const paidOn = inv.extra?.paid_on ? formatDate(inv.extra.paid_on) : '-';
+                const subtotal = inv.extra?.native_subtotal || inv.extra?.subtotal;
+                const paymentMethod = inv.extra?.payment_method || '-';
+                const statusLabel = inv.status === 'paid' ? tr.invoicesPage.paid :
+                  inv.extra?.status === 'sent' ? tr.invoicesPage.sent :
+                  inv.extra?.status === 'cancelled' ? tr.invoicesPage.cancelled :
+                  inv.extra?.status === 'overdue' ? tr.invoicesPage.overdue :
+                  inv.extra?.status === 'open' ? tr.invoicesPage.open : tr.invoicesPage.unpaid;
+                const statusClass = inv.status === 'paid' ? 'badge-success' :
+                  inv.extra?.status === 'overdue' ? 'badge-error' :
+                  inv.extra?.status === 'sent' ? 'badge-info' : 'badge-warning';
+                return `
                 <tr>
                   <td><strong>${inv.invoice_number || '-'}</strong></td>
-                  <td><span class="badge ${inv.invoice_type === 'issued' ? 'badge-info' : 'badge-warning'}">${inv.invoice_type === 'issued' ? tr.invoicesPage.issued : tr.invoicesPage.received}</span></td>
-                  <td>${inv.customer_name || '-'}</td>
+                  <td style="font-size: 0.85rem; color: var(--color-text-muted);">${varSymbol}</td>
+                  <td><span class="badge ${inv.invoice_type === 'issued' ? 'badge-info' : 'badge-warning'}">${docTypeLabel}</span></td>
+                  <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${inv.customer_name || ''}">${inv.customer_name || '-'}</td>
                   <td>${formatDate(inv.issue_date)}</td>
                   <td>${formatDate(inv.due_date)}</td>
-                  <td style="text-align:center; font-size: 0.85rem; color: var(--color-text-muted);">${inv.currency || 'CZK'}</td>
-                  <td style="text-align:right">${formatCurrency(inv.total_amount, inv.currency)}</td>
-                  <td style="text-align:right">${formatCurrency(inv.balance_due, inv.currency)}</td>
-                  <td><span class="badge ${inv.status === 'paid' ? 'badge-success' : 'badge-error'}">${inv.status === 'paid' ? tr.invoicesPage.paid : tr.invoicesPage.unpaid}</span></td>
+                  <td>${paidOn}</td>
+                  <td style="text-align:right; font-size: 0.85rem; color: var(--color-text-muted);">${subtotal ? formatCurrency(subtotal, inv.currency) : '-'}</td>
+                  <td style="text-align:right; font-weight: 600;">${formatCurrency(inv.total_amount, inv.currency)}</td>
+                  <td style="text-align:right; color: ${inv.balance_due > 0 ? 'var(--color-warning)' : 'var(--color-success)'};">${formatCurrency(inv.balance_due, inv.currency)}</td>
+                  <td style="font-size: 0.85rem;">${paymentMethod}</td>
+                  <td><span class="badge ${statusClass}">${statusLabel}</span></td>
                 </tr>
-              `).join('') : `<tr><td colspan="9" class="empty-state">${tr.invoicesPage.noInvoices}</td></tr>`}
+              `}).join('') : `<tr><td colspan="12" class="empty-state">${tr.invoicesPage.noInvoices}</td></tr>`}
             </tbody>
-            ${filteredInvoices.length > 0 ? `
-            <tfoot style="background: var(--color-sage-pale); font-weight: 600;">
-              <tr>
-                <td colspan="6" style="text-align: right;">${tr.invoicesPage.totalAmount}:</td>
-                <td style="text-align: right;">-</td>
-                <td style="text-align: right;">-</td>
-                <td></td>
-              </tr>
-            </tfoot>
-            ` : ''}
           </table>
         </div>
       </div>
@@ -2336,63 +2475,83 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
       <h2 style="font-size: 1.3rem;">${tr.invoicesPage.analytics}</h2>
     </div>
 
-    <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 24px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 24px;">
       <!-- Payment Status Chart -->
-      <div class="card">
-        <div class="card-header">
-          <h3 style="margin: 0; font-size: 1rem;">${tr.invoicesPage.paymentStatus}</h3>
-        </div>
-        <div style="padding: 20px; display: flex; justify-content: center;">
-          <canvas id="paymentStatusChart" style="max-width: 250px; max-height: 250px;"></canvas>
-        </div>
-        <div style="padding: 0 20px 20px; display: flex; justify-content: center; gap: 24px; font-size: 0.85rem;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="width: 12px; height: 12px; border-radius: 50%; background: #8BA88A;"></span>
-            <span>${tr.invoicesPage.paid}: ${formatCurrency(filteredPaidAmount)}</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="width: 12px; height: 12px; border-radius: 50%; background: #E57373;"></span>
-            <span>${tr.invoicesPage.unpaid}: ${formatCurrency(filteredUnpaidAmount)}</span>
+      <div class="card" style="background: linear-gradient(135deg, #fff 0%, #f8faf8 100%);">
+        <div style="padding: 20px;">
+          <h3 style="margin: 0 0 16px; font-size: 0.9rem; color: var(--color-text-muted); font-weight: 500;">${tr.invoicesPage.paymentStatus}</h3>
+          <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="width: 120px; height: 120px;">
+              <canvas id="paymentStatusChart"></canvas>
+            </div>
+            <div style="flex: 1;">
+              <div style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <span style="width: 10px; height: 10px; border-radius: 2px; background: linear-gradient(135deg, #7cb77c, #5a9a5a);"></span>
+                  <span style="font-size: 0.8rem; color: var(--color-text-muted);">${tr.invoicesPage.paid}</span>
+                </div>
+                <div style="font-size: 1.1rem; font-weight: 600; color: #5a9a5a;">${formatCurrency(filteredPaidAmount, primaryCurrency)}</div>
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <span style="width: 10px; height: 10px; border-radius: 2px; background: linear-gradient(135deg, #ef9a9a, #e57373);"></span>
+                  <span style="font-size: 0.8rem; color: var(--color-text-muted);">${tr.invoicesPage.unpaid}</span>
+                </div>
+                <div style="font-size: 1.1rem; font-weight: 600; color: #e57373;">${formatCurrency(filteredUnpaidAmount, primaryCurrency)}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Invoice Type Chart -->
-      <div class="card">
-        <div class="card-header">
-          <h3 style="margin: 0; font-size: 1rem;">${tr.invoicesPage.invoicesByType}</h3>
-        </div>
-        <div style="padding: 20px; display: flex; justify-content: center;">
-          <canvas id="invoiceTypeChart" style="max-width: 250px; max-height: 250px;"></canvas>
-        </div>
-        <div style="padding: 0 20px 20px; display: flex; justify-content: center; gap: 24px; font-size: 0.85rem;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="width: 12px; height: 12px; border-radius: 50%; background: #64B5F6;"></span>
-            <span>${tr.invoicesPage.issued}: ${filteredIssuedCount}</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="width: 12px; height: 12px; border-radius: 50%; background: #FFB74D;"></span>
-            <span>${tr.invoicesPage.received}: ${filteredReceivedCount}</span>
+      <div class="card" style="background: linear-gradient(135deg, #fff 0%, #f8f9fc 100%);">
+        <div style="padding: 20px;">
+          <h3 style="margin: 0 0 16px; font-size: 0.9rem; color: var(--color-text-muted); font-weight: 500;">${tr.invoicesPage.invoicesByType}</h3>
+          <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="width: 120px; height: 120px;">
+              <canvas id="invoiceTypeChart"></canvas>
+            </div>
+            <div style="flex: 1;">
+              <div style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <span style="width: 10px; height: 10px; border-radius: 2px; background: linear-gradient(135deg, #90caf9, #42a5f5);"></span>
+                  <span style="font-size: 0.8rem; color: var(--color-text-muted);">${tr.invoicesPage.issued}</span>
+                </div>
+                <div style="font-size: 1.3rem; font-weight: 600; color: #42a5f5;">${filteredIssuedCount}</div>
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <span style="width: 10px; height: 10px; border-radius: 2px; background: linear-gradient(135deg, #ffcc80, #ffa726);"></span>
+                  <span style="font-size: 0.8rem; color: var(--color-text-muted);">${tr.invoicesPage.received}</span>
+                </div>
+                <div style="font-size: 1.3rem; font-weight: 600; color: #ffa726;">${filteredReceivedCount}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Avg Days to Pay -->
-      <div class="card">
-        <div class="card-header">
-          <h3 style="margin: 0; font-size: 1rem;">${tr.invoicesPage.paymentTiming}</h3>
-        </div>
-        <div style="padding: 40px 20px; text-align: center;">
-          <div style="font-size: 3rem; font-weight: 700; color: var(--color-primary);">${avgDaysToPay}</div>
-          <div style="font-size: 0.9rem; color: var(--color-text-muted); margin-top: 4px;">${tr.invoicesPage.avgDaysToPay}</div>
-          <div style="margin-top: 20px; display: flex; justify-content: center; gap: 24px; font-size: 0.85rem;">
-            <div>
-              <span style="color: var(--color-success); font-weight: 600;">${onTimeCount}</span>
-              <span style="color: var(--color-text-muted);"> ${tr.invoicesPage.onTime}</span>
+      <div class="card" style="background: linear-gradient(135deg, #fff 0%, #fafaf8 100%);">
+        <div style="padding: 20px;">
+          <h3 style="margin: 0 0 16px; font-size: 0.9rem; color: var(--color-text-muted); font-weight: 500;">${tr.invoicesPage.paymentTiming}</h3>
+          <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--color-sage-pale), var(--color-sage-light)); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <div style="font-size: 1.8rem; font-weight: 700; color: var(--color-primary); line-height: 1;">${avgDaysToPay}</div>
+              <div style="font-size: 0.65rem; color: var(--color-text-muted);">${tr.invoicesPage.days}</div>
             </div>
-            <div>
-              <span style="color: var(--color-error); font-weight: 600;">${overdueCount}</span>
-              <span style="color: var(--color-text-muted);"> ${tr.invoicesPage.overdue}</span>
+            <div style="flex: 1;">
+              <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1rem;">&#10003;</span>
+                <span style="font-size: 0.85rem;">${tr.invoicesPage.onTime}</span>
+                <span style="font-weight: 600; color: var(--color-success); margin-left: auto;">${onTimeCount}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1rem;">&#10007;</span>
+                <span style="font-size: 0.85rem;">${tr.invoicesPage.overdue}</span>
+                <span style="font-weight: 600; color: var(--color-error); margin-left: auto;">${overdueCount}</span>
+              </div>
             </div>
           </div>
         </div>
