@@ -14,6 +14,10 @@ export interface Translations {
     inventory: string;
     events: string;
     todos: string;
+    payments: string;
+    estimates: string;
+    employees: string;
+    journalEntries: string;
     transactions: string;
     reports: string;
     offers: string;
@@ -220,6 +224,60 @@ export interface Translations {
     pending: string;
     completed: string;
   };
+  // Payments page
+  paymentsPage: {
+    title: string;
+    subtitle: string;
+    totalPayments: string;
+    received: string;
+    sent: string;
+    date: string;
+    customer: string;
+    amount: string;
+    method: string;
+    reference: string;
+    noPayments: string;
+  };
+  // Estimates page
+  estimatesPage: {
+    title: string;
+    subtitle: string;
+    totalEstimates: string;
+    quotes: string;
+    purchaseOrders: string;
+    date: string;
+    customer: string;
+    amount: string;
+    status: string;
+    expirationDate: string;
+    noEstimates: string;
+  };
+  // Employees page
+  employeesPage: {
+    title: string;
+    subtitle: string;
+    totalEmployees: string;
+    activeEmployees: string;
+    name: string;
+    email: string;
+    phone: string;
+    hireDate: string;
+    status: string;
+    active: string;
+    inactive: string;
+    noEmployees: string;
+  };
+  // Journal Entries page
+  journalEntriesPage: {
+    title: string;
+    subtitle: string;
+    totalEntries: string;
+    date: string;
+    entryNumber: string;
+    amount: string;
+    memo: string;
+    noEntries: string;
+  };
   // Transactions page
   transactionsPage: {
     title: string;
@@ -397,6 +455,10 @@ export const translations: Record<Language, Translations> = {
       inventory: 'Inventory',
       events: 'Activity',
       todos: 'Tasks',
+      payments: 'Payments',
+      estimates: 'Estimates',
+      employees: 'Employees',
+      journalEntries: 'Journal Entries',
       transactions: 'Transactions',
       reports: 'Reports',
       offers: 'Offers',
@@ -590,6 +652,56 @@ export const translations: Record<Language, Translations> = {
       pending: 'Pending',
       completed: 'Completed',
     },
+    paymentsPage: {
+      title: 'Payments',
+      subtitle: 'Customer and vendor payments synced from your accounting software',
+      totalPayments: 'Total Payments',
+      received: 'Received',
+      sent: 'Sent',
+      date: 'Date',
+      customer: 'Customer/Vendor',
+      amount: 'Amount',
+      method: 'Method',
+      reference: 'Reference',
+      noPayments: 'No payments found',
+    },
+    estimatesPage: {
+      title: 'Estimates & Orders',
+      subtitle: 'Quotes and purchase orders synced from your accounting software',
+      totalEstimates: 'Total',
+      quotes: 'Quotes',
+      purchaseOrders: 'Purchase Orders',
+      date: 'Date',
+      customer: 'Customer/Vendor',
+      amount: 'Amount',
+      status: 'Status',
+      expirationDate: 'Expires',
+      noEstimates: 'No estimates or purchase orders found',
+    },
+    employeesPage: {
+      title: 'Employees',
+      subtitle: 'Employee records synced from your accounting software',
+      totalEmployees: 'Total Employees',
+      activeEmployees: 'Active',
+      name: 'Name',
+      email: 'Email',
+      phone: 'Phone',
+      hireDate: 'Hire Date',
+      status: 'Status',
+      active: 'Active',
+      inactive: 'Inactive',
+      noEmployees: 'No employees found',
+    },
+    journalEntriesPage: {
+      title: 'Journal Entries',
+      subtitle: 'Journal entries synced from your accounting software',
+      totalEntries: 'Total Entries',
+      date: 'Date',
+      entryNumber: 'Entry #',
+      amount: 'Amount',
+      memo: 'Memo',
+      noEntries: 'No journal entries found',
+    },
     transactionsPage: {
       title: 'Bank Transactions',
       subtitle: 'All bank transactions synced from your accounting software',
@@ -757,9 +869,13 @@ export const translations: Record<Language, Translations> = {
       inventory: 'Sklad',
       events: 'Aktivita',
       todos: 'Úkoly',
+      payments: 'Platby',
+      estimates: 'Nabídky',
+      employees: 'Zaměstnanci',
+      journalEntries: 'Účetní zápisy',
       transactions: 'Transakce',
       reports: 'Reporty',
-      offers: 'Nabídky',
+      offers: 'Nabídky financování',
       settings: 'Nastavení',
       logout: 'Odhlásit',
       switchCompany: 'Změnit firmu',
@@ -950,6 +1066,56 @@ export const translations: Record<Language, Translations> = {
       pending: 'Nevyřízené',
       completed: 'Dokončené',
     },
+    paymentsPage: {
+      title: 'Platby',
+      subtitle: 'Platby zákazníků a dodavatelů synchronizované z vašeho účetního softwaru',
+      totalPayments: 'Celkem plateb',
+      received: 'Přijaté',
+      sent: 'Odeslané',
+      date: 'Datum',
+      customer: 'Zákazník/Dodavatel',
+      amount: 'Částka',
+      method: 'Způsob',
+      reference: 'Reference',
+      noPayments: 'Žádné platby nenalezeny',
+    },
+    estimatesPage: {
+      title: 'Nabídky a objednávky',
+      subtitle: 'Cenové nabídky a objednávky synchronizované z vašeho účetního softwaru',
+      totalEstimates: 'Celkem',
+      quotes: 'Nabídky',
+      purchaseOrders: 'Objednávky',
+      date: 'Datum',
+      customer: 'Zákazník/Dodavatel',
+      amount: 'Částka',
+      status: 'Stav',
+      expirationDate: 'Platnost do',
+      noEstimates: 'Žádné nabídky ani objednávky nenalezeny',
+    },
+    employeesPage: {
+      title: 'Zaměstnanci',
+      subtitle: 'Záznamy zaměstnanců synchronizované z vašeho účetního softwaru',
+      totalEmployees: 'Celkem zaměstnanců',
+      activeEmployees: 'Aktivní',
+      name: 'Jméno',
+      email: 'E-mail',
+      phone: 'Telefon',
+      hireDate: 'Datum nástupu',
+      status: 'Stav',
+      active: 'Aktivní',
+      inactive: 'Neaktivní',
+      noEmployees: 'Žádní zaměstnanci nenalezeni',
+    },
+    journalEntriesPage: {
+      title: 'Účetní zápisy',
+      subtitle: 'Účetní zápisy synchronizované z vašeho účetního softwaru',
+      totalEntries: 'Celkem zápisů',
+      date: 'Datum',
+      entryNumber: 'Číslo zápisu',
+      amount: 'Částka',
+      memo: 'Poznámka',
+      noEntries: 'Žádné účetní zápisy nenalezeny',
+    },
     transactionsPage: {
       title: 'Bankovní transakce',
       subtitle: 'Všechny bankovní transakce synchronizované z vašeho účetního softwaru',
@@ -1117,9 +1283,13 @@ export const translations: Record<Language, Translations> = {
       inventory: 'Sklad',
       events: 'Aktivita',
       todos: 'Úlohy',
+      payments: 'Platby',
+      estimates: 'Ponuky',
+      employees: 'Zamestnanci',
+      journalEntries: 'Účtovné zápisy',
       transactions: 'Transakcie',
       reports: 'Reporty',
-      offers: 'Ponuky',
+      offers: 'Ponuky financovania',
       settings: 'Nastavenia',
       logout: 'Odhlásiť',
       switchCompany: 'Zmeniť firmu',
@@ -1309,6 +1479,56 @@ export const translations: Record<Language, Translations> = {
       noTodos: 'Žiadne úlohy nenájdené',
       pending: 'Nevybavené',
       completed: 'Dokončené',
+    },
+    paymentsPage: {
+      title: 'Platby',
+      subtitle: 'Platby zákazníkov a dodávateľov synchronizované z vášho účtovného softvéru',
+      totalPayments: 'Celkom platieb',
+      received: 'Prijaté',
+      sent: 'Odoslané',
+      date: 'Dátum',
+      customer: 'Zákazník/Dodávateľ',
+      amount: 'Suma',
+      method: 'Spôsob',
+      reference: 'Referencia',
+      noPayments: 'Žiadne platby nenájdené',
+    },
+    estimatesPage: {
+      title: 'Ponuky a objednávky',
+      subtitle: 'Cenové ponuky a objednávky synchronizované z vášho účtovného softvéru',
+      totalEstimates: 'Celkom',
+      quotes: 'Ponuky',
+      purchaseOrders: 'Objednávky',
+      date: 'Dátum',
+      customer: 'Zákazník/Dodávateľ',
+      amount: 'Suma',
+      status: 'Stav',
+      expirationDate: 'Platnosť do',
+      noEstimates: 'Žiadne ponuky ani objednávky nenájdené',
+    },
+    employeesPage: {
+      title: 'Zamestnanci',
+      subtitle: 'Záznamy zamestnancov synchronizované z vášho účtovného softvéru',
+      totalEmployees: 'Celkom zamestnancov',
+      activeEmployees: 'Aktívni',
+      name: 'Meno',
+      email: 'E-mail',
+      phone: 'Telefón',
+      hireDate: 'Dátum nástupu',
+      status: 'Stav',
+      active: 'Aktívny',
+      inactive: 'Neaktívny',
+      noEmployees: 'Žiadni zamestnanci nenájdení',
+    },
+    journalEntriesPage: {
+      title: 'Účtovné zápisy',
+      subtitle: 'Účtovné zápisy synchronizované z vášho účtovného softvéru',
+      totalEntries: 'Celkom zápisov',
+      date: 'Dátum',
+      entryNumber: 'Číslo zápisu',
+      amount: 'Suma',
+      memo: 'Poznámka',
+      noEntries: 'Žiadne účtovné zápisy nenájdené',
     },
     transactionsPage: {
       title: 'Bankové transakcie',

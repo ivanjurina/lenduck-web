@@ -265,6 +265,80 @@ db.exec(`
     synced_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_id) REFERENCES companies(id)
   );
+
+  -- Payments (customer and vendor payments)
+  CREATE TABLE IF NOT EXISTS payments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    external_id TEXT,
+    payment_type TEXT NOT NULL,
+    payment_date TEXT,
+    amount REAL,
+    currency TEXT DEFAULT 'USD',
+    customer_name TEXT,
+    customer_id TEXT,
+    payment_method TEXT,
+    reference_number TEXT,
+    memo TEXT,
+    linked_invoices TEXT,
+    raw_data TEXT,
+    synced_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+  );
+
+  -- Estimates (quotes and purchase orders)
+  CREATE TABLE IF NOT EXISTS estimates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    external_id TEXT,
+    estimate_type TEXT NOT NULL,
+    estimate_number TEXT,
+    customer_name TEXT,
+    customer_id TEXT,
+    estimate_date TEXT,
+    expiration_date TEXT,
+    total_amount REAL,
+    currency TEXT DEFAULT 'USD',
+    status TEXT,
+    memo TEXT,
+    raw_data TEXT,
+    synced_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+  );
+
+  -- Employees
+  CREATE TABLE IF NOT EXISTS employees (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    external_id TEXT,
+    display_name TEXT NOT NULL,
+    given_name TEXT,
+    family_name TEXT,
+    email TEXT,
+    phone TEXT,
+    hire_date TEXT,
+    is_active INTEGER DEFAULT 1,
+    raw_data TEXT,
+    synced_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+  );
+
+  -- Journal Entries
+  CREATE TABLE IF NOT EXISTS journal_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    external_id TEXT,
+    entry_number TEXT,
+    entry_date TEXT,
+    total_amount REAL,
+    currency TEXT DEFAULT 'USD',
+    memo TEXT,
+    adjustment INTEGER DEFAULT 0,
+    lines TEXT,
+    raw_data TEXT,
+    synced_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+  );
 `);
 
 // Password hashing
@@ -519,6 +593,10 @@ export function getSyncStats(companyId: number) {
   const accountsStmt = db.prepare('SELECT COUNT(*) as count FROM accounts WHERE company_id = ? AND account_type = ?');
   const eventsStmt = db.prepare('SELECT COUNT(*) as count FROM activity_events WHERE company_id = ?');
   const todosStmt = db.prepare('SELECT COUNT(*) as count FROM todos WHERE company_id = ?');
+  const paymentsStmt = db.prepare('SELECT COUNT(*) as count FROM payments WHERE company_id = ?');
+  const estimatesStmt = db.prepare('SELECT COUNT(*) as count FROM estimates WHERE company_id = ?');
+  const employeesStmt = db.prepare('SELECT COUNT(*) as count FROM employees WHERE company_id = ?');
+  const journalEntriesStmt = db.prepare('SELECT COUNT(*) as count FROM journal_entries WHERE company_id = ?');
 
   const issuedInvoices = (invoicesStmt.get(companyId, 'issued') as any)?.count || 0;
   const receivedInvoices = (invoicesStmt.get(companyId, 'received') as any)?.count || 0;
@@ -528,6 +606,10 @@ export function getSyncStats(companyId: number) {
   const inventoryItems = (accountsStmt.get(companyId, 'Inventory') as any)?.count || 0;
   const events = (eventsStmt.get(companyId) as any)?.count || 0;
   const todos = (todosStmt.get(companyId) as any)?.count || 0;
+  const payments = (paymentsStmt.get(companyId) as any)?.count || 0;
+  const estimates = (estimatesStmt.get(companyId) as any)?.count || 0;
+  const employees = (employeesStmt.get(companyId) as any)?.count || 0;
+  const journalEntries = (journalEntriesStmt.get(companyId) as any)?.count || 0;
 
   return {
     issuedInvoices,
@@ -538,7 +620,11 @@ export function getSyncStats(companyId: number) {
     inventoryItems,
     events,
     todos,
-    totalRecords: issuedInvoices + receivedInvoices + customers + suppliers + bankAccounts + inventoryItems + events + todos
+    payments,
+    estimates,
+    employees,
+    journalEntries,
+    totalRecords: issuedInvoices + receivedInvoices + customers + suppliers + bankAccounts + inventoryItems + events + todos + payments + estimates + employees + journalEntries
   };
 }
 
@@ -1031,12 +1117,250 @@ export function getPendingTodoCount(companyId: number) {
   return (stmt.get(companyId) as any)?.count || 0;
 }
 
+// Payments functions
+export function upsertPayment(data: {
+  company_id: number;
+  external_id: string;
+  payment_type: string;
+  payment_date?: string | null;
+  amount?: number | null;
+  currency?: string | null;
+  customer_name?: string | null;
+  customer_id?: string | null;
+  payment_method?: string | null;
+  reference_number?: string | null;
+  memo?: string | null;
+  linked_invoices?: string | null;
+  raw_data?: string | null;
+}) {
+  const stmt = db.prepare(`
+    INSERT INTO payments (company_id, external_id, payment_type, payment_date, amount, currency, customer_name, customer_id, payment_method, reference_number, memo, linked_invoices, raw_data)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(company_id, external_id) DO UPDATE SET
+      payment_type = excluded.payment_type,
+      payment_date = excluded.payment_date,
+      amount = excluded.amount,
+      currency = excluded.currency,
+      customer_name = excluded.customer_name,
+      customer_id = excluded.customer_id,
+      payment_method = excluded.payment_method,
+      reference_number = excluded.reference_number,
+      memo = excluded.memo,
+      linked_invoices = excluded.linked_invoices,
+      raw_data = excluded.raw_data,
+      synced_at = CURRENT_TIMESTAMP
+  `);
+  return stmt.run(
+    data.company_id,
+    data.external_id,
+    data.payment_type,
+    data.payment_date || null,
+    data.amount || null,
+    data.currency || 'USD',
+    data.customer_name || null,
+    data.customer_id || null,
+    data.payment_method || null,
+    data.reference_number || null,
+    data.memo || null,
+    data.linked_invoices || null,
+    data.raw_data || null
+  );
+}
+
+export function getPayments(companyId: number, paymentType?: string) {
+  if (paymentType) {
+    const stmt = db.prepare('SELECT * FROM payments WHERE company_id = ? AND payment_type = ? ORDER BY payment_date DESC');
+    return stmt.all(companyId, paymentType) as any[];
+  }
+  const stmt = db.prepare('SELECT * FROM payments WHERE company_id = ? ORDER BY payment_date DESC');
+  return stmt.all(companyId) as any[];
+}
+
+export function getPaymentCount(companyId: number) {
+  const stmt = db.prepare('SELECT COUNT(*) as count FROM payments WHERE company_id = ?');
+  return (stmt.get(companyId) as any)?.count || 0;
+}
+
+// Estimates functions
+export function upsertEstimate(data: {
+  company_id: number;
+  external_id: string;
+  estimate_type: string;
+  estimate_number?: string | null;
+  customer_name?: string | null;
+  customer_id?: string | null;
+  estimate_date?: string | null;
+  expiration_date?: string | null;
+  total_amount?: number | null;
+  currency?: string | null;
+  status?: string | null;
+  memo?: string | null;
+  raw_data?: string | null;
+}) {
+  const stmt = db.prepare(`
+    INSERT INTO estimates (company_id, external_id, estimate_type, estimate_number, customer_name, customer_id, estimate_date, expiration_date, total_amount, currency, status, memo, raw_data)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(company_id, external_id) DO UPDATE SET
+      estimate_type = excluded.estimate_type,
+      estimate_number = excluded.estimate_number,
+      customer_name = excluded.customer_name,
+      customer_id = excluded.customer_id,
+      estimate_date = excluded.estimate_date,
+      expiration_date = excluded.expiration_date,
+      total_amount = excluded.total_amount,
+      currency = excluded.currency,
+      status = excluded.status,
+      memo = excluded.memo,
+      raw_data = excluded.raw_data,
+      synced_at = CURRENT_TIMESTAMP
+  `);
+  return stmt.run(
+    data.company_id,
+    data.external_id,
+    data.estimate_type,
+    data.estimate_number || null,
+    data.customer_name || null,
+    data.customer_id || null,
+    data.estimate_date || null,
+    data.expiration_date || null,
+    data.total_amount || null,
+    data.currency || 'USD',
+    data.status || null,
+    data.memo || null,
+    data.raw_data || null
+  );
+}
+
+export function getEstimates(companyId: number, estimateType?: string) {
+  if (estimateType) {
+    const stmt = db.prepare('SELECT * FROM estimates WHERE company_id = ? AND estimate_type = ? ORDER BY estimate_date DESC');
+    return stmt.all(companyId, estimateType) as any[];
+  }
+  const stmt = db.prepare('SELECT * FROM estimates WHERE company_id = ? ORDER BY estimate_date DESC');
+  return stmt.all(companyId) as any[];
+}
+
+export function getEstimateCount(companyId: number) {
+  const stmt = db.prepare('SELECT COUNT(*) as count FROM estimates WHERE company_id = ?');
+  return (stmt.get(companyId) as any)?.count || 0;
+}
+
+// Employees functions
+export function upsertEmployee(data: {
+  company_id: number;
+  external_id: string;
+  display_name: string;
+  given_name?: string;
+  family_name?: string;
+  email?: string;
+  phone?: string;
+  hire_date?: string;
+  is_active?: boolean;
+  raw_data?: string;
+}) {
+  const stmt = db.prepare(`
+    INSERT INTO employees (company_id, external_id, display_name, given_name, family_name, email, phone, hire_date, is_active, raw_data)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(company_id, external_id) DO UPDATE SET
+      display_name = excluded.display_name,
+      given_name = excluded.given_name,
+      family_name = excluded.family_name,
+      email = excluded.email,
+      phone = excluded.phone,
+      hire_date = excluded.hire_date,
+      is_active = excluded.is_active,
+      raw_data = excluded.raw_data,
+      synced_at = CURRENT_TIMESTAMP
+  `);
+  return stmt.run(
+    data.company_id,
+    data.external_id,
+    data.display_name,
+    data.given_name || null,
+    data.family_name || null,
+    data.email || null,
+    data.phone || null,
+    data.hire_date || null,
+    data.is_active !== false ? 1 : 0,
+    data.raw_data || null
+  );
+}
+
+export function getEmployees(companyId: number, activeOnly: boolean = false) {
+  if (activeOnly) {
+    const stmt = db.prepare('SELECT * FROM employees WHERE company_id = ? AND is_active = 1 ORDER BY display_name');
+    return stmt.all(companyId) as any[];
+  }
+  const stmt = db.prepare('SELECT * FROM employees WHERE company_id = ? ORDER BY display_name');
+  return stmt.all(companyId) as any[];
+}
+
+export function getEmployeeCount(companyId: number) {
+  const stmt = db.prepare('SELECT COUNT(*) as count FROM employees WHERE company_id = ?');
+  return (stmt.get(companyId) as any)?.count || 0;
+}
+
+// Journal Entries functions
+export function upsertJournalEntry(data: {
+  company_id: number;
+  external_id: string;
+  entry_number?: string | null;
+  entry_date?: string | null;
+  total_amount?: number | null;
+  currency?: string | null;
+  memo?: string | null;
+  adjustment?: boolean;
+  lines?: string | null;
+  raw_data?: string | null;
+}) {
+  const stmt = db.prepare(`
+    INSERT INTO journal_entries (company_id, external_id, entry_number, entry_date, total_amount, currency, memo, adjustment, lines, raw_data)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(company_id, external_id) DO UPDATE SET
+      entry_number = excluded.entry_number,
+      entry_date = excluded.entry_date,
+      total_amount = excluded.total_amount,
+      currency = excluded.currency,
+      memo = excluded.memo,
+      adjustment = excluded.adjustment,
+      lines = excluded.lines,
+      raw_data = excluded.raw_data,
+      synced_at = CURRENT_TIMESTAMP
+  `);
+  return stmt.run(
+    data.company_id,
+    data.external_id,
+    data.entry_number || null,
+    data.entry_date || null,
+    data.total_amount || null,
+    data.currency || 'USD',
+    data.memo || null,
+    data.adjustment ? 1 : 0,
+    data.lines || null,
+    data.raw_data || null
+  );
+}
+
+export function getJournalEntries(companyId: number) {
+  const stmt = db.prepare('SELECT * FROM journal_entries WHERE company_id = ? ORDER BY entry_date DESC');
+  return stmt.all(companyId) as any[];
+}
+
+export function getJournalEntryCount(companyId: number) {
+  const stmt = db.prepare('SELECT COUNT(*) as count FROM journal_entries WHERE company_id = ?');
+  return (stmt.get(companyId) as any)?.count || 0;
+}
+
 // Add unique constraint for upsert operations (run once)
 try {
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_invoices_company_external ON invoices(company_id, external_id)');
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_company_external ON bank_transactions(company_id, external_id)');
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_accounts_company_external ON accounts(company_id, external_id)');
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_todos_company_external ON todos(company_id, external_id)');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_company_external ON payments(company_id, external_id)');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_estimates_company_external ON estimates(company_id, external_id)');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_employees_company_external ON employees(company_id, external_id)');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_journal_entries_company_external ON journal_entries(company_id, external_id)');
 } catch (e) {
   // Indexes might already exist
 }
