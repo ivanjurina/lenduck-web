@@ -11,6 +11,7 @@ export interface Translations {
     accounts: string;
     customers: string;
     bankAccounts: string;
+    inventory: string;
     transactions: string;
     reports: string;
     offers: string;
@@ -176,6 +177,20 @@ export interface Translations {
     currency: string;
     balance: string;
     noBankAccounts: string;
+  };
+  // Inventory page
+  inventoryPage: {
+    title: string;
+    subtitle: string;
+    totalItems: string;
+    totalValue: string;
+    sku: string;
+    name: string;
+    quantity: string;
+    unit: string;
+    purchasePrice: string;
+    retailPrice: string;
+    noInventory: string;
   };
   // Transactions page
   transactionsPage: {
@@ -351,6 +366,7 @@ export const translations: Record<Language, Translations> = {
       accounts: 'Accounts',
       customers: 'Customers',
       bankAccounts: 'Bank Accounts',
+      inventory: 'Inventory',
       transactions: 'Transactions',
       reports: 'Reports',
       offers: 'Offers',
@@ -506,6 +522,19 @@ export const translations: Record<Language, Translations> = {
       currency: 'Currency',
       balance: 'Balance',
       noBankAccounts: 'No bank accounts found',
+    },
+    inventoryPage: {
+      title: 'Inventory',
+      subtitle: 'Products and inventory items synced from your accounting software',
+      totalItems: 'Total Items',
+      totalValue: 'Total Value',
+      sku: 'SKU',
+      name: 'Name',
+      quantity: 'Quantity',
+      unit: 'Unit',
+      purchasePrice: 'Purchase Price',
+      retailPrice: 'Retail Price',
+      noInventory: 'No inventory items found',
     },
     transactionsPage: {
       title: 'Bank Transactions',
@@ -671,6 +700,7 @@ export const translations: Record<Language, Translations> = {
       accounts: 'Účtová osnova',
       customers: 'Kontakty',
       bankAccounts: 'Bankovní účty',
+      inventory: 'Sklad',
       transactions: 'Transakce',
       reports: 'Reporty',
       offers: 'Nabídky',
@@ -826,6 +856,19 @@ export const translations: Record<Language, Translations> = {
       currency: 'Měna',
       balance: 'Zůstatek',
       noBankAccounts: 'Žádné bankovní účty nenalezeny',
+    },
+    inventoryPage: {
+      title: 'Sklad',
+      subtitle: 'Produkty a skladové položky synchronizované z vašeho účetního softwaru',
+      totalItems: 'Celkem položek',
+      totalValue: 'Celková hodnota',
+      sku: 'SKU',
+      name: 'Název',
+      quantity: 'Množství',
+      unit: 'Jednotka',
+      purchasePrice: 'Nákupní cena',
+      retailPrice: 'Prodejní cena',
+      noInventory: 'Žádné skladové položky nenalezeny',
     },
     transactionsPage: {
       title: 'Bankovní transakce',
@@ -991,6 +1034,7 @@ export const translations: Record<Language, Translations> = {
       accounts: 'Účtová osnova',
       customers: 'Kontakty',
       bankAccounts: 'Bankové účty',
+      inventory: 'Sklad',
       transactions: 'Transakcie',
       reports: 'Reporty',
       offers: 'Ponuky',
@@ -1146,6 +1190,19 @@ export const translations: Record<Language, Translations> = {
       currency: 'Mena',
       balance: 'Zostatok',
       noBankAccounts: 'Žiadne bankové účty nenájdené',
+    },
+    inventoryPage: {
+      title: 'Sklad',
+      subtitle: 'Produkty a skladové položky synchronizované z vášho účtovného softvéru',
+      totalItems: 'Celkom položiek',
+      totalValue: 'Celková hodnota',
+      sku: 'SKU',
+      name: 'Názov',
+      quantity: 'Množstvo',
+      unit: 'Jednotka',
+      purchasePrice: 'Nákupná cena',
+      retailPrice: 'Predajná cena',
+      noInventory: 'Žiadne skladové položky nenájdené',
     },
     transactionsPage: {
       title: 'Bankové transakcie',

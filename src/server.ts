@@ -234,7 +234,7 @@ interface AppPageOptions {
   content: string;
   companyId?: number;
   companyName?: string;
-  activePage?: 'overview' | 'data' | 'invoices' | 'customers' | 'bankAccounts' | 'accounts' | 'transactions' | 'reports' | 'offers' | 'settings' | 'admin' | 'dashboard';
+  activePage?: 'overview' | 'data' | 'invoices' | 'customers' | 'bankAccounts' | 'inventory' | 'accounts' | 'transactions' | 'reports' | 'offers' | 'settings' | 'admin' | 'dashboard';
   req: Request;
 }
 
@@ -751,6 +751,7 @@ function renderAppPage(options: AppPageOptions): string {
                 ${navItem(`/company/${companyId}/data/invoices`, tr.nav.invoices, 'invoices')}
                 ${navItem(`/company/${companyId}/data/customers`, tr.nav.customers, 'customers')}
                 ${navItem(`/company/${companyId}/data/bank-accounts`, tr.nav.bankAccounts, 'bankAccounts')}
+                ${navItem(`/company/${companyId}/data/inventory`, tr.nav.inventory, 'inventory')}
                 ${navItem(`/company/${companyId}/data/accounts`, tr.nav.accounts, 'accounts')}
                 ${navItem(`/company/${companyId}/data/transactions`, tr.nav.transactions, 'transactions')}
             </div>
@@ -3373,6 +3374,92 @@ app.get('/company/:id/data/bank-accounts', requireAuth, (req: Request, res: Resp
     companyId,
     companyName: company.name,
     activePage: 'bankAccounts',
+    req
+  }));
+});
+
+// Data: Inventory
+app.get('/company/:id/data/inventory', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const allAccounts = db.getAccountsByCompany(companyId);
+  const tr = t(req);
+  const lang = getLang(req);
+
+  // Filter only inventory items
+  const inventory = allAccounts.filter((a: any) => a.account_type === 'Inventory');
+
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null || amount === undefined) return '-';
+    return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { maximumFractionDigits: 2 }).format(amount) + ' ' + (company.currency || 'CZK');
+  };
+
+  // Calculate total value (retail price * quantity for tracked items)
+  const totalValue = inventory.reduce((sum: number, item: any) => {
+    // We stored quantity in current_balance for inventory items
+    return sum + (item.current_balance || 0);
+  }, 0);
+
+  const content = `
+    <div class="page-header">
+      <h1>${tr.inventoryPage.title}</h1>
+      <p>${tr.inventoryPage.subtitle}</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">${tr.inventoryPage.totalItems}</div>
+        <div class="stat-value">${inventory.length}</div>
+      </div>
+    </div>
+
+    ${inventory.length > 0 ? `
+      <div class="card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>${tr.inventoryPage.sku}</th>
+                <th>${tr.inventoryPage.name}</th>
+                <th>${tr.inventoryPage.unit}</th>
+                <th style="text-align:right">${tr.inventoryPage.retailPrice}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${inventory.map((item: any) => `
+                <tr>
+                  <td><strong>${item.account_number || '-'}</strong></td>
+                  <td>${item.name}</td>
+                  <td>${item.account_sub_type || '-'}</td>
+                  <td style="text-align:right; font-weight: 600;">${formatCurrency(item.current_balance)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    ` : `
+      <div class="card">
+        <div class="card-body empty-state" style="text-align: center; padding: 48px;">
+          <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.3;">📦</div>
+          <h3 style="margin-bottom: 8px;">${tr.inventoryPage.noInventory}</h3>
+          <p style="color: var(--color-text-secondary);">${lang === 'cs' ? 'Skladové položky se synchronizují z vašeho účetního softwaru.' : lang === 'sk' ? 'Skladové položky sa synchronizujú z vášho účtovného softvéru.' : 'Inventory items are synced from your accounting software.'}</p>
+        </div>
+      </div>
+    `}
+  `;
+
+  res.send(renderAppPage({
+    title: tr.inventoryPage.title,
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'inventory',
     req
   }));
 });
