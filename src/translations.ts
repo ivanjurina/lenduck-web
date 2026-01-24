@@ -9,6 +9,8 @@ export interface Translations {
     data: string;
     invoices: string;
     accounts: string;
+    customers: string;
+    bankAccounts: string;
     transactions: string;
     reports: string;
     offers: string;
@@ -149,6 +151,31 @@ export interface Translations {
     type: string;
     balance: string;
     noAccounts: string;
+    noAccountsFromIntegration: string;
+  };
+  // Customers page
+  customersPage: {
+    title: string;
+    subtitle: string;
+    totalCustomers: string;
+    totalSuppliers: string;
+    customers: string;
+    suppliers: string;
+    name: string;
+    registrationNo: string;
+    type: string;
+    noCustomers: string;
+  };
+  // Bank Accounts page
+  bankAccountsPage: {
+    title: string;
+    subtitle: string;
+    totalBankAccounts: string;
+    accountNumber: string;
+    bankName: string;
+    currency: string;
+    balance: string;
+    noBankAccounts: string;
   };
   // Transactions page
   transactionsPage: {
@@ -322,6 +349,8 @@ export const translations: Record<Language, Translations> = {
       data: 'Data',
       invoices: 'Invoices',
       accounts: 'Accounts',
+      customers: 'Customers',
+      bankAccounts: 'Bank Accounts',
       transactions: 'Transactions',
       reports: 'Reports',
       offers: 'Offers',
@@ -454,6 +483,29 @@ export const translations: Record<Language, Translations> = {
       type: 'Type',
       balance: 'Balance',
       noAccounts: 'No accounts found',
+      noAccountsFromIntegration: 'No chart of accounts available from your current integration.',
+    },
+    customersPage: {
+      title: 'Customers & Suppliers',
+      subtitle: 'All contacts synced from your accounting software',
+      totalCustomers: 'Customers',
+      totalSuppliers: 'Suppliers',
+      customers: 'Customers',
+      suppliers: 'Suppliers',
+      name: 'Name',
+      registrationNo: 'Registration No.',
+      type: 'Type',
+      noCustomers: 'No customers or suppliers found',
+    },
+    bankAccountsPage: {
+      title: 'Bank Accounts',
+      subtitle: 'Bank accounts synced from your accounting software',
+      totalBankAccounts: 'Total Accounts',
+      accountNumber: 'Account Number',
+      bankName: 'Bank Name',
+      currency: 'Currency',
+      balance: 'Balance',
+      noBankAccounts: 'No bank accounts found',
     },
     transactionsPage: {
       title: 'Bank Transactions',
@@ -616,7 +668,9 @@ export const translations: Record<Language, Translations> = {
       overview: 'Přehled',
       data: 'Data',
       invoices: 'Faktury',
-      accounts: 'Účty',
+      accounts: 'Účtová osnova',
+      customers: 'Kontakty',
+      bankAccounts: 'Bankovní účty',
       transactions: 'Transakce',
       reports: 'Reporty',
       offers: 'Nabídky',
@@ -749,6 +803,29 @@ export const translations: Record<Language, Translations> = {
       type: 'Typ',
       balance: 'Zůstatek',
       noAccounts: 'Žádné účty nenalezeny',
+      noAccountsFromIntegration: 'Účtová osnova není dostupná z vaší aktuální integrace.',
+    },
+    customersPage: {
+      title: 'Kontakty',
+      subtitle: 'Zákazníci a dodavatelé synchronizovaní z vašeho účetního softwaru',
+      totalCustomers: 'Zákazníci',
+      totalSuppliers: 'Dodavatelé',
+      customers: 'Zákazníci',
+      suppliers: 'Dodavatelé',
+      name: 'Název',
+      registrationNo: 'IČO',
+      type: 'Typ',
+      noCustomers: 'Žádní zákazníci ani dodavatelé nenalezeni',
+    },
+    bankAccountsPage: {
+      title: 'Bankovní účty',
+      subtitle: 'Bankovní účty synchronizované z vašeho účetního softwaru',
+      totalBankAccounts: 'Celkem účtů',
+      accountNumber: 'Číslo účtu',
+      bankName: 'Název banky',
+      currency: 'Měna',
+      balance: 'Zůstatek',
+      noBankAccounts: 'Žádné bankovní účty nenalezeny',
     },
     transactionsPage: {
       title: 'Bankovní transakce',
@@ -911,7 +988,9 @@ export const translations: Record<Language, Translations> = {
       overview: 'Prehľad',
       data: 'Dáta',
       invoices: 'Faktúry',
-      accounts: 'Účty',
+      accounts: 'Účtová osnova',
+      customers: 'Kontakty',
+      bankAccounts: 'Bankové účty',
       transactions: 'Transakcie',
       reports: 'Reporty',
       offers: 'Ponuky',
@@ -1044,6 +1123,29 @@ export const translations: Record<Language, Translations> = {
       type: 'Typ',
       balance: 'Zostatok',
       noAccounts: 'Žiadne účty nenájdené',
+      noAccountsFromIntegration: 'Účtová osnova nie je dostupná z vašej aktuálnej integrácie.',
+    },
+    customersPage: {
+      title: 'Kontakty',
+      subtitle: 'Zákazníci a dodávatelia synchronizovaní z vášho účtovného softvéru',
+      totalCustomers: 'Zákazníci',
+      totalSuppliers: 'Dodávatelia',
+      customers: 'Zákazníci',
+      suppliers: 'Dodávatelia',
+      name: 'Názov',
+      registrationNo: 'IČO',
+      type: 'Typ',
+      noCustomers: 'Žiadni zákazníci ani dodávatelia nenájdení',
+    },
+    bankAccountsPage: {
+      title: 'Bankové účty',
+      subtitle: 'Bankové účty synchronizované z vášho účtovného softvéru',
+      totalBankAccounts: 'Celkom účtov',
+      accountNumber: 'Číslo účtu',
+      bankName: 'Názov banky',
+      currency: 'Mena',
+      balance: 'Zostatok',
+      noBankAccounts: 'Žiadne bankové účty nenájdené',
     },
     transactionsPage: {
       title: 'Bankové transakcie',

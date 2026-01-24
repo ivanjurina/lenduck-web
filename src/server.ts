@@ -233,7 +233,7 @@ interface AppPageOptions {
   content: string;
   companyId?: number;
   companyName?: string;
-  activePage?: 'overview' | 'data' | 'invoices' | 'accounts' | 'transactions' | 'reports' | 'offers' | 'settings' | 'admin' | 'dashboard';
+  activePage?: 'overview' | 'data' | 'invoices' | 'customers' | 'bankAccounts' | 'accounts' | 'transactions' | 'reports' | 'offers' | 'settings' | 'admin' | 'dashboard';
   req: Request;
 }
 
@@ -748,6 +748,8 @@ function renderAppPage(options: AppPageOptions): string {
             <div class="nav-section">
                 <div class="nav-section-title">${tr.nav.data}</div>
                 ${navItem(`/company/${companyId}/data/invoices`, tr.nav.invoices, 'invoices')}
+                ${navItem(`/company/${companyId}/data/customers`, tr.nav.customers, 'customers')}
+                ${navItem(`/company/${companyId}/data/bank-accounts`, tr.nav.bankAccounts, 'bankAccounts')}
                 ${navItem(`/company/${companyId}/data/accounts`, tr.nav.accounts, 'accounts')}
                 ${navItem(`/company/${companyId}/data/transactions`, tr.nav.transactions, 'transactions')}
             </div>
@@ -3018,7 +3020,197 @@ app.get('/company/:id/data/invoices/export/json', requireAuth, (req: Request, re
   res.send(JSON.stringify(exportData, null, 2));
 });
 
-// Data: Chart of Accounts / Contacts
+// Data: Customers & Suppliers
+app.get('/company/:id/data/customers', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const allAccounts = db.getAccountsByCompany(companyId);
+  const tr = t(req);
+  const lang = getLang(req);
+
+  // Filter only customers and suppliers (Accounts Receivable / Accounts Payable)
+  const contacts = allAccounts.filter((a: any) =>
+    a.account_type === 'Accounts Receivable' || a.account_type === 'Accounts Payable'
+  );
+
+  const customers = contacts.filter((a: any) => a.account_type === 'Accounts Receivable');
+  const suppliers = contacts.filter((a: any) => a.account_type === 'Accounts Payable');
+
+  const getTypeLabel = (acc: any) => {
+    if (acc.account_type === 'Accounts Receivable') {
+      return lang === 'cs' ? 'Zákazník' : lang === 'sk' ? 'Zákazník' : 'Customer';
+    }
+    return lang === 'cs' ? 'Dodavatel' : lang === 'sk' ? 'Dodávateľ' : 'Supplier';
+  };
+
+  const content = `
+    <div class="page-header">
+      <h1>${tr.customersPage.title}</h1>
+      <p>${tr.customersPage.subtitle}</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">${tr.customersPage.totalCustomers}</div>
+        <div class="stat-value">${customers.length}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${tr.customersPage.totalSuppliers}</div>
+        <div class="stat-value">${suppliers.length}</div>
+      </div>
+    </div>
+
+    ${customers.length > 0 ? `
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-header">
+          <span class="card-title">${tr.customersPage.customers}</span>
+          <span class="badge badge-info">${customers.length}</span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>${tr.customersPage.registrationNo}</th>
+                <th>${tr.customersPage.name}</th>
+                <th>${tr.customersPage.type}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${customers.map((c: any) => `
+                <tr>
+                  <td><strong>${c.account_number || '-'}</strong></td>
+                  <td>${c.name}</td>
+                  <td>${getTypeLabel(c)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    ` : ''}
+
+    ${suppliers.length > 0 ? `
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-header">
+          <span class="card-title">${tr.customersPage.suppliers}</span>
+          <span class="badge badge-info">${suppliers.length}</span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>${tr.customersPage.registrationNo}</th>
+                <th>${tr.customersPage.name}</th>
+                <th>${tr.customersPage.type}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${suppliers.map((s: any) => `
+                <tr>
+                  <td><strong>${s.account_number || '-'}</strong></td>
+                  <td>${s.name}</td>
+                  <td>${getTypeLabel(s)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    ` : ''}
+
+    ${contacts.length === 0 ? `<div class="card"><div class="card-body empty-state" style="text-align: center; padding: 48px;"><div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.3;">👥</div><p>${tr.customersPage.noCustomers}</p></div></div>` : ''}
+  `;
+
+  res.send(renderAppPage({
+    title: tr.customersPage.title,
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'customers',
+    req
+  }));
+});
+
+// Data: Bank Accounts
+app.get('/company/:id/data/bank-accounts', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const allAccounts = db.getAccountsByCompany(companyId);
+  const tr = t(req);
+  const lang = getLang(req);
+
+  // Filter only bank accounts
+  const bankAccounts = allAccounts.filter((a: any) => a.account_type === 'Bank');
+
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null || amount === undefined) return 'N/A';
+    return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { maximumFractionDigits: 0 }).format(amount);
+  };
+
+  const content = `
+    <div class="page-header">
+      <h1>${tr.bankAccountsPage.title}</h1>
+      <p>${tr.bankAccountsPage.subtitle}</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">${tr.bankAccountsPage.totalBankAccounts}</div>
+        <div class="stat-value">${bankAccounts.length}</div>
+      </div>
+    </div>
+
+    ${bankAccounts.length > 0 ? `
+      <div class="card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>${tr.bankAccountsPage.accountNumber}</th>
+                <th>${tr.bankAccountsPage.bankName}</th>
+                <th>${tr.bankAccountsPage.currency}</th>
+                <th style="text-align:right">${tr.bankAccountsPage.balance}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${bankAccounts.map((acc: any) => `
+                <tr>
+                  <td><strong>${acc.account_number || '-'}</strong></td>
+                  <td>${acc.name}</td>
+                  <td>${acc.currency || 'CZK'}</td>
+                  <td style="text-align:right; font-weight: 600;">${formatCurrency(acc.current_balance)} ${acc.currency || 'CZK'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    ` : `
+      <div class="card"><div class="card-body empty-state" style="text-align: center; padding: 48px;"><div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.3;">🏦</div><p>${tr.bankAccountsPage.noBankAccounts}</p></div></div>
+    `}
+  `;
+
+  res.send(renderAppPage({
+    title: tr.bankAccountsPage.title,
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'bankAccounts',
+    req
+  }));
+});
+
+// Data: Chart of Accounts
 app.get('/company/:id/data/accounts', requireAuth, (req: Request, res: Response) => {
   const companyId = parseInt(req.params.id);
   const company = db.getCompanyById(companyId);
@@ -3027,42 +3219,27 @@ app.get('/company/:id/data/accounts', requireAuth, (req: Request, res: Response)
     return res.redirect('/dashboard');
   }
 
-  const accounts = db.getAccountsByCompany(companyId);
+  const allAccounts = db.getAccountsByCompany(companyId);
   const connection = db.getAccountingConnection(companyId);
-  const isFakturoid = connection?.software_type === 'fakturoid';
   const tr = t(req);
   const lang = getLang(req);
+
+  // Filter out contacts and bank accounts - only show actual chart of accounts
+  // Chart of accounts types: Income, Expense, Fixed Asset, Other Current Asset, Equity, etc.
+  const chartOfAccountsTypes = ['Income', 'Expense', 'Fixed Asset', 'Other Current Asset', 'Equity', 'Cost of Goods Sold', 'Other Income', 'Other Expense'];
+  const accounts = allAccounts.filter((a: any) =>
+    !['Accounts Receivable', 'Accounts Payable', 'Bank'].includes(a.account_type)
+  );
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return 'N/A';
     return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
   };
 
-  // Friendly type labels for Fakturoid
-  const getTypeLabel = (type: string) => {
-    if (isFakturoid) {
-      const labels: Record<string, Record<string, string>> = {
-        'Accounts Receivable': { en: 'Customers', cs: 'Zákazníci', sk: 'Zákazníci' },
-        'Accounts Payable': { en: 'Suppliers', cs: 'Dodavatelé', sk: 'Dodávatelia' },
-        'Bank': { en: 'Bank Accounts', cs: 'Bankovní účty', sk: 'Bankové účty' },
-        'Other': { en: 'Other', cs: 'Ostatní', sk: 'Ostatné' },
-      };
-      return labels[type]?.[lang] || type;
-    }
-    return type;
-  };
-
-  const getSubTypeLabel = (subType: string) => {
-    if (isFakturoid) {
-      const labels: Record<string, Record<string, string>> = {
-        'customer': { en: 'Customer', cs: 'Zákazník', sk: 'Zákazník' },
-        'supplier': { en: 'Supplier', cs: 'Dodavatel', sk: 'Dodávateľ' },
-        'both': { en: 'Customer & Supplier', cs: 'Zákazník i dodavatel', sk: 'Zákazník aj dodávateľ' },
-      };
-      return labels[subType]?.[lang] || subType || '-';
-    }
-    return subType || '-';
-  };
+  // Check if integration provides chart of accounts
+  const softwareType = connection?.software_type || 'unknown';
+  const noChartOfAccountsIntegrations = ['fakturoid']; // Add other integrations that don't provide COA
+  const hasChartOfAccounts = !noChartOfAccountsIntegrations.includes(softwareType) && accounts.length > 0;
 
   // Group accounts by type
   const accountsByType: Record<string, any[]> = {};
@@ -3072,43 +3249,17 @@ app.get('/company/:id/data/accounts', requireAuth, (req: Request, res: Response)
     accountsByType[type].push(acc);
   });
 
-  // For Fakturoid, count customers and suppliers
-  const customers = accounts.filter((a: any) => a.account_type === 'Accounts Receivable').length;
-  const suppliers = accounts.filter((a: any) => a.account_type === 'Accounts Payable').length;
-  const bankAccounts = accounts.filter((a: any) => a.account_type === 'Bank').length;
-
-  const totalAssets = accounts.filter((a: any) => ['Bank', 'Accounts Receivable', 'Fixed Asset', 'Other Current Asset'].includes(a.account_type)).reduce((sum: number, a: any) => sum + (a.current_balance || 0), 0);
-  const totalLiabilities = accounts.filter((a: any) => ['Accounts Payable', 'Credit Card', 'Long Term Liability', 'Other Current Liability'].includes(a.account_type)).reduce((sum: number, a: any) => sum + (a.current_balance || 0), 0);
-
-  // Page title based on software
-  const pageTitle = isFakturoid
-    ? (lang === 'cs' ? 'Kontakty' : lang === 'sk' ? 'Kontakty' : 'Contacts')
-    : tr.accountsPage.title;
-  const pageSubtitle = isFakturoid
-    ? (lang === 'cs' ? 'Zákazníci a dodavatelé z Fakturoidu' : lang === 'sk' ? 'Zákazníci a dodávatelia z Fakturoidu' : 'Customers and suppliers from Fakturoid')
-    : tr.accountsPage.subtitle;
+  const totalAssets = accounts.filter((a: any) => ['Fixed Asset', 'Other Current Asset'].includes(a.account_type)).reduce((sum: number, a: any) => sum + (a.current_balance || 0), 0);
+  const totalLiabilities = accounts.filter((a: any) => ['Credit Card', 'Long Term Liability', 'Other Current Liability'].includes(a.account_type)).reduce((sum: number, a: any) => sum + (a.current_balance || 0), 0);
 
   const content = `
     <div class="page-header">
-      <h1>${pageTitle}</h1>
-      <p>${pageSubtitle}</p>
+      <h1>${tr.accountsPage.title}</h1>
+      <p>${tr.accountsPage.subtitle}</p>
     </div>
 
-    <div class="stats-grid">
-      ${isFakturoid ? `
-        <div class="stat-card">
-          <div class="stat-label">${lang === 'cs' ? 'Zákazníci' : lang === 'sk' ? 'Zákazníci' : 'Customers'}</div>
-          <div class="stat-value">${customers}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">${lang === 'cs' ? 'Dodavatelé' : lang === 'sk' ? 'Dodávatelia' : 'Suppliers'}</div>
-          <div class="stat-value">${suppliers}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">${lang === 'cs' ? 'Bankovní účty' : lang === 'sk' ? 'Bankové účty' : 'Bank Accounts'}</div>
-          <div class="stat-value">${bankAccounts}</div>
-        </div>
-      ` : `
+    ${hasChartOfAccounts ? `
+      <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">${tr.accountsPage.totalAccounts}</div>
           <div class="stat-value">${accounts.length}</div>
@@ -3121,41 +3272,48 @@ app.get('/company/:id/data/accounts', requireAuth, (req: Request, res: Response)
           <div class="stat-label">${tr.accountsPage.liabilities}</div>
           <div class="stat-value" style="color: var(--color-error)">${formatCurrency(totalLiabilities)}</div>
         </div>
-      `}
-    </div>
+      </div>
 
-    ${Object.entries(accountsByType).map(([type, accs]) => `
-      <div class="card" style="margin-bottom: 20px;">
-        <div class="card-header">
-          <span class="card-title">${getTypeLabel(type)}</span>
-          <span class="badge badge-info">${accs.length}</span>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>${isFakturoid ? (lang === 'cs' ? 'IČO' : lang === 'sk' ? 'IČO' : 'ID') : tr.accountsPage.accountNumber}</th>
-                <th>${isFakturoid ? (lang === 'cs' ? 'Název' : lang === 'sk' ? 'Názov' : 'Name') : tr.accountsPage.accountName}</th>
-                <th>${tr.accountsPage.type}</th>
-                ${!isFakturoid ? `<th style="text-align:right">${tr.accountsPage.balance}</th>` : ''}
-              </tr>
-            </thead>
-            <tbody>
-              ${accs.map((acc: any) => `
+      ${Object.entries(accountsByType).map(([type, accs]) => `
+        <div class="card" style="margin-bottom: 20px;">
+          <div class="card-header">
+            <span class="card-title">${type}</span>
+            <span class="badge badge-info">${accs.length}</span>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
                 <tr>
-                  <td><strong>${acc.account_number || '-'}</strong></td>
-                  <td>${acc.name}</td>
-                  <td>${getSubTypeLabel(acc.account_sub_type)}</td>
-                  ${!isFakturoid ? `<td style="text-align:right; font-weight: 600; color: ${acc.current_balance >= 0 ? 'var(--color-success)' : 'var(--color-error)'}">${formatCurrency(acc.current_balance)}</td>` : ''}
+                  <th>${tr.accountsPage.accountNumber}</th>
+                  <th>${tr.accountsPage.accountName}</th>
+                  <th>${tr.accountsPage.type}</th>
+                  <th style="text-align:right">${tr.accountsPage.balance}</th>
                 </tr>
-              `).join('')}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                ${accs.map((acc: any) => `
+                  <tr>
+                    <td><strong>${acc.account_number || '-'}</strong></td>
+                    <td>${acc.name}</td>
+                    <td>${acc.account_sub_type || '-'}</td>
+                    <td style="text-align:right; font-weight: 600; color: ${acc.current_balance >= 0 ? 'var(--color-success)' : 'var(--color-error)'}">${formatCurrency(acc.current_balance)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `).join('')}
+    ` : `
+      <div class="card">
+        <div class="card-body empty-state" style="text-align: center; padding: 48px;">
+          <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.3;">📊</div>
+          <h3 style="margin-bottom: 8px;">${tr.accountsPage.noAccounts}</h3>
+          <p style="color: var(--color-text-secondary);">${tr.accountsPage.noAccountsFromIntegration}</p>
+          ${softwareType ? `<p style="color: var(--color-text-muted); font-size: 0.85rem; margin-top: 12px;">${lang === 'cs' ? 'Aktivní integrace' : lang === 'sk' ? 'Aktívna integrácia' : 'Active integration'}: <strong>${softwareType.charAt(0).toUpperCase() + softwareType.slice(1)}</strong></p>` : ''}
         </div>
       </div>
-    `).join('')}
-
-    ${accounts.length === 0 ? `<div class="card"><div class="empty-state"><div class="empty-state-icon">&#128179;</div><p>${tr.accountsPage.noAccounts}</p></div></div>` : ''}
+    `}
   `;
 
   res.send(renderAppPage({
