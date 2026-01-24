@@ -1044,9 +1044,6 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
         <p>${tr.connectPage.subtitle}</p>
       </div>
       <div class="dashboard-actions">
-        <form method="POST" action="/company/demo" style="margin: 0;">
-          <button type="submit" class="btn btn-secondary">${tr.dashboard.tryDemo}</button>
-        </form>
         <a href="/company/new" class="btn btn-primary">+ ${tr.dashboard.addCompany}</a>
       </div>
     </div>
@@ -1070,12 +1067,7 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
           <div class="empty-state-icon">&#127970;</div>
           <h3 style="margin-bottom: 8px;">${tr.dashboard.noCompanies}</h3>
           <p style="margin-bottom: 24px;">${tr.dashboard.createFirst}</p>
-          <div style="display: flex; gap: 12px; justify-content: center;">
-            <form method="POST" action="/company/demo" style="margin: 0;">
-              <button type="submit" class="btn btn-secondary">${tr.dashboard.tryDemo}</button>
-            </form>
-            <a href="/company/new" class="btn btn-primary">${tr.dashboard.addCompany}</a>
-          </div>
+          <a href="/company/new" class="btn btn-primary">${tr.dashboard.addCompany}</a>
         </div>
       </div>
     `}
@@ -1215,6 +1207,30 @@ app.get('/company/new', requireAuth, (req: Request, res: Response) => {
               </div>
             </div>
           </a>
+
+          <div style="display: flex; align-items: center; gap: 16px; color: var(--color-text-muted);">
+            <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
+            <span style="font-size: 0.85rem;">${labels.orDivider}</span>
+            <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
+          </div>
+
+          <!-- Demo Company Option -->
+          <form method="POST" action="/company/demo" style="margin: 0;">
+            <button type="submit" class="card" style="width: 100%; text-align: left; padding: 24px; border: 2px dashed var(--color-border); background: transparent; cursor: pointer; transition: all 0.2s;">
+              <div style="display: flex; align-items: flex-start; gap: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <svg width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </div>
+                <div style="flex: 1;">
+                  <span style="font-weight: 600; font-size: 1.1rem; color: var(--color-text); display: block; margin-bottom: 4px;">${tr.dashboard.tryDemo}</span>
+                  <p style="color: var(--color-text-secondary); margin: 0; font-size: 0.9rem;">${lang === 'cs' ? 'Vytvořte demo firmu s ukázkovými daty pro vyzkoušení' : lang === 'sk' ? 'Vytvorte demo firmu so vzorovými dátami na vyskúšanie' : 'Create a demo company with sample data to try it out'}</p>
+                </div>
+                <div style="color: var(--color-text-muted);">
+                  <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                </div>
+              </div>
+            </button>
+          </form>
         </div>
 
         <div class="auth-footer" style="margin-top: 24px;">
