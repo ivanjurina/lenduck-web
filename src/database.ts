@@ -484,6 +484,29 @@ export function deleteAccountingConnection(companyId: number) {
   return stmt.run(companyId);
 }
 
+// Get sync statistics for a company
+export function getSyncStats(companyId: number) {
+  const invoicesStmt = db.prepare('SELECT COUNT(*) as count FROM invoices WHERE company_id = ? AND invoice_type = ?');
+  const accountsStmt = db.prepare('SELECT COUNT(*) as count FROM accounts WHERE company_id = ? AND account_type = ?');
+
+  const issuedInvoices = (invoicesStmt.get(companyId, 'issued') as any)?.count || 0;
+  const receivedInvoices = (invoicesStmt.get(companyId, 'received') as any)?.count || 0;
+  const customers = (accountsStmt.get(companyId, 'Accounts Receivable') as any)?.count || 0;
+  const suppliers = (accountsStmt.get(companyId, 'Accounts Payable') as any)?.count || 0;
+  const bankAccounts = (accountsStmt.get(companyId, 'Bank') as any)?.count || 0;
+  const inventoryItems = (accountsStmt.get(companyId, 'Inventory') as any)?.count || 0;
+
+  return {
+    issuedInvoices,
+    receivedInvoices,
+    customers,
+    suppliers,
+    bankAccounts,
+    inventoryItems,
+    totalRecords: issuedInvoices + receivedInvoices + customers + suppliers + bankAccounts + inventoryItems
+  };
+}
+
 // Software Request (for "Other" option)
 export function createSoftwareRequest(data: {
   company_id: number;

@@ -1533,6 +1533,10 @@ app.get('/company/:id/connect', requireAuth, (req: Request, res: Response) => {
   const success = req.query.success as string;
   const tr = t(req);
 
+  // Get existing connection
+  const existingConnection = db.getAccountingConnection(companyId);
+  const syncStats = db.getSyncStats(companyId);
+
   const softwareOptions = [
     { value: 'fakturoid', name: 'Fakturoid', description: 'Czech invoicing & accounting', available: true },
     { value: 'profit365', name: 'Profit365', description: 'Slovak/Czech accounting', available: true },
@@ -1544,7 +1548,92 @@ app.get('/company/:id/connect', requireAuth, (req: Request, res: Response) => {
     { value: 'other', name: tr.connectPage.other, description: 'Tell us what you use', available: true },
   ];
 
-  const softwareCards = softwareOptions.map(sw => `
+  // Build existing connection section
+  let existingConnectionHtml = '';
+  if (existingConnection && existingConnection.status === 'connected') {
+    const softwareName = softwareOptions.find(s => s.value === existingConnection.software_type)?.name || existingConnection.software_type;
+    const lastSync = existingConnection.last_sync_at
+      ? new Date(existingConnection.last_sync_at).toLocaleString(getLang(req) === 'cs' ? 'cs-CZ' : 'en-US')
+      : 'Never';
+
+    existingConnectionHtml = `
+      <div style="margin-bottom: 32px;">
+        <h2 style="margin: 0 0 16px 0; font-size: 1.1rem;">${tr.settingsPage.integration}</h2>
+        <div class="card" style="padding: 20px; border: 2px solid var(--color-success);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <div>
+              <h3 style="margin: 0 0 4px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                ${softwareName}
+                <span class="badge badge-success">${tr.settingsPage.connected}</span>
+              </h3>
+              <p style="margin: 0; color: var(--color-text-secondary); font-size: 0.85rem;">
+                ${tr.settingsPage.lastSync}: ${lastSync}
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <a href="/company/${companyId}/sync" class="btn btn-primary btn-sm">${tr.settingsPage.syncNow}</a>
+              <form method="POST" action="/company/${companyId}/disconnect" style="margin: 0;" onsubmit="return confirm('Are you sure you want to disconnect this integration?')">
+                <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--color-error);">Disconnect</button>
+              </form>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; background: var(--color-bg); padding: 16px; border-radius: var(--radius);">
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: 600; color: var(--color-primary);">${syncStats.issuedInvoices}</div>
+              <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Issued Invoices</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: 600; color: var(--color-primary);">${syncStats.receivedInvoices}</div>
+              <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Expenses</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: 600; color: var(--color-primary);">${syncStats.customers + syncStats.suppliers}</div>
+              <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Contacts</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: 600; color: var(--color-primary);">${syncStats.bankAccounts}</div>
+              <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Bank Accounts</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: 600; color: var(--color-primary);">${syncStats.inventoryItems}</div>
+              <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Inventory Items</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (existingConnection && existingConnection.status === 'pending') {
+    const softwareName = softwareOptions.find(s => s.value === existingConnection.software_type)?.name || existingConnection.software_type;
+    existingConnectionHtml = `
+      <div style="margin-bottom: 32px;">
+        <h2 style="margin: 0 0 16px 0; font-size: 1.1rem;">${tr.settingsPage.integration}</h2>
+        <div class="card" style="padding: 20px; border: 2px solid var(--color-warning);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h3 style="margin: 0 0 4px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                ${softwareName}
+                <span class="badge badge-warning">${tr.settingsPage.pending}</span>
+              </h3>
+              <p style="margin: 0; color: var(--color-text-secondary); font-size: 0.85rem;">
+                Connection setup in progress
+              </p>
+            </div>
+            <form method="POST" action="/company/${companyId}/connect" style="margin: 0;">
+              <input type="hidden" name="software_type" value="${existingConnection.software_type}">
+              <button type="submit" class="btn btn-primary btn-sm">Complete Setup</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Filter out already connected software from available options
+  const connectedType = existingConnection?.software_type;
+  const availableSoftware = softwareOptions.filter(sw => sw.value !== connectedType && sw.value !== 'other');
+  const otherOption = softwareOptions.find(sw => sw.value === 'other');
+
+  const softwareCards = availableSoftware.map(sw => `
     <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; ${sw.available ? '' : 'opacity: 0.6;'}">
       <div>
         <h3 style="margin: 0 0 4px 0; font-size: 1rem;">${sw.name}</h3>
@@ -1559,22 +1648,49 @@ app.get('/company/:id/connect', requireAuth, (req: Request, res: Response) => {
     </div>
   `).join('');
 
+  const otherCard = otherOption ? `
+    <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px;">
+      <div>
+        <h3 style="margin: 0 0 4px 0; font-size: 1rem;">${otherOption.name}</h3>
+        <p style="margin: 0; color: var(--color-text-secondary); font-size: 0.85rem;">${otherOption.description}</p>
+      </div>
+      <form method="POST" action="/company/${companyId}/connect" style="margin: 0;">
+        <input type="hidden" name="software_type" value="other">
+        <button type="submit" class="btn btn-secondary btn-sm">${tr.connectPage.requestIntegration}</button>
+      </form>
+    </div>
+  ` : '';
+
+  const availableIntegrationsTitle = existingConnection?.status === 'connected'
+    ? 'Add Another Integration'
+    : tr.connectPage.title;
+  const availableIntegrationsSubtitle = existingConnection?.status === 'connected'
+    ? 'Connect additional accounting software to this company'
+    : tr.connectPage.subtitle;
+
   const content = `
     <div class="page-header">
-      <h1>${tr.connectPage.title}</h1>
-      <p>${tr.connectPage.subtitle}</p>
+      <h1>${tr.settingsPage.title}</h1>
+      <p>${tr.settingsPage.subtitle}</p>
     </div>
 
     ${error ? `<div class="alert alert-error">${error}</div>` : ''}
     ${success ? `<div class="alert alert-success">${success}</div>` : ''}
 
-    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 600px;">
-      ${softwareCards}
+    ${existingConnectionHtml}
+
+    <div style="max-width: 600px;">
+      <h2 style="margin: 0 0 8px 0; font-size: 1.1rem;">${availableIntegrationsTitle}</h2>
+      <p style="margin: 0 0 16px 0; color: var(--color-text-secondary); font-size: 0.9rem;">${availableIntegrationsSubtitle}</p>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        ${softwareCards}
+        ${otherCard}
+      </div>
     </div>
   `;
 
   res.send(renderAppPage({
-    title: tr.connectPage.title,
+    title: tr.settingsPage.title,
     content,
     companyId,
     companyName: company.name,
@@ -1622,6 +1738,21 @@ app.post('/company/:id/connect', requireAuth, (req: Request, res: Response) => {
 
   // For other software types (not yet implemented)
   res.redirect(`/company/${companyId}/connect?error=` + encodeURIComponent('This integration is coming soon.'));
+});
+
+// Disconnect integration
+app.post('/company/:id/disconnect', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  // Delete the accounting connection
+  db.deleteAccountingConnection(companyId);
+
+  res.redirect(`/company/${companyId}/connect?success=` + encodeURIComponent('Integration disconnected successfully.'));
 });
 
 // Other software request form
