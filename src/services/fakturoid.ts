@@ -913,6 +913,8 @@ export async function fullSync(companyId: number): Promise<{
 export async function fetchUserAccounts(accessToken: string): Promise<Array<{
   slug: string;
   name: string;
+  registration_no?: string;
+  permission: string;
 }>> {
   const url = `${FAKTUROID_API_BASE}/user.json`;
 

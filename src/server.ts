@@ -1812,39 +1812,30 @@ app.get('/api/fakturoid/callback', async (req: Request, res: Response) => {
     }
 
     // Use the first account (or let user choose if multiple)
-    const accountSlug = accounts[0].slug;
+    const fakturoidAccount = accounts[0];
+    const accountSlug = fakturoidAccount.slug;
 
     let companyId: number;
 
     if (isNewCompanyFlow) {
       // NEW COMPANY FLOW: Create company from Fakturoid account data
-      try {
-        // Fetch account info from Fakturoid
-        const accountInfo = await fakturoid.fetchAccountInfoDirect(tokens.accessToken, accountSlug);
+      // Use data from fetchUserAccounts response directly
+      const result = db.createCompany({
+        user_id: req.session.userId!,
+        name: fakturoidAccount.name || 'My Company',
+        business_id: fakturoidAccount.registration_no || undefined,
+        country: 'CZ', // Fakturoid is primarily Czech
+        currency: 'CZK', // Default Czech currency
+      });
 
-        // Create company with data from Fakturoid
-        const result = db.createCompany({
-          user_id: req.session.userId!,
-          name: accountInfo.name || accountInfo.full_name || 'My Company',
-          business_id: accountInfo.registration_no || undefined,
-          country: accountInfo.country || 'CZ',
-          currency: accountInfo.currency || 'CZK',
-        });
+      companyId = result.lastInsertRowid as number;
 
-        companyId = result.lastInsertRowid as number;
-
-        // Create accounting connection
-        db.createAccountingConnection({
-          company_id: companyId,
-          software_type: 'fakturoid',
-          status: 'pending',
-        });
-      } catch (e: any) {
-        console.error('Failed to create company from Fakturoid:', e);
-        delete req.session.fakturoidNewCompany;
-        delete req.session.fakturoidOAuthState;
-        return res.redirect('/company/new?error=' + encodeURIComponent('Failed to get company info from Fakturoid: ' + e.message));
-      }
+      // Create accounting connection
+      db.createAccountingConnection({
+        company_id: companyId,
+        software_type: 'fakturoid',
+        status: 'pending',
+      });
     } else {
       // EXISTING COMPANY FLOW: Extract company ID from state
       const stateMatch = (state as string).match(/^company_(\d+)_/);
