@@ -560,6 +560,26 @@ export async function fetchAccountInfo(companyId: number): Promise<FakturoidAcco
 }
 
 /**
+ * Fetch account info using direct tokens (for new company creation)
+ */
+export async function fetchAccountInfoDirect(accessToken: string, accountSlug: string): Promise<FakturoidAccount> {
+  const url = `${FAKTUROID_API_BASE}/accounts/${accountSlug}.json`;
+
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'User-Agent': 'Lenduck/1.0 (podpora@lenduck.com)',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch account info: ${response.status}`);
+  }
+
+  return response.json() as Promise<FakturoidAccount>;
+}
+
+/**
  * Fetch all invoices
  */
 export async function fetchInvoices(companyId: number): Promise<FakturoidInvoice[]> {

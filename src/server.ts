@@ -17,6 +17,7 @@ declare module 'express-session' {
     // Fakturoid OAuth state
     fakturoidOAuthState?: string;
     fakturoidCompanyId?: number;
+    fakturoidNewCompany?: boolean;
   }
 }
 
@@ -1088,56 +1089,142 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
   }));
 });
 
-// Add new company form
+// Add new company page with integration options
 app.get('/company/new', requireAuth, (req: Request, res: Response) => {
   const error = req.query.error as string;
+  const success = req.query.success as string;
+  const mode = req.query.mode as string; // 'manual' to show form directly
+  const tr = t(req);
+  const lang = getLang(req);
 
+  const labels = {
+    title: lang === 'cs' ? 'Přidat firmu' : lang === 'sk' ? 'Pridať firmu' : 'Add Company',
+    subtitle: lang === 'cs' ? 'Vyberte způsob přidání vaší firmy' : lang === 'sk' ? 'Vyberte spôsob pridania vašej firmy' : 'Choose how to add your company',
+    connectFakturoid: lang === 'cs' ? 'Připojit Fakturoid' : lang === 'sk' ? 'Pripojiť Fakturoid' : 'Connect Fakturoid',
+    connectFakturoidDesc: lang === 'cs' ? 'Automaticky importujeme údaje o firmě z vašeho Fakturoid účtu' : lang === 'sk' ? 'Automaticky importujeme údaje o firme z vášho Fakturoid účtu' : 'We\'ll automatically import company info from your Fakturoid account',
+    addManually: lang === 'cs' ? 'Přidat ručně' : lang === 'sk' ? 'Pridať ručne' : 'Add Manually',
+    addManuallyDesc: lang === 'cs' ? 'Zadejte údaje o firmě ručně a připojte účetní software později' : lang === 'sk' ? 'Zadajte údaje o firme ručne a pripojte účtovný softvér neskôr' : 'Enter company details manually and connect accounting software later',
+    companyName: lang === 'cs' ? 'Název firmy' : lang === 'sk' ? 'Názov firmy' : 'Company Name',
+    businessId: lang === 'cs' ? 'IČO' : lang === 'sk' ? 'IČO' : 'Business ID',
+    country: lang === 'cs' ? 'Země' : lang === 'sk' ? 'Krajina' : 'Country',
+    currency: lang === 'cs' ? 'Měna' : lang === 'sk' ? 'Mena' : 'Currency',
+    createCompany: lang === 'cs' ? 'Vytvořit firmu' : lang === 'sk' ? 'Vytvoriť firmu' : 'Create Company',
+    backToDashboard: lang === 'cs' ? 'Zpět na nástěnku' : lang === 'sk' ? 'Späť na nástenku' : 'Back to Dashboard',
+    backToOptions: lang === 'cs' ? 'Zpět na možnosti' : lang === 'sk' ? 'Späť na možnosti' : 'Back to Options',
+    recommended: lang === 'cs' ? 'Doporučeno' : lang === 'sk' ? 'Odporúčané' : 'Recommended',
+    orDivider: lang === 'cs' ? 'nebo' : lang === 'sk' ? 'alebo' : 'or',
+  };
+
+  // Manual form
+  if (mode === 'manual') {
+    const content = `
+      <div class="auth-container">
+        <div class="auth-card" style="max-width: 500px;">
+          <div class="auth-header">
+            <h1>${labels.addManually}</h1>
+            <p>${labels.addManuallyDesc}</p>
+          </div>
+          ${error ? `<div class="flash flash-error">${error}</div>` : ''}
+          <form method="POST" action="/company/new">
+            <div class="form-group">
+              <label for="name">${labels.companyName} *</label>
+              <input type="text" id="name" name="name" required placeholder="${lang === 'cs' ? 'Vaše firma s.r.o.' : lang === 'sk' ? 'Vaša firma s.r.o.' : 'Your Company Ltd.'}">
+            </div>
+            <div class="form-group">
+              <label for="business_id">${labels.businessId}</label>
+              <input type="text" id="business_id" name="business_id" placeholder="12345678">
+            </div>
+            <div class="form-group">
+              <label for="country">${labels.country}</label>
+              <select id="country" name="country">
+                <option value="CZ">${lang === 'cs' ? 'Česká republika' : lang === 'sk' ? 'Česká republika' : 'Czech Republic'}</option>
+                <option value="SK">${lang === 'cs' ? 'Slovensko' : lang === 'sk' ? 'Slovensko' : 'Slovakia'}</option>
+                <option value="US">${lang === 'cs' ? 'Spojené státy' : lang === 'sk' ? 'Spojené štáty' : 'United States'}</option>
+                <option value="DE">${lang === 'cs' ? 'Německo' : lang === 'sk' ? 'Nemecko' : 'Germany'}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="currency">${labels.currency}</label>
+              <select id="currency" name="currency">
+                <option value="CZK">CZK - ${lang === 'cs' ? 'Česká koruna' : lang === 'sk' ? 'Česká koruna' : 'Czech Koruna'}</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="USD">USD - US Dollar</option>
+                <option value="GBP">GBP - British Pound</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">${labels.createCompany}</button>
+          </form>
+          <div class="auth-footer">
+            <a href="/company/new">${labels.backToOptions}</a>
+          </div>
+        </div>
+      </div>
+    `;
+    return res.send(renderPage(labels.title, content, req));
+  }
+
+  // Main page with options
   const content = `
     <div class="auth-container">
-      <div class="auth-card" style="max-width: 500px;">
+      <div class="auth-card" style="max-width: 600px;">
         <div class="auth-header">
-          <h1>Add New Company</h1>
-          <p>Enter your company details to get started</p>
+          <h1>${labels.title}</h1>
+          <p>${labels.subtitle}</p>
         </div>
         ${error ? `<div class="flash flash-error">${error}</div>` : ''}
-        <form method="POST" action="/company/new">
-          <div class="form-group">
-            <label for="name">Company Name *</label>
-            <input type="text" id="name" name="name" required placeholder="Your Company Ltd.">
+        ${success ? `<div class="flash flash-success">${success}</div>` : ''}
+
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Fakturoid Option -->
+          <a href="/company/new/fakturoid" class="card" style="text-decoration: none; padding: 24px; border: 2px solid #10b981; background: rgba(16, 185, 129, 0.05); transition: all 0.2s;">
+            <div style="display: flex; align-items: flex-start; gap: 16px;">
+              <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <span style="font-weight: 600; font-size: 1.1rem; color: var(--color-text);">${labels.connectFakturoid}</span>
+                  <span style="background: #10b981; color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${labels.recommended}</span>
+                </div>
+                <p style="color: var(--color-text-secondary); margin: 0; font-size: 0.9rem;">${labels.connectFakturoidDesc}</p>
+              </div>
+              <div style="color: #10b981;">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+              </div>
+            </div>
+          </a>
+
+          <div style="display: flex; align-items: center; gap: 16px; color: var(--color-text-muted);">
+            <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
+            <span style="font-size: 0.85rem;">${labels.orDivider}</span>
+            <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
           </div>
-          <div class="form-group">
-            <label for="business_id">Business ID (ICO)</label>
-            <input type="text" id="business_id" name="business_id" placeholder="12345678">
-          </div>
-          <div class="form-group">
-            <label for="country">Country</label>
-            <select id="country" name="country">
-              <option value="CZ">Czech Republic</option>
-              <option value="SK">Slovakia</option>
-              <option value="US">United States</option>
-              <option value="GB">United Kingdom</option>
-              <option value="DE">Germany</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="currency">Currency</label>
-            <select id="currency" name="currency">
-              <option value="CZK">CZK - Czech Koruna</option>
-              <option value="EUR">EUR - Euro</option>
-              <option value="USD">USD - US Dollar</option>
-              <option value="GBP">GBP - British Pound</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary btn-full">Create Company</button>
-        </form>
-        <div class="auth-footer">
-          <a href="/dashboard">Back to Dashboard</a>
+
+          <!-- Manual Option -->
+          <a href="/company/new?mode=manual" class="card" style="text-decoration: none; padding: 24px; border: 2px solid var(--color-border); transition: all 0.2s;">
+            <div style="display: flex; align-items: flex-start; gap: 16px;">
+              <div style="width: 48px; height: 48px; background: var(--color-bg-secondary); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="24" height="24" fill="var(--color-text-secondary)" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+              </div>
+              <div style="flex: 1;">
+                <span style="font-weight: 600; font-size: 1.1rem; color: var(--color-text); display: block; margin-bottom: 4px;">${labels.addManually}</span>
+                <p style="color: var(--color-text-secondary); margin: 0; font-size: 0.9rem;">${labels.addManuallyDesc}</p>
+              </div>
+              <div style="color: var(--color-text-muted);">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <div class="auth-footer" style="margin-top: 24px;">
+          <a href="/dashboard">${labels.backToDashboard}</a>
         </div>
       </div>
     </div>
   `;
 
-  res.send(renderPage('Add Company', content, req));
+  res.send(renderPage(labels.title, content, req));
 });
 
 app.post('/company/new', requireAuth, (req: Request, res: Response) => {
@@ -1159,6 +1246,18 @@ app.post('/company/new', requireAuth, (req: Request, res: Response) => {
   } catch (e) {
     res.redirect('/company/new?error=' + encodeURIComponent('Failed to create company.'));
   }
+});
+
+// Add new company via Fakturoid OAuth
+app.get('/company/new/fakturoid', requireAuth, (req: Request, res: Response) => {
+  // Generate state for CSRF protection - use special prefix for new company flow
+  const state = `new_company_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  req.session.fakturoidOAuthState = state;
+  req.session.fakturoidNewCompany = true; // Flag to indicate new company creation
+
+  // Redirect to Fakturoid authorization
+  const authUrl = fakturoid.getAuthorizationUrl(state);
+  res.redirect(authUrl);
 });
 
 // Create Demo Company with sample data
@@ -1670,6 +1769,12 @@ app.get('/api/fakturoid/callback', async (req: Request, res: Response) => {
 
   if (error) {
     const errorMsg = error_description || error;
+    // Check if this was a new company flow
+    if (req.session.fakturoidNewCompany) {
+      delete req.session.fakturoidNewCompany;
+      delete req.session.fakturoidOAuthState;
+      return res.redirect('/company/new?error=' + encodeURIComponent(`Fakturoid authorization denied: ${errorMsg}`));
+    }
     const companyId = req.session.fakturoidCompanyId;
     if (companyId) {
       return res.redirect(`/company/${companyId}/connect/fakturoid?error=` + encodeURIComponent(`Authorization denied: ${errorMsg}`));
@@ -1686,13 +1791,8 @@ app.get('/api/fakturoid/callback', async (req: Request, res: Response) => {
     return res.redirect('/dashboard?error=' + encodeURIComponent('Invalid state parameter. Please try again.'));
   }
 
-  // Extract company ID from state
-  const stateMatch = (state as string).match(/^company_(\d+)_/);
-  if (!stateMatch) {
-    return res.redirect('/dashboard?error=' + encodeURIComponent('Invalid state format.'));
-  }
-
-  const companyId = parseInt(stateMatch[1]);
+  // Check if this is a new company flow
+  const isNewCompanyFlow = (state as string).startsWith('new_company_');
 
   try {
     // Exchange code for tokens
@@ -1702,11 +1802,57 @@ app.get('/api/fakturoid/callback', async (req: Request, res: Response) => {
     const accounts = await fakturoid.fetchUserAccounts(tokens.accessToken);
 
     if (!accounts || accounts.length === 0) {
+      if (isNewCompanyFlow) {
+        delete req.session.fakturoidNewCompany;
+        delete req.session.fakturoidOAuthState;
+        return res.redirect('/company/new?error=' + encodeURIComponent('No Fakturoid accounts found.'));
+      }
+      const companyId = req.session.fakturoidCompanyId;
       return res.redirect(`/company/${companyId}/connect/fakturoid?error=` + encodeURIComponent('No Fakturoid accounts found for this user.'));
     }
 
     // Use the first account (or let user choose if multiple)
     const accountSlug = accounts[0].slug;
+
+    let companyId: number;
+
+    if (isNewCompanyFlow) {
+      // NEW COMPANY FLOW: Create company from Fakturoid account data
+      try {
+        // Fetch account info from Fakturoid
+        const accountInfo = await fakturoid.fetchAccountInfoDirect(tokens.accessToken, accountSlug);
+
+        // Create company with data from Fakturoid
+        const result = db.createCompany({
+          user_id: req.session.userId!,
+          name: accountInfo.name || accountInfo.full_name || 'My Company',
+          business_id: accountInfo.registration_no || undefined,
+          country: accountInfo.country || 'CZ',
+          currency: accountInfo.currency || 'CZK',
+        });
+
+        companyId = result.lastInsertRowid as number;
+
+        // Create accounting connection
+        db.createAccountingConnection({
+          company_id: companyId,
+          software_type: 'fakturoid',
+          status: 'pending',
+        });
+      } catch (e: any) {
+        console.error('Failed to create company from Fakturoid:', e);
+        delete req.session.fakturoidNewCompany;
+        delete req.session.fakturoidOAuthState;
+        return res.redirect('/company/new?error=' + encodeURIComponent('Failed to get company info from Fakturoid: ' + e.message));
+      }
+    } else {
+      // EXISTING COMPANY FLOW: Extract company ID from state
+      const stateMatch = (state as string).match(/^company_(\d+)_/);
+      if (!stateMatch) {
+        return res.redirect('/dashboard?error=' + encodeURIComponent('Invalid state format.'));
+      }
+      companyId = parseInt(stateMatch[1]);
+    }
 
     // Save the OAuth credentials
     fakturoid.saveOAuthCredentials(
@@ -1720,12 +1866,26 @@ app.get('/api/fakturoid/callback', async (req: Request, res: Response) => {
     // Clear OAuth session state
     delete req.session.fakturoidOAuthState;
     delete req.session.fakturoidCompanyId;
+    delete req.session.fakturoidNewCompany;
 
     // Trigger initial sync
     res.redirect(`/company/${companyId}/sync?initial=true`);
   } catch (e: any) {
     console.error('Fakturoid OAuth callback error:', e);
-    res.redirect(`/company/${companyId}/connect/fakturoid?error=` + encodeURIComponent('Failed to connect: ' + e.message));
+    // Clear session state
+    delete req.session.fakturoidOAuthState;
+    delete req.session.fakturoidCompanyId;
+    delete req.session.fakturoidNewCompany;
+
+    // Redirect based on flow type
+    if (isNewCompanyFlow) {
+      return res.redirect('/company/new?error=' + encodeURIComponent('Failed to connect: ' + e.message));
+    }
+    const sessionCompanyId = req.session.fakturoidCompanyId;
+    if (sessionCompanyId) {
+      return res.redirect(`/company/${sessionCompanyId}/connect/fakturoid?error=` + encodeURIComponent('Failed to connect: ' + e.message));
+    }
+    res.redirect('/dashboard?error=' + encodeURIComponent('Failed to connect to Fakturoid: ' + e.message));
   }
 });
 
