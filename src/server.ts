@@ -973,6 +973,8 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
   const companies = db.getCompaniesByUserId(req.session.userId!);
   const tr = t(req);
   const lang = getLang(req);
+  const openAddCompany = req.query.openAddCompany === '1';
+  const addCompanyError = req.query.addCompanyError as string;
 
   const companyCards = companies.length > 0 ? companies.map(company => {
     const connection = db.getAccountingConnection(company.id);
@@ -1038,6 +1040,243 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
     `;
   }).join('') : '';
 
+  const modalLabels = {
+    title: lang === 'cs' ? 'Přidat firmu' : lang === 'sk' ? 'Pridať firmu' : 'Add Company',
+    subtitle: lang === 'cs' ? 'Vyberte způsob přidání vaší firmy' : lang === 'sk' ? 'Vyberte spôsob pridania vašej firmy' : 'Choose how to add your company',
+    connectFakturoid: lang === 'cs' ? 'Připojit Fakturoid' : lang === 'sk' ? 'Pripojiť Fakturoid' : 'Connect Fakturoid',
+    connectFakturoidDesc: lang === 'cs' ? 'Automaticky importujeme údaje o firmě z vašeho Fakturoid účtu' : lang === 'sk' ? 'Automaticky importujeme údaje o firme z vášho Fakturoid účtu' : 'We\'ll automatically import company info from your Fakturoid account',
+    addManually: lang === 'cs' ? 'Přidat ručně' : lang === 'sk' ? 'Pridať ručne' : 'Add Manually',
+    addManuallyDesc: lang === 'cs' ? 'Zadejte údaje o firmě ručně a připojte účetní software později' : lang === 'sk' ? 'Zadajte údaje o firme ručne a pripojte účtovný softvér neskôr' : 'Enter company details manually and connect accounting software later',
+    companyName: lang === 'cs' ? 'Název firmy' : lang === 'sk' ? 'Názov firmy' : 'Company Name',
+    businessId: lang === 'cs' ? 'IČO' : lang === 'sk' ? 'IČO' : 'Business ID',
+    country: lang === 'cs' ? 'Země' : lang === 'sk' ? 'Krajina' : 'Country',
+    currency: lang === 'cs' ? 'Měna' : lang === 'sk' ? 'Mena' : 'Currency',
+    createCompany: lang === 'cs' ? 'Vytvořit firmu' : lang === 'sk' ? 'Vytvoriť firmu' : 'Create Company',
+    backToOptions: lang === 'cs' ? 'Zpět na možnosti' : lang === 'sk' ? 'Späť na možnosti' : 'Back to Options',
+    recommended: lang === 'cs' ? 'Doporučeno' : lang === 'sk' ? 'Odporúčané' : 'Recommended',
+    orDivider: lang === 'cs' ? 'nebo' : lang === 'sk' ? 'alebo' : 'or',
+    czechRepublic: lang === 'cs' ? 'Česká republika' : lang === 'sk' ? 'Česká republika' : 'Czech Republic',
+    slovakia: lang === 'cs' ? 'Slovensko' : lang === 'sk' ? 'Slovensko' : 'Slovakia',
+    usa: lang === 'cs' ? 'Spojené státy' : lang === 'sk' ? 'Spojené štáty' : 'United States',
+    germany: lang === 'cs' ? 'Německo' : lang === 'sk' ? 'Nemecko' : 'Germany',
+    czechKoruna: lang === 'cs' ? 'Česká koruna' : lang === 'sk' ? 'Česká koruna' : 'Czech Koruna',
+    companyPlaceholder: lang === 'cs' ? 'Vaše firma s.r.o.' : lang === 'sk' ? 'Vaša firma s.r.o.' : 'Your Company Ltd.',
+    demoDesc: lang === 'cs' ? 'Vytvořte demo firmu s ukázkovými daty pro vyzkoušení' : lang === 'sk' ? 'Vytvorte demo firmu so vzorovými dátami na vyskúšanie' : 'Create a demo company with sample data to try it out',
+  };
+
+  const addCompanyModal = `
+    <!-- Add Company Modal -->
+    <div id="addCompanyModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+          <h2 id="modalTitle">${modalLabels.title}</h2>
+          <button type="button" class="modal-close" onclick="closeAddCompanyModal()">&times;</button>
+        </div>
+        <p id="modalSubtitle" style="color: var(--color-text-secondary); margin-bottom: 24px;">${modalLabels.subtitle}</p>
+
+        <div id="addCompanyError" class="flash flash-error" style="display: none;"></div>
+
+        <!-- Options View -->
+        <div id="optionsView">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <!-- Fakturoid Option -->
+            <a href="/company/new/fakturoid" class="card" style="text-decoration: none; padding: 24px; border: 2px solid #10b981; background: rgba(16, 185, 129, 0.05); transition: all 0.2s;">
+              <div style="display: flex; align-items: flex-start; gap: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <svg width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+                </div>
+                <div style="flex: 1;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="font-weight: 600; font-size: 1.1rem; color: var(--color-text);">${modalLabels.connectFakturoid}</span>
+                    <span style="background: #10b981; color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${modalLabels.recommended}</span>
+                  </div>
+                  <p style="color: var(--color-text-secondary); margin: 0; font-size: 0.9rem;">${modalLabels.connectFakturoidDesc}</p>
+                </div>
+                <div style="color: #10b981;">
+                  <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                </div>
+              </div>
+            </a>
+
+            <div style="display: flex; align-items: center; gap: 16px; color: var(--color-text-muted);">
+              <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
+              <span style="font-size: 0.85rem;">${modalLabels.orDivider}</span>
+              <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
+            </div>
+
+            <!-- Manual Option -->
+            <button type="button" onclick="showManualForm()" class="card" style="width: 100%; text-align: left; padding: 24px; border: 2px solid var(--color-border); background: transparent; cursor: pointer; transition: all 0.2s;">
+              <div style="display: flex; align-items: flex-start; gap: 16px;">
+                <div style="width: 48px; height: 48px; background: var(--color-bg-secondary); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <svg width="24" height="24" fill="var(--color-text-secondary)" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                </div>
+                <div style="flex: 1;">
+                  <span style="font-weight: 600; font-size: 1.1rem; color: var(--color-text); display: block; margin-bottom: 4px;">${modalLabels.addManually}</span>
+                  <p style="color: var(--color-text-secondary); margin: 0; font-size: 0.9rem;">${modalLabels.addManuallyDesc}</p>
+                </div>
+                <div style="color: var(--color-text-muted);">
+                  <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                </div>
+              </div>
+            </button>
+
+            <div style="display: flex; align-items: center; gap: 16px; color: var(--color-text-muted);">
+              <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
+              <span style="font-size: 0.85rem;">${modalLabels.orDivider}</span>
+              <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
+            </div>
+
+            <!-- Demo Company Option -->
+            <form method="POST" action="/company/demo" style="margin: 0;">
+              <button type="submit" class="card" style="width: 100%; text-align: left; padding: 24px; border: 2px dashed var(--color-border); background: transparent; cursor: pointer; transition: all 0.2s;">
+                <div style="display: flex; align-items: flex-start; gap: 16px;">
+                  <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                  </div>
+                  <div style="flex: 1;">
+                    <span style="font-weight: 600; font-size: 1.1rem; color: var(--color-text); display: block; margin-bottom: 4px;">${tr.dashboard.tryDemo}</span>
+                    <p style="color: var(--color-text-secondary); margin: 0; font-size: 0.9rem;">${modalLabels.demoDesc}</p>
+                  </div>
+                  <div style="color: var(--color-text-muted);">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                  </div>
+                </div>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Manual Form View -->
+        <div id="manualFormView" style="display: none;">
+          <form method="POST" action="/company/new">
+            <div class="form-group">
+              <label for="name">${modalLabels.companyName} *</label>
+              <input type="text" id="name" name="name" required placeholder="${modalLabels.companyPlaceholder}">
+            </div>
+            <div class="form-group">
+              <label for="business_id">${modalLabels.businessId}</label>
+              <input type="text" id="business_id" name="business_id" placeholder="12345678">
+            </div>
+            <div class="form-group">
+              <label for="country">${modalLabels.country}</label>
+              <select id="country" name="country">
+                <option value="CZ">${modalLabels.czechRepublic}</option>
+                <option value="SK">${modalLabels.slovakia}</option>
+                <option value="US">${modalLabels.usa}</option>
+                <option value="DE">${modalLabels.germany}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="currency">${modalLabels.currency}</label>
+              <select id="currency" name="currency">
+                <option value="CZK">CZK - ${modalLabels.czechKoruna}</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="USD">USD - US Dollar</option>
+                <option value="GBP">GBP - British Pound</option>
+              </select>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button type="button" class="btn btn-secondary" onclick="showOptionsView()">${modalLabels.backToOptions}</button>
+              <button type="submit" class="btn btn-primary" style="flex: 1;">${modalLabels.createCompany}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 20px;
+      }
+      .modal-content {
+        background: var(--color-bg);
+        border-radius: 12px;
+        padding: 24px;
+        max-height: 90vh;
+        overflow-y: auto;
+        width: 100%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .modal-header h2 {
+        margin: 0;
+      }
+      .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--color-text-secondary);
+        padding: 4px 8px;
+        line-height: 1;
+      }
+      .modal-close:hover {
+        color: var(--color-text);
+      }
+    </style>
+
+    <script>
+      function openAddCompanyModal() {
+        document.getElementById('addCompanyModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeAddCompanyModal() {
+        document.getElementById('addCompanyModal').style.display = 'none';
+        document.body.style.overflow = '';
+        showOptionsView();
+      }
+      function showManualForm() {
+        document.getElementById('optionsView').style.display = 'none';
+        document.getElementById('manualFormView').style.display = 'block';
+        document.getElementById('modalTitle').textContent = '${modalLabels.addManually}';
+        document.getElementById('modalSubtitle').textContent = '${modalLabels.addManuallyDesc}';
+      }
+      function showOptionsView() {
+        document.getElementById('optionsView').style.display = 'block';
+        document.getElementById('manualFormView').style.display = 'none';
+        document.getElementById('modalTitle').textContent = '${modalLabels.title}';
+        document.getElementById('modalSubtitle').textContent = '${modalLabels.subtitle}';
+      }
+      // Close modal on escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeAddCompanyModal();
+        }
+      });
+      // Close modal on backdrop click
+      document.getElementById('addCompanyModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeAddCompanyModal();
+        }
+      });
+      ${openAddCompany || addCompanyError ? `
+      // Auto-open modal
+      document.addEventListener('DOMContentLoaded', function() {
+        openAddCompanyModal();
+        ${addCompanyError ? `
+        document.getElementById('addCompanyError').style.display = 'block';
+        document.getElementById('addCompanyError').textContent = '${addCompanyError.replace(/'/g, "\\'")}';
+        ` : ''}
+      });
+      ` : ''}
+    </script>
+  `;
+
   const content = `
     <div class="page-header dashboard-header-mobile">
       <div>
@@ -1045,7 +1284,7 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
         <p>${tr.connectPage.subtitle}</p>
       </div>
       <div class="dashboard-actions">
-        <a href="/company/new" class="btn btn-primary">+ ${tr.dashboard.addCompany}</a>
+        <button type="button" onclick="openAddCompanyModal()" class="btn btn-primary">+ ${tr.dashboard.addCompany}</button>
       </div>
     </div>
     <style>
@@ -1068,10 +1307,12 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
           <div class="empty-state-icon">&#127970;</div>
           <h3 style="margin-bottom: 8px;">${tr.dashboard.noCompanies}</h3>
           <p style="margin-bottom: 24px;">${tr.dashboard.createFirst}</p>
-          <a href="/company/new" class="btn btn-primary">${tr.dashboard.addCompany}</a>
+          <button type="button" onclick="openAddCompanyModal()" class="btn btn-primary">${tr.dashboard.addCompany}</button>
         </div>
       </div>
     `}
+
+    ${addCompanyModal}
   `;
 
   res.send(renderAppPage({
@@ -1083,172 +1324,20 @@ app.get('/dashboard', requireAuth, (req: Request, res: Response) => {
 });
 
 // Add new company page with integration options
+// Redirect old /company/new page to dashboard (now a modal)
 app.get('/company/new', requireAuth, (req: Request, res: Response) => {
   const error = req.query.error as string;
-  const success = req.query.success as string;
-  const mode = req.query.mode as string; // 'manual' to show form directly
-  const tr = t(req);
-  const lang = getLang(req);
-
-  const labels = {
-    title: lang === 'cs' ? 'Přidat firmu' : lang === 'sk' ? 'Pridať firmu' : 'Add Company',
-    subtitle: lang === 'cs' ? 'Vyberte způsob přidání vaší firmy' : lang === 'sk' ? 'Vyberte spôsob pridania vašej firmy' : 'Choose how to add your company',
-    connectFakturoid: lang === 'cs' ? 'Připojit Fakturoid' : lang === 'sk' ? 'Pripojiť Fakturoid' : 'Connect Fakturoid',
-    connectFakturoidDesc: lang === 'cs' ? 'Automaticky importujeme údaje o firmě z vašeho Fakturoid účtu' : lang === 'sk' ? 'Automaticky importujeme údaje o firme z vášho Fakturoid účtu' : 'We\'ll automatically import company info from your Fakturoid account',
-    addManually: lang === 'cs' ? 'Přidat ručně' : lang === 'sk' ? 'Pridať ručne' : 'Add Manually',
-    addManuallyDesc: lang === 'cs' ? 'Zadejte údaje o firmě ručně a připojte účetní software později' : lang === 'sk' ? 'Zadajte údaje o firme ručne a pripojte účtovný softvér neskôr' : 'Enter company details manually and connect accounting software later',
-    companyName: lang === 'cs' ? 'Název firmy' : lang === 'sk' ? 'Názov firmy' : 'Company Name',
-    businessId: lang === 'cs' ? 'IČO' : lang === 'sk' ? 'IČO' : 'Business ID',
-    country: lang === 'cs' ? 'Země' : lang === 'sk' ? 'Krajina' : 'Country',
-    currency: lang === 'cs' ? 'Měna' : lang === 'sk' ? 'Mena' : 'Currency',
-    createCompany: lang === 'cs' ? 'Vytvořit firmu' : lang === 'sk' ? 'Vytvoriť firmu' : 'Create Company',
-    backToDashboard: lang === 'cs' ? 'Zpět na nástěnku' : lang === 'sk' ? 'Späť na nástenku' : 'Back to Dashboard',
-    backToOptions: lang === 'cs' ? 'Zpět na možnosti' : lang === 'sk' ? 'Späť na možnosti' : 'Back to Options',
-    recommended: lang === 'cs' ? 'Doporučeno' : lang === 'sk' ? 'Odporúčané' : 'Recommended',
-    orDivider: lang === 'cs' ? 'nebo' : lang === 'sk' ? 'alebo' : 'or',
-  };
-
-  // Manual form
-  if (mode === 'manual') {
-    const content = `
-      <div class="auth-container">
-        <div class="auth-card" style="max-width: 500px;">
-          <div class="auth-header">
-            <h1>${labels.addManually}</h1>
-            <p>${labels.addManuallyDesc}</p>
-          </div>
-          ${error ? `<div class="flash flash-error">${error}</div>` : ''}
-          <form method="POST" action="/company/new">
-            <div class="form-group">
-              <label for="name">${labels.companyName} *</label>
-              <input type="text" id="name" name="name" required placeholder="${lang === 'cs' ? 'Vaše firma s.r.o.' : lang === 'sk' ? 'Vaša firma s.r.o.' : 'Your Company Ltd.'}">
-            </div>
-            <div class="form-group">
-              <label for="business_id">${labels.businessId}</label>
-              <input type="text" id="business_id" name="business_id" placeholder="12345678">
-            </div>
-            <div class="form-group">
-              <label for="country">${labels.country}</label>
-              <select id="country" name="country">
-                <option value="CZ">${lang === 'cs' ? 'Česká republika' : lang === 'sk' ? 'Česká republika' : 'Czech Republic'}</option>
-                <option value="SK">${lang === 'cs' ? 'Slovensko' : lang === 'sk' ? 'Slovensko' : 'Slovakia'}</option>
-                <option value="US">${lang === 'cs' ? 'Spojené státy' : lang === 'sk' ? 'Spojené štáty' : 'United States'}</option>
-                <option value="DE">${lang === 'cs' ? 'Německo' : lang === 'sk' ? 'Nemecko' : 'Germany'}</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="currency">${labels.currency}</label>
-              <select id="currency" name="currency">
-                <option value="CZK">CZK - ${lang === 'cs' ? 'Česká koruna' : lang === 'sk' ? 'Česká koruna' : 'Czech Koruna'}</option>
-                <option value="EUR">EUR - Euro</option>
-                <option value="USD">USD - US Dollar</option>
-                <option value="GBP">GBP - British Pound</option>
-              </select>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">${labels.createCompany}</button>
-          </form>
-          <div class="auth-footer">
-            <a href="/company/new">${labels.backToOptions}</a>
-          </div>
-        </div>
-      </div>
-    `;
-    return res.send(renderPage(labels.title, content, req));
+  if (error) {
+    return res.redirect('/dashboard?addCompanyError=' + encodeURIComponent(error));
   }
-
-  // Main page with options
-  const content = `
-    <div class="auth-container">
-      <div class="auth-card" style="max-width: 600px;">
-        <div class="auth-header">
-          <h1>${labels.title}</h1>
-          <p>${labels.subtitle}</p>
-        </div>
-        ${error ? `<div class="flash flash-error">${error}</div>` : ''}
-        ${success ? `<div class="flash flash-success">${success}</div>` : ''}
-
-        <div style="display: flex; flex-direction: column; gap: 16px;">
-          <!-- Fakturoid Option -->
-          <a href="/company/new/fakturoid" class="card" style="text-decoration: none; padding: 24px; border: 2px solid #10b981; background: rgba(16, 185, 129, 0.05); transition: all 0.2s;">
-            <div style="display: flex; align-items: flex-start; gap: 16px;">
-              <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
-              </div>
-              <div style="flex: 1;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                  <span style="font-weight: 600; font-size: 1.1rem; color: var(--color-text);">${labels.connectFakturoid}</span>
-                  <span style="background: #10b981; color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${labels.recommended}</span>
-                </div>
-                <p style="color: var(--color-text-secondary); margin: 0; font-size: 0.9rem;">${labels.connectFakturoidDesc}</p>
-              </div>
-              <div style="color: #10b981;">
-                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-              </div>
-            </div>
-          </a>
-
-          <div style="display: flex; align-items: center; gap: 16px; color: var(--color-text-muted);">
-            <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
-            <span style="font-size: 0.85rem;">${labels.orDivider}</span>
-            <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
-          </div>
-
-          <!-- Manual Option -->
-          <a href="/company/new?mode=manual" class="card" style="text-decoration: none; padding: 24px; border: 2px solid var(--color-border); transition: all 0.2s;">
-            <div style="display: flex; align-items: flex-start; gap: 16px;">
-              <div style="width: 48px; height: 48px; background: var(--color-bg-secondary); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg width="24" height="24" fill="var(--color-text-secondary)" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-              </div>
-              <div style="flex: 1;">
-                <span style="font-weight: 600; font-size: 1.1rem; color: var(--color-text); display: block; margin-bottom: 4px;">${labels.addManually}</span>
-                <p style="color: var(--color-text-secondary); margin: 0; font-size: 0.9rem;">${labels.addManuallyDesc}</p>
-              </div>
-              <div style="color: var(--color-text-muted);">
-                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-              </div>
-            </div>
-          </a>
-
-          <div style="display: flex; align-items: center; gap: 16px; color: var(--color-text-muted);">
-            <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
-            <span style="font-size: 0.85rem;">${labels.orDivider}</span>
-            <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
-          </div>
-
-          <!-- Demo Company Option -->
-          <form method="POST" action="/company/demo" style="margin: 0;">
-            <button type="submit" class="card" style="width: 100%; text-align: left; padding: 24px; border: 2px dashed var(--color-border); background: transparent; cursor: pointer; transition: all 0.2s;">
-              <div style="display: flex; align-items: flex-start; gap: 16px;">
-                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                  <svg width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                </div>
-                <div style="flex: 1;">
-                  <span style="font-weight: 600; font-size: 1.1rem; color: var(--color-text); display: block; margin-bottom: 4px;">${tr.dashboard.tryDemo}</span>
-                  <p style="color: var(--color-text-secondary); margin: 0; font-size: 0.9rem;">${lang === 'cs' ? 'Vytvořte demo firmu s ukázkovými daty pro vyzkoušení' : lang === 'sk' ? 'Vytvorte demo firmu so vzorovými dátami na vyskúšanie' : 'Create a demo company with sample data to try it out'}</p>
-                </div>
-                <div style="color: var(--color-text-muted);">
-                  <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-                </div>
-              </div>
-            </button>
-          </form>
-        </div>
-
-        <div class="auth-footer" style="margin-top: 24px;">
-          <a href="/dashboard">${labels.backToDashboard}</a>
-        </div>
-      </div>
-    </div>
-  `;
-
-  res.send(renderPage(labels.title, content, req));
+  res.redirect('/dashboard?openAddCompany=1');
 });
 
 app.post('/company/new', requireAuth, (req: Request, res: Response) => {
   const { name, business_id, country, currency } = req.body;
 
   if (!name) {
-    return res.redirect('/company/new?error=' + encodeURIComponent('Company name is required.'));
+    return res.redirect('/dashboard?addCompanyError=' + encodeURIComponent('Company name is required.'));
   }
 
   try {
@@ -1261,7 +1350,7 @@ app.post('/company/new', requireAuth, (req: Request, res: Response) => {
     });
     res.redirect(`/company/${result.lastInsertRowid}/connect`);
   } catch (e) {
-    res.redirect('/company/new?error=' + encodeURIComponent('Failed to create company.'));
+    res.redirect('/dashboard?addCompanyError=' + encodeURIComponent('Failed to create company.'));
   }
 });
 
