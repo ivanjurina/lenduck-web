@@ -236,6 +236,35 @@ db.exec(`
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_id) REFERENCES companies(id)
   );
+
+  -- Activity Events from accounting software
+  CREATE TABLE IF NOT EXISTS activity_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    event_name TEXT NOT NULL,
+    event_text TEXT,
+    related_type TEXT,
+    related_id INTEGER,
+    user_name TEXT,
+    event_created_at TEXT NOT NULL,
+    synced_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+  );
+
+  -- Todos from accounting software
+  CREATE TABLE IF NOT EXISTS todos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    external_id TEXT,
+    name TEXT NOT NULL,
+    text TEXT,
+    related_type TEXT,
+    related_id INTEGER,
+    completed_at TEXT,
+    todo_created_at TEXT NOT NULL,
+    synced_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+  );
 `);
 
 // Password hashing
@@ -488,6 +517,8 @@ export function deleteAccountingConnection(companyId: number) {
 export function getSyncStats(companyId: number) {
   const invoicesStmt = db.prepare('SELECT COUNT(*) as count FROM invoices WHERE company_id = ? AND invoice_type = ?');
   const accountsStmt = db.prepare('SELECT COUNT(*) as count FROM accounts WHERE company_id = ? AND account_type = ?');
+  const eventsStmt = db.prepare('SELECT COUNT(*) as count FROM activity_events WHERE company_id = ?');
+  const todosStmt = db.prepare('SELECT COUNT(*) as count FROM todos WHERE company_id = ?');
 
   const issuedInvoices = (invoicesStmt.get(companyId, 'issued') as any)?.count || 0;
   const receivedInvoices = (invoicesStmt.get(companyId, 'received') as any)?.count || 0;
@@ -495,6 +526,8 @@ export function getSyncStats(companyId: number) {
   const suppliers = (accountsStmt.get(companyId, 'Accounts Payable') as any)?.count || 0;
   const bankAccounts = (accountsStmt.get(companyId, 'Bank') as any)?.count || 0;
   const inventoryItems = (accountsStmt.get(companyId, 'Inventory') as any)?.count || 0;
+  const events = (eventsStmt.get(companyId) as any)?.count || 0;
+  const todos = (todosStmt.get(companyId) as any)?.count || 0;
 
   return {
     issuedInvoices,
@@ -503,7 +536,9 @@ export function getSyncStats(companyId: number) {
     suppliers,
     bankAccounts,
     inventoryItems,
-    totalRecords: issuedInvoices + receivedInvoices + customers + suppliers + bankAccounts + inventoryItems
+    events,
+    todos,
+    totalRecords: issuedInvoices + receivedInvoices + customers + suppliers + bankAccounts + inventoryItems + events + todos
   };
 }
 
@@ -902,11 +937,106 @@ export function getOfferById(offerId: number) {
   return stmt.get(offerId) as any;
 }
 
+// Activity Events functions
+export function insertActivityEvent(data: {
+  company_id: number;
+  event_name: string;
+  event_text?: string;
+  related_type?: string;
+  related_id?: number;
+  user_name?: string;
+  event_created_at: string;
+}) {
+  const stmt = db.prepare(`
+    INSERT INTO activity_events (company_id, event_name, event_text, related_type, related_id, user_name, event_created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+  return stmt.run(
+    data.company_id,
+    data.event_name,
+    data.event_text || null,
+    data.related_type || null,
+    data.related_id || null,
+    data.user_name || null,
+    data.event_created_at
+  );
+}
+
+export function getActivityEvents(companyId: number, limit: number = 100) {
+  const stmt = db.prepare('SELECT * FROM activity_events WHERE company_id = ? ORDER BY event_created_at DESC LIMIT ?');
+  return stmt.all(companyId, limit) as any[];
+}
+
+export function clearActivityEvents(companyId: number) {
+  const stmt = db.prepare('DELETE FROM activity_events WHERE company_id = ?');
+  return stmt.run(companyId);
+}
+
+export function getActivityEventCount(companyId: number) {
+  const stmt = db.prepare('SELECT COUNT(*) as count FROM activity_events WHERE company_id = ?');
+  return (stmt.get(companyId) as any)?.count || 0;
+}
+
+// Todos functions
+export function upsertTodo(data: {
+  company_id: number;
+  external_id: string;
+  name: string;
+  text?: string;
+  related_type?: string;
+  related_id?: number;
+  completed_at?: string;
+  todo_created_at: string;
+}) {
+  const stmt = db.prepare(`
+    INSERT INTO todos (company_id, external_id, name, text, related_type, related_id, completed_at, todo_created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(company_id, external_id) DO UPDATE SET
+      name = excluded.name,
+      text = excluded.text,
+      related_type = excluded.related_type,
+      related_id = excluded.related_id,
+      completed_at = excluded.completed_at,
+      synced_at = CURRENT_TIMESTAMP
+  `);
+  return stmt.run(
+    data.company_id,
+    data.external_id,
+    data.name,
+    data.text || null,
+    data.related_type || null,
+    data.related_id || null,
+    data.completed_at || null,
+    data.todo_created_at
+  );
+}
+
+export function getTodos(companyId: number, includeCompleted: boolean = true) {
+  if (includeCompleted) {
+    const stmt = db.prepare('SELECT * FROM todos WHERE company_id = ? ORDER BY todo_created_at DESC');
+    return stmt.all(companyId) as any[];
+  } else {
+    const stmt = db.prepare('SELECT * FROM todos WHERE company_id = ? AND completed_at IS NULL ORDER BY todo_created_at DESC');
+    return stmt.all(companyId) as any[];
+  }
+}
+
+export function getTodoCount(companyId: number) {
+  const stmt = db.prepare('SELECT COUNT(*) as count FROM todos WHERE company_id = ?');
+  return (stmt.get(companyId) as any)?.count || 0;
+}
+
+export function getPendingTodoCount(companyId: number) {
+  const stmt = db.prepare('SELECT COUNT(*) as count FROM todos WHERE company_id = ? AND completed_at IS NULL');
+  return (stmt.get(companyId) as any)?.count || 0;
+}
+
 // Add unique constraint for upsert operations (run once)
 try {
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_invoices_company_external ON invoices(company_id, external_id)');
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_company_external ON bank_transactions(company_id, external_id)');
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_accounts_company_external ON accounts(company_id, external_id)');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_todos_company_external ON todos(company_id, external_id)');
 } catch (e) {
   // Indexes might already exist
 }

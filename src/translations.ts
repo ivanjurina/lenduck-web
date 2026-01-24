@@ -12,6 +12,8 @@ export interface Translations {
     customers: string;
     bankAccounts: string;
     inventory: string;
+    events: string;
+    todos: string;
     transactions: string;
     reports: string;
     offers: string;
@@ -192,6 +194,32 @@ export interface Translations {
     retailPrice: string;
     noInventory: string;
   };
+  // Events/Activity page
+  eventsPage: {
+    title: string;
+    subtitle: string;
+    totalEvents: string;
+    event: string;
+    user: string;
+    date: string;
+    relatedTo: string;
+    noEvents: string;
+  };
+  // Todos page
+  todosPage: {
+    title: string;
+    subtitle: string;
+    totalTodos: string;
+    pendingTodos: string;
+    task: string;
+    status: string;
+    createdAt: string;
+    completedAt: string;
+    relatedTo: string;
+    noTodos: string;
+    pending: string;
+    completed: string;
+  };
   // Transactions page
   transactionsPage: {
     title: string;
@@ -367,6 +395,8 @@ export const translations: Record<Language, Translations> = {
       customers: 'Customers',
       bankAccounts: 'Bank Accounts',
       inventory: 'Inventory',
+      events: 'Activity',
+      todos: 'Tasks',
       transactions: 'Transactions',
       reports: 'Reports',
       offers: 'Offers',
@@ -536,6 +566,30 @@ export const translations: Record<Language, Translations> = {
       retailPrice: 'Retail Price',
       noInventory: 'No inventory items found',
     },
+    eventsPage: {
+      title: 'Activity Log',
+      subtitle: 'Recent activity and events from your accounting software',
+      totalEvents: 'Total Events',
+      event: 'Event',
+      user: 'User',
+      date: 'Date',
+      relatedTo: 'Related To',
+      noEvents: 'No activity events found',
+    },
+    todosPage: {
+      title: 'Tasks',
+      subtitle: 'Tasks and reminders from your accounting software',
+      totalTodos: 'Total Tasks',
+      pendingTodos: 'Pending',
+      task: 'Task',
+      status: 'Status',
+      createdAt: 'Created',
+      completedAt: 'Completed',
+      relatedTo: 'Related To',
+      noTodos: 'No tasks found',
+      pending: 'Pending',
+      completed: 'Completed',
+    },
     transactionsPage: {
       title: 'Bank Transactions',
       subtitle: 'All bank transactions synced from your accounting software',
@@ -701,6 +755,8 @@ export const translations: Record<Language, Translations> = {
       customers: 'Kontakty',
       bankAccounts: 'Bankovní účty',
       inventory: 'Sklad',
+      events: 'Aktivita',
+      todos: 'Úkoly',
       transactions: 'Transakce',
       reports: 'Reporty',
       offers: 'Nabídky',
@@ -870,6 +926,30 @@ export const translations: Record<Language, Translations> = {
       retailPrice: 'Prodejní cena',
       noInventory: 'Žádné skladové položky nenalezeny',
     },
+    eventsPage: {
+      title: 'Historie aktivit',
+      subtitle: 'Nedávná aktivita a události z vašeho účetního softwaru',
+      totalEvents: 'Celkem událostí',
+      event: 'Událost',
+      user: 'Uživatel',
+      date: 'Datum',
+      relatedTo: 'Související s',
+      noEvents: 'Žádné události nenalezeny',
+    },
+    todosPage: {
+      title: 'Úkoly',
+      subtitle: 'Úkoly a připomínky z vašeho účetního softwaru',
+      totalTodos: 'Celkem úkolů',
+      pendingTodos: 'Nevyřízené',
+      task: 'Úkol',
+      status: 'Stav',
+      createdAt: 'Vytvořeno',
+      completedAt: 'Dokončeno',
+      relatedTo: 'Související s',
+      noTodos: 'Žádné úkoly nenalezeny',
+      pending: 'Nevyřízené',
+      completed: 'Dokončené',
+    },
     transactionsPage: {
       title: 'Bankovní transakce',
       subtitle: 'Všechny bankovní transakce synchronizované z vašeho účetního softwaru',
@@ -1035,6 +1115,8 @@ export const translations: Record<Language, Translations> = {
       customers: 'Kontakty',
       bankAccounts: 'Bankové účty',
       inventory: 'Sklad',
+      events: 'Aktivita',
+      todos: 'Úlohy',
       transactions: 'Transakcie',
       reports: 'Reporty',
       offers: 'Ponuky',
@@ -1203,6 +1285,30 @@ export const translations: Record<Language, Translations> = {
       purchasePrice: 'Nákupná cena',
       retailPrice: 'Predajná cena',
       noInventory: 'Žiadne skladové položky nenájdené',
+    },
+    eventsPage: {
+      title: 'História aktivít',
+      subtitle: 'Nedávna aktivita a udalosti z vášho účtovného softvéru',
+      totalEvents: 'Celkom udalostí',
+      event: 'Udalosť',
+      user: 'Používateľ',
+      date: 'Dátum',
+      relatedTo: 'Súvisiace s',
+      noEvents: 'Žiadne udalosti nenájdené',
+    },
+    todosPage: {
+      title: 'Úlohy',
+      subtitle: 'Úlohy a pripomienky z vášho účtovného softvéru',
+      totalTodos: 'Celkom úloh',
+      pendingTodos: 'Nevybavené',
+      task: 'Úloha',
+      status: 'Stav',
+      createdAt: 'Vytvorené',
+      completedAt: 'Dokončené',
+      relatedTo: 'Súvisiace s',
+      noTodos: 'Žiadne úlohy nenájdené',
+      pending: 'Nevybavené',
+      completed: 'Dokončené',
     },
     transactionsPage: {
       title: 'Bankové transakcie',

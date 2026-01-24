@@ -234,7 +234,7 @@ interface AppPageOptions {
   content: string;
   companyId?: number;
   companyName?: string;
-  activePage?: 'overview' | 'data' | 'invoices' | 'customers' | 'bankAccounts' | 'inventory' | 'accounts' | 'transactions' | 'reports' | 'offers' | 'settings' | 'admin' | 'dashboard';
+  activePage?: 'overview' | 'data' | 'invoices' | 'customers' | 'bankAccounts' | 'inventory' | 'events' | 'todos' | 'accounts' | 'transactions' | 'reports' | 'offers' | 'settings' | 'admin' | 'dashboard';
   req: Request;
 }
 
@@ -752,6 +752,8 @@ function renderAppPage(options: AppPageOptions): string {
                 ${navItem(`/company/${companyId}/data/customers`, tr.nav.customers, 'customers')}
                 ${navItem(`/company/${companyId}/data/bank-accounts`, tr.nav.bankAccounts, 'bankAccounts')}
                 ${navItem(`/company/${companyId}/data/inventory`, tr.nav.inventory, 'inventory')}
+                ${navItem(`/company/${companyId}/data/events`, tr.nav.events, 'events')}
+                ${navItem(`/company/${companyId}/data/todos`, tr.nav.todos, 'todos')}
                 ${navItem(`/company/${companyId}/data/accounts`, tr.nav.accounts, 'accounts')}
                 ${navItem(`/company/${companyId}/data/transactions`, tr.nav.transactions, 'transactions')}
             </div>
@@ -1597,6 +1599,14 @@ app.get('/company/:id/connect', requireAuth, (req: Request, res: Response) => {
             <div style="text-align: center;">
               <div style="font-size: 1.5rem; font-weight: 600; color: var(--color-primary);">${syncStats.inventoryItems}</div>
               <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Inventory Items</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: 600; color: var(--color-primary);">${syncStats.events}</div>
+              <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Events</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.5rem; font-weight: 600; color: var(--color-primary);">${syncStats.todos}</div>
+              <div style="font-size: 0.75rem; color: var(--color-text-secondary);">Tasks</div>
             </div>
           </div>
         </div>
@@ -3680,6 +3690,188 @@ app.get('/company/:id/data/inventory', requireAuth, (req: Request, res: Response
     companyId,
     companyName: company.name,
     activePage: 'inventory',
+    req
+  }));
+});
+
+// Data: Activity Events
+app.get('/company/:id/data/events', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const events = db.getActivityEvents(companyId);
+  const tr = t(req);
+  const lang = getLang(req);
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleString(lang === 'en' ? 'en-US' : lang === 'sk' ? 'sk-SK' : 'cs-CZ', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const content = `
+    <div class="page-header">
+      <h1>${tr.eventsPage.title}</h1>
+      <p>${tr.eventsPage.subtitle}</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">${tr.eventsPage.totalEvents}</div>
+        <div class="stat-value">${events.length}</div>
+      </div>
+    </div>
+
+    ${events.length > 0 ? `
+      <div class="card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>${tr.eventsPage.date}</th>
+                <th>${tr.eventsPage.event}</th>
+                <th>${tr.eventsPage.user}</th>
+                <th>${tr.eventsPage.relatedTo}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${events.map((event: any) => `
+                <tr>
+                  <td style="white-space: nowrap;">${formatDate(event.event_created_at)}</td>
+                  <td>
+                    <strong>${event.event_name}</strong>
+                    ${event.event_text ? `<br><span style="font-size: 0.85rem; color: var(--color-text-secondary);">${event.event_text}</span>` : ''}
+                  </td>
+                  <td>${event.user_name || '-'}</td>
+                  <td>${event.related_type ? `${event.related_type} #${event.related_id}` : '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    ` : `
+      <div class="card">
+        <div class="card-body empty-state" style="text-align: center; padding: 48px;">
+          <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.3;">📋</div>
+          <h3 style="margin-bottom: 8px;">${tr.eventsPage.noEvents}</h3>
+          <p style="color: var(--color-text-secondary);">${lang === 'cs' ? 'Události se synchronizují z vašeho účetního softwaru.' : lang === 'sk' ? 'Udalosti sa synchronizujú z vášho účtovného softvéru.' : 'Events are synced from your accounting software.'}</p>
+        </div>
+      </div>
+    `}
+  `;
+
+  res.send(renderAppPage({
+    title: tr.eventsPage.title,
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'events',
+    req
+  }));
+});
+
+// Data: Todos/Tasks
+app.get('/company/:id/data/todos', requireAuth, (req: Request, res: Response) => {
+  const companyId = parseInt(req.params.id);
+  const company = db.getCompanyById(companyId);
+
+  if (!company || company.user_id !== req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+
+  const todos = db.getTodos(companyId);
+  const pendingCount = db.getPendingTodoCount(companyId);
+  const tr = t(req);
+  const lang = getLang(req);
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleString(lang === 'en' ? 'en-US' : lang === 'sk' ? 'sk-SK' : 'cs-CZ', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const content = `
+    <div class="page-header">
+      <h1>${tr.todosPage.title}</h1>
+      <p>${tr.todosPage.subtitle}</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">${tr.todosPage.totalTodos}</div>
+        <div class="stat-value">${todos.length}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${tr.todosPage.pendingTodos}</div>
+        <div class="stat-value" style="color: ${pendingCount > 0 ? 'var(--color-warning)' : 'var(--color-success)'};">${pendingCount}</div>
+      </div>
+    </div>
+
+    ${todos.length > 0 ? `
+      <div class="card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>${tr.todosPage.status}</th>
+                <th>${tr.todosPage.task}</th>
+                <th>${tr.todosPage.createdAt}</th>
+                <th>${tr.todosPage.completedAt}</th>
+                <th>${tr.todosPage.relatedTo}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${todos.map((todo: any) => `
+                <tr>
+                  <td>
+                    ${todo.completed_at
+                      ? `<span class="badge badge-success">${tr.todosPage.completed}</span>`
+                      : `<span class="badge badge-warning">${tr.todosPage.pending}</span>`
+                    }
+                  </td>
+                  <td>
+                    <strong>${todo.name}</strong>
+                    ${todo.text ? `<br><span style="font-size: 0.85rem; color: var(--color-text-secondary);">${todo.text}</span>` : ''}
+                  </td>
+                  <td style="white-space: nowrap;">${formatDate(todo.todo_created_at)}</td>
+                  <td style="white-space: nowrap;">${formatDate(todo.completed_at)}</td>
+                  <td>${todo.related_type ? `${todo.related_type} #${todo.related_id}` : '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    ` : `
+      <div class="card">
+        <div class="card-body empty-state" style="text-align: center; padding: 48px;">
+          <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.3;">✓</div>
+          <h3 style="margin-bottom: 8px;">${tr.todosPage.noTodos}</h3>
+          <p style="color: var(--color-text-secondary);">${lang === 'cs' ? 'Úkoly se synchronizují z vašeho účetního softwaru.' : lang === 'sk' ? 'Úlohy sa synchronizujú z vášho účtovného softvéru.' : 'Tasks are synced from your accounting software.'}</p>
+        </div>
+      </div>
+    `}
+  `;
+
+  res.send(renderAppPage({
+    title: tr.todosPage.title,
+    content,
+    companyId,
+    companyName: company.name,
+    activePage: 'todos',
     req
   }));
 });

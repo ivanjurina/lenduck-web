@@ -190,15 +190,38 @@ interface FakturoidBankAccount {
 }
 
 /**
- * Event from Fakturoid API
+ * Event from Fakturoid API (activity log)
  */
 interface FakturoidEvent {
+  name: string;
+  created_at: string;
+  text?: string;
+  related_objects?: Array<{
+    type: 'Invoice' | 'Subject' | 'Expense' | 'Generator' | 'RecurringGenerator' | 'ExpenseGenerator';
+    id: number;
+  }>;
+  user?: {
+    id: number;
+    full_name: string;
+    avatar_url?: string;
+  };
+  params?: Record<string, any>;
+}
+
+/**
+ * Todo from Fakturoid API
+ */
+interface FakturoidTodo {
   id: number;
   name: string;
   created_at: string;
-  invoice_id?: number;
-  subject_id?: number;
+  completed_at?: string;
   text?: string;
+  related_objects?: Array<{
+    type: 'Invoice' | 'Subject' | 'Expense' | 'Generator' | 'RecurringGenerator' | 'ExpenseGenerator';
+    id: number;
+  }>;
+  params?: Record<string, any>;
 }
 
 /**
@@ -620,6 +643,14 @@ export async function fetchEvents(companyId: number): Promise<FakturoidEvent[]> 
 }
 
 /**
+ * Fetch todos (tasks)
+ */
+export async function fetchTodos(companyId: number): Promise<FakturoidTodo[]> {
+  const credentials = getCredentials(companyId);
+  return fetchPaginated<FakturoidTodo>(credentials, 'todos.json', companyId);
+}
+
+/**
  * Fetch inventory items
  */
 export async function fetchInventoryItems(companyId: number): Promise<FakturoidInventoryItem[]> {
@@ -767,6 +798,58 @@ export async function syncInventory(companyId: number): Promise<number> {
 }
 
 /**
+ * Sync events (activity log) from Fakturoid to database
+ */
+export async function syncEvents(companyId: number): Promise<number> {
+  const events = await fetchEvents(companyId);
+
+  // Clear existing events for this company (events don't have unique IDs)
+  db.clearActivityEvents(companyId);
+
+  let count = 0;
+  for (const event of events) {
+    const relatedObj = event.related_objects?.[0];
+    db.insertActivityEvent({
+      company_id: companyId,
+      event_name: event.name,
+      event_text: event.text,
+      related_type: relatedObj?.type,
+      related_id: relatedObj?.id,
+      user_name: event.user?.full_name,
+      event_created_at: event.created_at,
+    });
+    count++;
+  }
+
+  return count;
+}
+
+/**
+ * Sync todos from Fakturoid to database
+ */
+export async function syncTodos(companyId: number): Promise<number> {
+  const todos = await fetchTodos(companyId);
+  let count = 0;
+
+  for (const todo of todos) {
+    const relatedObj = todo.related_objects?.[0];
+    db.upsertTodo({
+      company_id: companyId,
+      external_id: `fkt_todo_${todo.id}`,
+      name: todo.name,
+      text: todo.text,
+      related_type: relatedObj?.type,
+      related_id: relatedObj?.id,
+      completed_at: todo.completed_at,
+      todo_created_at: todo.created_at,
+    });
+    count++;
+  }
+
+  return count;
+}
+
+/**
  * Calculate and save financial metrics from synced data
  */
 export async function calculateAndSaveMetrics(companyId: number): Promise<any> {
@@ -856,6 +939,8 @@ export async function fullSync(companyId: number): Promise<{
   subjects: number;
   bankAccounts: number;
   inventory: number;
+  events: number;
+  todos: number;
   metrics: any;
 }> {
   // Create sync log
@@ -872,6 +957,8 @@ export async function fullSync(companyId: number): Promise<{
     const subjectCount = await syncSubjects(companyId);
     const bankAccountCount = await syncBankAccounts(companyId);
     const inventoryCount = await syncInventory(companyId);
+    const eventCount = await syncEvents(companyId);
+    const todoCount = await syncTodos(companyId);
 
     // Calculate metrics
     const metrics = await calculateAndSaveMetrics(companyId);
@@ -883,7 +970,7 @@ export async function fullSync(companyId: number): Promise<{
     });
 
     // Update sync log
-    const totalRecords = invoiceCount + expenseCount + subjectCount + bankAccountCount + inventoryCount;
+    const totalRecords = invoiceCount + expenseCount + subjectCount + bankAccountCount + inventoryCount + eventCount + todoCount;
     db.updateSyncLog(syncLog.lastInsertRowid as number, {
       status: 'completed',
       records_synced: totalRecords,
@@ -895,6 +982,8 @@ export async function fullSync(companyId: number): Promise<{
       subjects: subjectCount,
       bankAccounts: bankAccountCount,
       inventory: inventoryCount,
+      events: eventCount,
+      todos: todoCount,
       metrics,
     };
   } catch (error: any) {
