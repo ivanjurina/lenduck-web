@@ -12,6 +12,8 @@ db.exec(`
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT,
     is_admin INTEGER DEFAULT 0,
+    google_id TEXT UNIQUE,
+    name TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -386,6 +388,21 @@ export function validateUser(email: string, password: string) {
 export function getUserCount() {
   const stmt = db.prepare('SELECT COUNT(*) as count FROM users');
   return (stmt.get() as any).count;
+}
+
+export function getUserByGoogleId(googleId: string) {
+  const stmt = db.prepare('SELECT * FROM users WHERE google_id = ?');
+  return stmt.get(googleId) as any;
+}
+
+export function createUserWithGoogle(email: string, googleId: string, name?: string) {
+  const stmt = db.prepare('INSERT INTO users (email, password_hash, is_admin, google_id, name) VALUES (?, NULL, 0, ?, ?)');
+  return stmt.run(email.toLowerCase(), googleId, name || null);
+}
+
+export function linkGoogleToUser(userId: number, googleId: string) {
+  const stmt = db.prepare('UPDATE users SET google_id = ? WHERE id = ?');
+  return stmt.run(googleId, userId);
 }
 
 // SME Waitlist functions
@@ -1363,6 +1380,18 @@ try {
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_journal_entries_company_external ON journal_entries(company_id, external_id)');
 } catch (e) {
   // Indexes might already exist
+}
+
+// Migration: Add Google OAuth columns to existing users table
+try {
+  db.exec('ALTER TABLE users ADD COLUMN google_id TEXT UNIQUE');
+} catch (e) {
+  // Column already exists
+}
+try {
+  db.exec('ALTER TABLE users ADD COLUMN name TEXT');
+} catch (e) {
+  // Column already exists
 }
 
 // Initialize default admin

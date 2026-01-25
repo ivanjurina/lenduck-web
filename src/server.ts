@@ -18,6 +18,8 @@ declare module 'express-session' {
     fakturoidOAuthState?: string;
     fakturoidCompanyId?: number;
     fakturoidNewCompany?: boolean;
+    // Google OAuth state
+    googleOAuthState?: string;
   }
 }
 
@@ -164,6 +166,13 @@ function renderPage(title: string, content: string, req: Request): string {
         .auth-footer { text-align: center; margin-top: 24px; color: var(--color-text-light); }
         .auth-footer a { color: var(--color-forest); text-decoration: none; font-weight: 600; }
         .auth-footer a:hover { text-decoration: underline; }
+        .btn-google { background: white; color: #3c4043; border: 2px solid #dadce0; gap: 12px; font-weight: 600; }
+        .btn-google:hover { background: #f8f9fa; border-color: #dadce0; box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3); }
+        .btn-google svg { flex-shrink: 0; }
+        .auth-divider { display: flex; align-items: center; margin: 24px 0; }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--color-border); }
+        .auth-divider span { padding: 0 16px; color: var(--color-text-light); font-size: 0.875rem; }
+        .auth-note { text-align: center; color: var(--color-text-light); font-size: 0.85rem; margin-top: 16px; }
         .dashboard-header { background: linear-gradient(135deg, var(--color-forest), #4a7c59); color: white; padding: 60px 0; margin-top: -20px; }
         .dashboard-title { color: white; font-size: 2rem; }
         .dashboard-subtitle { color: var(--color-sage-light); margin-top: 8px; }
@@ -870,6 +879,18 @@ app.get('/login', (req: Request, res: Response) => {
             </div>
             ${error ? `<div class="flash flash-error">${error}</div>` : ''}
             ${success ? `<div class="flash flash-success">${success}</div>` : ''}
+            <a href="/auth/google" class="btn btn-google btn-full">
+                <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                    <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18l-2.909-2.26c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.482 18 9.003 18z" fill="#34A853"/>
+                    <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                    <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.428 0 9.002 0 5.48 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+                </svg>
+                Continue with Google
+            </a>
+            <div class="auth-divider">
+                <span>or</span>
+            </div>
             <form method="POST" action="/login">
                 <div class="form-group">
                     <label for="email">Email</label>
@@ -926,18 +947,31 @@ app.get('/signup', (req: Request, res: Response) => {
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <h1>Get Early Access</h1>
-                <p>Join Lenduck and we'll send you login details</p>
+                <h1>Get Started</h1>
+                <p>Create your Lenduck account instantly</p>
             </div>
             ${error ? `<div class="flash flash-error">${error}</div>` : ''}
             ${success ? `<div class="flash flash-success">${success}</div>` : ''}
+            <a href="/auth/google" class="btn btn-google btn-full">
+                <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                    <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18l-2.909-2.26c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.482 18 9.003 18z" fill="#34A853"/>
+                    <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                    <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.428 0 9.002 0 5.48 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+                </svg>
+                Continue with Google
+            </a>
+            <div class="auth-divider">
+                <span>or sign up with email</span>
+            </div>
             <form method="POST" action="/signup">
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" required placeholder="you@company.com">
                 </div>
-                <button type="submit" class="btn btn-primary btn-full">Sign Up</button>
+                <button type="submit" class="btn btn-secondary btn-full">Sign Up with Email</button>
             </form>
+            <p class="auth-note">We'll send you login details shortly after sign up</p>
             <div class="auth-footer">
                 Already have an account? <a href="/login">Log in</a>
             </div>
@@ -973,6 +1007,114 @@ app.get('/logout', (req: Request, res: Response) => {
   req.session.destroy(() => {
     res.redirect('/');
   });
+});
+
+// Google OAuth Configuration
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
+const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://lenduck.com/auth/google/callback';
+
+// Google OAuth - Initiate login
+app.get('/auth/google', (req: Request, res: Response) => {
+  if (!GOOGLE_CLIENT_ID) {
+    return res.redirect('/login?error=' + encodeURIComponent('Google login is not configured.'));
+  }
+
+  const state = require('crypto').randomBytes(32).toString('hex');
+  req.session.googleOAuthState = state;
+
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: GOOGLE_REDIRECT_URI,
+    response_type: 'code',
+    scope: 'openid email profile',
+    state: state,
+    access_type: 'offline',
+    prompt: 'select_account'
+  });
+
+  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
+});
+
+// Google OAuth - Callback
+app.get('/auth/google/callback', async (req: Request, res: Response) => {
+  const { code, state, error } = req.query;
+
+  if (error) {
+    return res.redirect('/login?error=' + encodeURIComponent('Google login was cancelled.'));
+  }
+
+  if (!code || !state) {
+    return res.redirect('/login?error=' + encodeURIComponent('Invalid callback parameters.'));
+  }
+
+  if (state !== req.session.googleOAuthState) {
+    return res.redirect('/login?error=' + encodeURIComponent('Invalid state parameter.'));
+  }
+
+  delete req.session.googleOAuthState;
+
+  try {
+    // Exchange code for tokens
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code: code as string,
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        redirect_uri: GOOGLE_REDIRECT_URI,
+        grant_type: 'authorization_code'
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      throw new Error('Failed to exchange code for tokens');
+    }
+
+    const tokens = await tokenResponse.json() as { access_token: string; id_token: string };
+
+    // Get user info from Google
+    const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${tokens.access_token}` }
+    });
+
+    if (!userInfoResponse.ok) {
+      throw new Error('Failed to get user info from Google');
+    }
+
+    const googleUser = await userInfoResponse.json() as { id: string; email: string; name?: string };
+
+    // Find or create user
+    let user = db.getUserByGoogleId(googleUser.id);
+
+    if (!user) {
+      // Check if user exists with this email
+      user = db.getUserByEmail(googleUser.email);
+
+      if (user) {
+        // Link Google account to existing user
+        db.linkGoogleToUser(user.id, googleUser.id);
+      } else {
+        // Create new user with Google
+        const result = db.createUserWithGoogle(googleUser.email, googleUser.id, googleUser.name);
+        user = db.getUserById(result.lastInsertRowid as number);
+      }
+    }
+
+    // Log in the user
+    req.session.userId = user.id;
+    req.session.isAdmin = user.is_admin === 1;
+
+    if (user.is_admin) {
+      return res.redirect('/admin');
+    }
+    res.redirect('/dashboard');
+
+  } catch (err) {
+    console.error('Google OAuth error:', err);
+    res.redirect('/login?error=' + encodeURIComponent('Failed to authenticate with Google. Please try again.'));
+  }
 });
 
 // Language switching

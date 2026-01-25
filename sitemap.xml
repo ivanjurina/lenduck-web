@@ -8,6 +8,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://lenduck.com/"/>
     <xhtml:link rel="alternate" hreflang="cs" href="https://lenduck.com/cz"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lenduck.com/"/>
+    <lastmod>2026-01-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -18,13 +19,44 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://lenduck.com/"/>
     <xhtml:link rel="alternate" hreflang="cs" href="https://lenduck.com/cz"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lenduck.com/"/>
+    <lastmod>2026-01-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+  </url>
+
+  <!-- Blog Articles -->
+  <url>
+    <loc>https://lenduck.com/blog/who-we-are</loc>
+    <lastmod>2026-01-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://lenduck.com/blog/how-it-works</loc>
+    <lastmod>2026-01-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://lenduck.com/blog/open-finance</loc>
+    <lastmod>2026-01-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://lenduck.com/blog/case-study-10x-faster</loc>
+    <lastmod>2026-01-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 
   <!-- Login Page -->
   <url>
     <loc>https://lenduck.com/login</loc>
+    <lastmod>2026-01-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -32,6 +64,7 @@
   <!-- Signup Page -->
   <url>
     <loc>https://lenduck.com/signup</loc>
+    <lastmod>2026-01-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
