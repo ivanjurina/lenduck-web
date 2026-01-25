@@ -1795,6 +1795,157 @@
             line-height: 1.75;
         }
 
+        /* Blog Section */
+        .blog-section {
+            padding: 120px 0;
+            background: white;
+            position: relative;
+        }
+
+        .blog-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(180deg, var(--color-sage-pale) 0%, transparent 100%);
+        }
+
+        .blog-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 64px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .blog-card {
+            background: var(--color-cream);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-soft);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-large);
+            border-color: var(--color-sage);
+        }
+
+        .blog-card-image {
+            height: 200px;
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blog-card-image svg {
+            width: 80px;
+            height: 80px;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .blog-card-image::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(0deg, var(--color-cream), transparent);
+        }
+
+        .blog-card.case-study .blog-card-image {
+            background: linear-gradient(135deg, var(--color-earth), var(--color-brown));
+        }
+
+        .blog-card.how-it-works .blog-card-image {
+            background: linear-gradient(135deg, var(--color-sage), var(--color-forest-light));
+        }
+
+        .blog-card.open-finance .blog-card-image {
+            background: linear-gradient(135deg, var(--color-moss), var(--color-forest));
+        }
+
+        .blog-card-content {
+            padding: 28px 32px 32px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .blog-card-category {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-forest);
+            margin-bottom: 12px;
+        }
+
+        .blog-card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--color-forest-dark);
+            margin-bottom: 14px;
+            line-height: 1.35;
+        }
+
+        .blog-card-excerpt {
+            color: var(--color-text-light);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            flex: 1;
+        }
+
+        .blog-card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--color-forest);
+            transition: gap 0.3s ease;
+        }
+
+        .blog-card:hover .blog-card-link {
+            gap: 12px;
+        }
+
+        .blog-card-link svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .blog-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .blog-card-image {
+                height: 160px;
+            }
+        }
+
         /* Footer */
         footer {
             padding: 60px 0;
@@ -2133,6 +2284,7 @@
                 <a href="#for-business">Pro firmy</a>
                 <a href="#for-lenders">Pro poskytovatele</a>
                 <a href="#pricing">Ceník</a>
+                <a href="#blog">Blog</a>
                 <a href="#faq">FAQ</a>
                 <a href="/login" class="nav-login">Přihlásit</a>
                 <a href="#cta" class="btn btn-primary" style="color: whitesmoke;">Začít</a>
@@ -2939,6 +3091,99 @@
                         <h4>Jak Lenduck prospívá poskytovatelům?</h4>
                         <p>Poskytovatelé získávají předkvalifikované leady s ověřenými finančními daty, což dramaticky snižuje jejich náklady na akvizici a čas posuzování. Platí pouze při uzavření obchodu.</p>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog Section -->
+        <section class="blog-section" id="blog">
+            <div class="container">
+                <div class="blog-header">
+                    <p class="section-label">Blog</p>
+                    <h2 class="section-title">Novinky a zdroje</h2>
+                    <p class="section-subtitle">Dozvězte se více o otevřených financích, úvěrech pro malé a střední podniky a jak Lenduck mění pravidla hry.</p>
+                </div>
+                <div class="blog-grid">
+                    <a href="/blog/who-we-are" class="blog-card">
+                        <div class="blog-card-image">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                            </svg>
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-card-category">O nás</span>
+                            <h3 class="blog-card-title">Kdo jsme a proč děláme to, co děláme</h3>
+                            <p class="blog-card-excerpt">Seznamte se s týmem Lenduck a objevte naši misi zpřístupnit firemní financování transparentním a férovým způsobem.</p>
+                            <span class="blog-card-link">
+                                Číst více
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </a>
+                    <a href="/blog/how-it-works" class="blog-card how-it-works">
+                        <div class="blog-card-image">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+                            </svg>
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-card-category">Průvodce</span>
+                            <h3 class="blog-card-title">Jak Lenduck funguje: Od připojení k financování</h3>
+                            <p class="blog-card-excerpt">Krok za krokem průvodce používáním Lenduck, od připojení účetního softwaru po získání konkurenčních nabídek během minut.</p>
+                            <span class="blog-card-link">
+                                Číst více
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </a>
+                    <a href="/blog/open-finance" class="blog-card open-finance">
+                        <div class="blog-card-image">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                <path d="M9 12l2 2 4-4"/>
+                                <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+                            </svg>
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-card-category">Odvětví</span>
+                            <h3 class="blog-card-title">Co je otevřené financování a proč záleží na agregaci účetních dat</h3>
+                            <p class="blog-card-excerpt">Prozkoumejte revoluci otevřeného financování a jak agregace účetních dat mění rozhodování o úvěrech pro malé a střední podniky.</p>
+                            <span class="blog-card-link">
+                                Číst více
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </a>
+                    <a href="/blog/case-study-10x-faster" class="blog-card case-study">
+                        <div class="blog-card-image">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/>
+                                <polyline points="13 2 13 9 20 9"/>
+                                <line x1="10" y1="13" x2="14" y2="13"/>
+                                <line x1="10" y1="17" x2="14" y2="17"/>
+                            </svg>
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-card-category">Případová studie</span>
+                            <h3 class="blog-card-title">Jak jsme pomohli firmě získat financování 10x rychleji</h3>
+                            <p class="blog-card-excerpt">Skutečný příběh úspěchu, jak jedna malá firma získala lepší podmínky financování za dny místo měsíců pomocí platformy Lenduck.</p>
+                            <span class="blog-card-link">
+                                Číst více
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </a>
                 </div>
             </div>
         </section>

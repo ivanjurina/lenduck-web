@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="apple-touch-icon" href="/logo.png">
+    <title>Who We Are and Why We Do What We Do | Lenduck Blog</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Meet the team behind Lenduck and discover our mission to make business financing accessible, transparent, and fair for everyone.">
+    <meta name="keywords" content="Lenduck, about us, SME financing, business loans, fintech startup, mission">
+    <meta name="author" content="Lenduck">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://lenduck.com/blog/who-we-are">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://lenduck.com/blog/who-we-are">
+    <meta property="og:title" content="Who We Are and Why We Do What We Do | Lenduck">
+    <meta property="og:description" content="Meet the team behind Lenduck and discover our mission to make business financing accessible, transparent, and fair for everyone.">
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JC8J014HF3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-JC8J014HF3');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-forest: #2d5a3d;
+            --color-forest-dark: #1e3d29;
+            --color-forest-light: #3d7a52;
+            --color-sage: #7c9a82;
+            --color-sage-light: #a8c4ad;
+            --color-sage-pale: #d4e4d7;
+            --color-cream: #faf8f3;
+            --color-cream-dark: #f0ebe0;
+            --color-brown: #5c4d3c;
+            --color-brown-light: #8b7355;
+            --color-earth: #c4a77d;
+            --color-moss: #4a7c59;
+            --color-text: #3d3d3d;
+            --color-text-light: #6b6b6b;
+            --color-text-inverse: #faf8f3;
+            --color-border: #d4d4c4;
+            --font-main: 'Nunito', sans-serif;
+            --shadow-soft: 0 4px 20px rgba(45, 90, 61, 0.08);
+            --shadow-medium: 0 8px 30px rgba(45, 90, 61, 0.12);
+            --shadow-large: 0 16px 50px rgba(45, 90, 61, 0.15);
+            --radius-soft: 20px;
+            --radius-round: 50px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--color-cream);
+            color: var(--color-text);
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 20px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(250, 248, 243, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(124, 154, 130, 0.2);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .nav-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--color-forest);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 36px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--color-text-light);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--color-forest);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: var(--radius-round);
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            color: white;
+            box-shadow: 0 4px 15px rgba(45, 90, 61, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(45, 90, 61, 0.4);
+        }
+
+        /* Article Hero */
+        .article-hero {
+            padding: 160px 0 80px;
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .article-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='rgba(255,255,255,0.03)' d='M50 5 C70 20 90 50 50 95 C10 50 30 20 50 5 Z'/%3E%3C/svg%3E");
+            background-size: 200px 200px;
+        }
+
+        .article-hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+        }
+
+        .article-category {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-sage-light);
+            margin-bottom: 16px;
+        }
+
+        .article-hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 24px;
+            font-size: 0.95rem;
+            color: var(--color-sage-light);
+        }
+
+        /* Article Content */
+        .article-content {
+            padding: 80px 0;
+            background: white;
+        }
+
+        .article-body {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .article-body h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--color-forest-dark);
+            margin: 48px 0 24px;
+        }
+
+        .article-body h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--color-forest-dark);
+            margin: 36px 0 18px;
+        }
+
+        .article-body p {
+            font-size: 1.1rem;
+            line-height: 1.85;
+            color: var(--color-text);
+            margin-bottom: 24px;
+        }
+
+        .article-body ul, .article-body ol {
+            margin: 24px 0;
+            padding-left: 32px;
+        }
+
+        .article-body li {
+            font-size: 1.1rem;
+            line-height: 1.85;
+            margin-bottom: 12px;
+            color: var(--color-text);
+        }
+
+        .article-body blockquote {
+            border-left: 4px solid var(--color-forest);
+            padding: 24px 32px;
+            margin: 36px 0;
+            background: var(--color-cream);
+            border-radius: 0 var(--radius-soft) var(--radius-soft) 0;
+        }
+
+        .article-body blockquote p {
+            font-size: 1.2rem;
+            font-style: italic;
+            color: var(--color-forest-dark);
+            margin: 0;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--color-sage-pale), var(--color-cream));
+            border-radius: var(--radius-soft);
+            padding: 32px;
+            margin: 36px 0;
+            border: 1px solid var(--color-sage);
+        }
+
+        .highlight-box h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--color-forest);
+            margin-bottom: 16px;
+        }
+
+        /* CTA Section */
+        .article-cta {
+            padding: 80px 0;
+            background: var(--color-sage-pale);
+            text-align: center;
+        }
+
+        .article-cta h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-forest-dark);
+            margin-bottom: 16px;
+        }
+
+        .article-cta p {
+            font-size: 1.1rem;
+            color: var(--color-text-light);
+            margin-bottom: 32px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 0;
+            background: var(--color-forest-dark);
+            color: var(--color-text-inverse);
+        }
+
+        .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 36px;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-copy {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9rem;
+        }
+
+        /* Back Link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-sage-light);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 24px;
+            transition: gap 0.3s ease;
+        }
+
+        .back-link:hover {
+            gap: 12px;
+        }
+
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .article-hero h1 {
+                font-size: 2rem;
+            }
+
+            .article-hero {
+                padding: 140px 0 60px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .footer-inner {
+                flex-direction: column;
+                gap: 24px;
+                text-align: center;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container nav-inner">
+            <a href="/" class="logo">
+                <img src="/logo.png" alt="Lenduck" class="logo-icon">
+                <span class="logo-text">Lenduck</span>
+            </a>
+            <div class="nav-links">
+                <a href="/#how-it-works">How It Works</a>
+                <a href="/#for-business">For Businesses</a>
+                <a href="/#for-lenders">For Lenders</a>
+                <a href="/#blog">Blog</a>
+                <a href="/#cta" class="btn btn-primary" style="color: whitesmoke;">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <section class="article-hero">
+            <div class="container">
+                <div class="article-hero-content">
+                    <a href="/#blog" class="back-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                        Back to Blog
+                    </a>
+                    <span class="article-category">About Us</span>
+                    <h1>Who We Are and Why We Do What We Do</h1>
+                    <div class="article-meta">
+                        <span>By Lenduck Team</span>
+                        <span>5 min read</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="article-content">
+            <div class="container">
+                <div class="article-body">
+                    <p>At Lenduck, we believe that every business deserves access to fair, transparent financing. Yet for too long, small and medium-sized enterprises (SMEs) have been stuck in a system that works against them: endless paperwork, opaque processes, and rates that seem to be pulled from thin air.</p>
+
+                    <p>We started Lenduck because we saw firsthand how broken business lending had become. As former entrepreneurs and fintech professionals, we watched countless businesses struggle to secure the funding they needed to grow, not because they weren't creditworthy, but because the system was designed for a different era.</p>
+
+                    <h2>The Problem We're Solving</h2>
+
+                    <p>Traditional business lending is stuck in the past. Here's what a typical experience looks like:</p>
+
+                    <ul>
+                        <li><strong>Weeks of paperwork:</strong> Gathering financial statements, tax returns, bank statements, and other documents that should already be digital.</li>
+                        <li><strong>Multiple applications:</strong> Repeating the same process with each lender, never knowing if you're getting competitive rates.</li>
+                        <li><strong>Black-box decisions:</strong> Getting approved or rejected with little explanation, making it impossible to improve your chances.</li>
+                        <li><strong>Hidden fees and rates:</strong> Discovering the true cost of financing only after you've committed.</li>
+                    </ul>
+
+                    <p>This isn't just frustrating for businesses. It's inefficient for lenders too, who spend enormous resources on customer acquisition and manual underwriting, only to have limited visibility into the true financial health of their borrowers.</p>
+
+                    <h2>Our Mission</h2>
+
+                    <blockquote>
+                        <p>"To make business financing as simple as it should be in the digital age: instant, transparent, and fair."</p>
+                    </blockquote>
+
+                    <p>We believe that with modern technology, there's no reason businesses should spend weeks on loan applications. Your accounting software already contains everything a lender needs to make an informed decision. Lenduck simply connects the dots.</p>
+
+                    <h2>How We're Different</h2>
+
+                    <div class="highlight-box">
+                        <h4>Our Core Principles</h4>
+                        <ul>
+                            <li><strong>Your data, your control:</strong> We never share your information without explicit consent. You decide what lenders see and when.</li>
+                            <li><strong>Transparency first:</strong> See all your offers side by side, with clear terms and no hidden fees. Compare APRs, not just headline rates.</li>
+                            <li><strong>Speed without sacrifice:</strong> Get multiple offers in minutes, not weeks. Automation shouldn't mean less accuracy.</li>
+                            <li><strong>Fair for everyone:</strong> We're free for businesses. Lenders only pay when they successfully fund a deal. Everyone's incentives are aligned.</li>
+                        </ul>
+                    </div>
+
+                    <h2>The Team</h2>
+
+                    <p>Lenduck was founded by a team with deep experience in both fintech and SME financing. We've built lending platforms, worked with banks and alternative lenders, and most importantly, run businesses ourselves. We know the pain points because we've lived them.</p>
+
+                    <p>Our engineering team comes from leading tech companies, bringing expertise in security, data integration, and user experience. Our financial team includes former bankers and credit analysts who understand what lenders need to make confident decisions.</p>
+
+                    <h2>Looking Ahead</h2>
+
+                    <p>We're just getting started. Our vision is a world where accessing business financing is as simple as checking your email. Where every SME can compare offers from dozens of lenders with a single click. Where financial data flows securely between businesses and lenders, removing friction and creating value for everyone.</p>
+
+                    <p>Open finance is the future, and we're proud to be at the forefront of this transformation. Join us in building a better way to fund business growth.</p>
+
+                    <h3>Ready to experience the difference?</h3>
+
+                    <p>Whether you're a business looking for financing or a lender seeking qualified borrowers, we'd love to show you what Lenduck can do.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="article-cta">
+            <div class="container">
+                <h2>Ready to Find Better Financing?</h2>
+                <p>Connect your accounting software and get personalized loan offers in minutes. It's free for businesses.</p>
+                <a href="/#cta" class="btn btn-primary" style="color: whitesmoke;">Get Started Today</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-inner">
+            <div class="footer-logo">
+                <img src="/logo.png" alt="Lenduck" width="36" height="36" style="border-radius: 12px;">
+                <span class="footer-logo-text">Lenduck</span>
+            </div>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="mailto:hello@lenduck.com">Contact Us</a>
+            </div>
+            <p class="footer-copy">2026 Lenduck. The natural way to find business financing.</p>
+        </div>
+    </footer>
+</body>
+</html>

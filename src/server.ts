@@ -823,6 +823,23 @@ app.get('/cz', (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '..', 'index8-cz.html'));
 });
 
+// Blog articles
+app.get('/blog/who-we-are', (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '..', 'blog-who-we-are.html'));
+});
+
+app.get('/blog/how-it-works', (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '..', 'blog-how-it-works.html'));
+});
+
+app.get('/blog/open-finance', (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '..', 'blog-open-finance.html'));
+});
+
+app.get('/blog/case-study-10x-faster', (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '..', 'blog-case-study-10x-faster.html'));
+});
+
 // SEO files
 app.get('/robots.txt', (req: Request, res: Response) => {
   res.type('text/plain');

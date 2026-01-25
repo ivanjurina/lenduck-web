@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="apple-touch-icon" href="/logo.png">
+    <title>How Lenduck Works: From Connection to Funding | Lenduck Blog</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="A step-by-step guide to using Lenduck, from connecting your accounting software to receiving competitive loan offers in minutes.">
+    <meta name="keywords" content="Lenduck, how it works, business financing, loan application, accounting software, QuickBooks, Xero">
+    <meta name="author" content="Lenduck">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://lenduck.com/blog/how-it-works">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://lenduck.com/blog/how-it-works">
+    <meta property="og:title" content="How Lenduck Works: From Connection to Funding | Lenduck">
+    <meta property="og:description" content="A step-by-step guide to using Lenduck, from connecting your accounting software to receiving competitive loan offers in minutes.">
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JC8J014HF3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-JC8J014HF3');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-forest: #2d5a3d;
+            --color-forest-dark: #1e3d29;
+            --color-forest-light: #3d7a52;
+            --color-sage: #7c9a82;
+            --color-sage-light: #a8c4ad;
+            --color-sage-pale: #d4e4d7;
+            --color-cream: #faf8f3;
+            --color-cream-dark: #f0ebe0;
+            --color-brown: #5c4d3c;
+            --color-brown-light: #8b7355;
+            --color-earth: #c4a77d;
+            --color-moss: #4a7c59;
+            --color-text: #3d3d3d;
+            --color-text-light: #6b6b6b;
+            --color-text-inverse: #faf8f3;
+            --color-border: #d4d4c4;
+            --font-main: 'Nunito', sans-serif;
+            --shadow-soft: 0 4px 20px rgba(45, 90, 61, 0.08);
+            --shadow-medium: 0 8px 30px rgba(45, 90, 61, 0.12);
+            --shadow-large: 0 16px 50px rgba(45, 90, 61, 0.15);
+            --radius-soft: 20px;
+            --radius-round: 50px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--font-main); background: var(--color-cream); color: var(--color-text); line-height: 1.7; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+        nav { padding: 20px 0; position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(250, 248, 243, 0.98); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(124, 154, 130, 0.2); box-shadow: var(--shadow-soft); }
+        .nav-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-icon { width: 40px; height: 40px; }
+        .logo-text { font-size: 1.5rem; font-weight: 800; color: var(--color-forest); }
+        .nav-links { display: flex; gap: 36px; align-items: center; }
+        .nav-links a { color: var(--color-text-light); text-decoration: none; font-size: 0.95rem; font-weight: 600; transition: color 0.3s; }
+        .nav-links a:hover { color: var(--color-forest); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 28px; border-radius: var(--radius-round); font-weight: 700; font-size: 0.95rem; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border: none; }
+        .btn-primary { background: linear-gradient(135deg, var(--color-forest), var(--color-moss)); color: white; box-shadow: 0 4px 15px rgba(45, 90, 61, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(45, 90, 61, 0.4); }
+
+        .article-hero { padding: 160px 0 80px; background: linear-gradient(135deg, var(--color-sage), var(--color-forest-light)); color: white; position: relative; overflow: hidden; }
+        .article-hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle fill='rgba(255,255,255,0.03)' cx='50' cy='50' r='40'/%3E%3C/svg%3E"); background-size: 150px 150px; }
+        .article-hero-content { position: relative; z-index: 1; max-width: 800px; }
+        .article-category { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.8); margin-bottom: 16px; }
+        .article-hero h1 { font-size: 3rem; font-weight: 800; line-height: 1.2; margin-bottom: 20px; color: white; }
+        .article-meta { display: flex; gap: 24px; font-size: 0.95rem; color: rgba(255,255,255,0.8); }
+
+        .article-content { padding: 80px 0; background: white; }
+        .article-body { max-width: 720px; margin: 0 auto; }
+        .article-body h2 { font-size: 1.8rem; font-weight: 700; color: var(--color-forest-dark); margin: 48px 0 24px; }
+        .article-body h3 { font-size: 1.4rem; font-weight: 700; color: var(--color-forest-dark); margin: 36px 0 18px; }
+        .article-body p { font-size: 1.1rem; line-height: 1.85; color: var(--color-text); margin-bottom: 24px; }
+        .article-body ul, .article-body ol { margin: 24px 0; padding-left: 32px; }
+        .article-body li { font-size: 1.1rem; line-height: 1.85; margin-bottom: 12px; color: var(--color-text); }
+        .article-body blockquote { border-left: 4px solid var(--color-forest); padding: 24px 32px; margin: 36px 0; background: var(--color-cream); border-radius: 0 var(--radius-soft) var(--radius-soft) 0; }
+        .article-body blockquote p { font-size: 1.2rem; font-style: italic; color: var(--color-forest-dark); margin: 0; }
+
+        .step-card { background: var(--color-cream); border: 2px solid var(--color-border); border-radius: var(--radius-soft); padding: 32px; margin: 24px 0; display: flex; gap: 24px; align-items: flex-start; transition: all 0.3s ease; }
+        .step-card:hover { border-color: var(--color-forest); box-shadow: var(--shadow-medium); transform: translateY(-4px); }
+        .step-number { width: 48px; height: 48px; background: linear-gradient(135deg, var(--color-forest), var(--color-moss)); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; flex-shrink: 0; }
+        .step-content h4 { font-size: 1.2rem; font-weight: 700; color: var(--color-forest-dark); margin-bottom: 8px; }
+        .step-content p { font-size: 1rem; color: var(--color-text-light); margin: 0; }
+
+        .highlight-box { background: linear-gradient(135deg, var(--color-sage-pale), var(--color-cream)); border-radius: var(--radius-soft); padding: 32px; margin: 36px 0; border: 1px solid var(--color-sage); }
+        .highlight-box h4 { font-size: 1.1rem; font-weight: 700; color: var(--color-forest); margin-bottom: 16px; }
+
+        .article-cta { padding: 80px 0; background: var(--color-sage-pale); text-align: center; }
+        .article-cta h2 { font-size: 2rem; font-weight: 700; color: var(--color-forest-dark); margin-bottom: 16px; }
+        .article-cta p { font-size: 1.1rem; color: var(--color-text-light); margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+        footer { padding: 60px 0; background: var(--color-forest-dark); color: var(--color-text-inverse); }
+        .footer-inner { display: flex; justify-content: space-between; align-items: center; }
+        .footer-logo { display: flex; align-items: center; gap: 12px; }
+        .footer-logo-text { font-size: 1.5rem; font-weight: 800; }
+        .footer-links { display: flex; gap: 36px; }
+        .footer-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: color 0.3s; }
+        .footer-links a:hover { color: white; }
+        .footer-copy { color: rgba(255,255,255,0.5); font-size: 0.9rem; }
+
+        .back-link { display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 600; margin-bottom: 24px; transition: gap 0.3s ease; }
+        .back-link:hover { gap: 12px; }
+        .back-link svg { width: 20px; height: 20px; }
+
+        @media (max-width: 768px) {
+            .article-hero h1 { font-size: 2rem; }
+            .article-hero { padding: 140px 0 60px; }
+            .nav-links { display: none; }
+            .footer-inner { flex-direction: column; gap: 24px; text-align: center; }
+            .footer-links { flex-wrap: wrap; justify-content: center; }
+            .step-card { flex-direction: column; align-items: center; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container nav-inner">
+            <a href="/" class="logo">
+                <img src="/logo.png" alt="Lenduck" class="logo-icon">
+                <span class="logo-text">Lenduck</span>
+            </a>
+            <div class="nav-links">
+                <a href="/#how-it-works">How It Works</a>
+                <a href="/#for-business">For Businesses</a>
+                <a href="/#for-lenders">For Lenders</a>
+                <a href="/#blog">Blog</a>
+                <a href="/#cta" class="btn btn-primary" style="color: whitesmoke;">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <section class="article-hero">
+            <div class="container">
+                <div class="article-hero-content">
+                    <a href="/#blog" class="back-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                        Back to Blog
+                    </a>
+                    <span class="article-category">Guide</span>
+                    <h1>How Lenduck Works: From Connection to Funding</h1>
+                    <div class="article-meta">
+                        <span>By Lenduck Team</span>
+                        <span>6 min read</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="article-content">
+            <div class="container">
+                <div class="article-body">
+                    <p>Getting business financing doesn't have to be complicated. With Lenduck, you can go from connecting your accounting software to receiving multiple loan offers in minutes, not weeks. Here's exactly how it works.</p>
+
+                    <h2>The Traditional Way vs. The Lenduck Way</h2>
+
+                    <p>Traditionally, applying for a business loan meant gathering months of financial statements, filling out lengthy applications, and waiting days or weeks for each lender to respond. If you wanted to compare offers, you'd repeat this process multiple times.</p>
+
+                    <p>Lenduck changes everything. By securely connecting to your existing accounting software, we can instantly analyze your financial health and match you with lenders who are likely to approve your application, all without a single piece of paperwork.</p>
+
+                    <h2>Step-by-Step: How Lenduck Works</h2>
+
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Create Your Free Account</h4>
+                            <p>Sign up in seconds with just your email. No credit card required, and it's completely free for businesses. We'll never charge you anything.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Connect Your Accounting Software</h4>
+                            <p>Link your QuickBooks, Xero, Sage, FreshBooks, or other accounting platform using secure OAuth authentication. We support all major providers and are constantly adding more.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>We Analyze Your Financials</h4>
+                            <p>Our AI-powered platform reviews your revenue, expenses, cash flow patterns, and other key metrics to build a complete financial profile. This takes just seconds.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Receive Personalized Offers</h4>
+                            <p>Within minutes, you'll see offers from multiple lenders tailored to your specific financial situation. Compare APRs, terms, and fees side by side.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4>Choose and Get Funded</h4>
+                            <p>Select the offer that works best for you. Once you accept, the lender handles the rest. Many of our partners can fund within 24-48 hours.</p>
+                        </div>
+                    </div>
+
+                    <h2>What Happens to Your Data?</h2>
+
+                    <p>We take data security seriously. Here's what you need to know:</p>
+
+                    <ul>
+                        <li><strong>Read-only access:</strong> We can only view your financial data. We can never modify or delete anything in your accounting software.</li>
+                        <li><strong>Bank-level encryption:</strong> All data is encrypted in transit and at rest using AES-256 encryption.</li>
+                        <li><strong>You control sharing:</strong> Lenders only see an anonymized financial profile until you explicitly choose to share your identity with a specific lender.</li>
+                        <li><strong>Disconnect anytime:</strong> You can revoke our access to your accounting software at any moment through your account settings.</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <h4>Supported Accounting Platforms</h4>
+                        <p>We currently integrate with:</p>
+                        <ul>
+                            <li>QuickBooks Online</li>
+                            <li>Xero</li>
+                            <li>Sage Business Cloud</li>
+                            <li>FreshBooks</li>
+                            <li>Fakturoid</li>
+                            <li>And more being added regularly</li>
+                        </ul>
+                        <p style="margin-bottom: 0; margin-top: 16px;">Don't see your software? <a href="mailto:hello@lenduck.com" style="color: var(--color-forest); font-weight: 600;">Let us know</a> and we'll prioritize adding it.</p>
+                    </div>
+
+                    <h2>What Lenders See</h2>
+
+                    <p>When lenders view your profile on Lenduck, they see:</p>
+
+                    <ul>
+                        <li>Monthly and annual revenue trends</li>
+                        <li>Profit margins and cash flow patterns</li>
+                        <li>Outstanding receivables and payables</li>
+                        <li>Business age and industry category</li>
+                        <li>A proprietary financial health score</li>
+                    </ul>
+
+                    <p>They don't see your company name, personal details, or any identifying information until you choose to proceed with their offer. This protects you while allowing lenders to make informed pre-qualification decisions.</p>
+
+                    <h2>Types of Financing Available</h2>
+
+                    <p>Through Lenduck, you can access various types of business financing:</p>
+
+                    <ul>
+                        <li><strong>Term Loans:</strong> Traditional loans with fixed repayment schedules, ideal for major investments or equipment purchases.</li>
+                        <li><strong>Lines of Credit:</strong> Flexible access to funds that you can draw on as needed, perfect for managing cash flow.</li>
+                        <li><strong>Invoice Factoring:</strong> Convert outstanding invoices to immediate cash, great for businesses with long payment cycles.</li>
+                        <li><strong>Equipment Financing:</strong> Specialized loans for purchasing machinery, vehicles, or technology.</li>
+                        <li><strong>Revenue-Based Financing:</strong> Repayments tied to your monthly revenue, offering flexibility during slower periods.</li>
+                    </ul>
+
+                    <h2>Frequently Asked Questions</h2>
+
+                    <h3>Does applying affect my credit score?</h3>
+                    <p>No. Viewing offers on Lenduck doesn't trigger a credit check. A hard inquiry only happens if you choose to proceed with a specific lender's offer.</p>
+
+                    <h3>How long does the process take?</h3>
+                    <p>From signing up to receiving offers typically takes 2-5 minutes. Funding timelines vary by lender but can be as fast as 24 hours.</p>
+
+                    <h3>What if I'm declined by all lenders?</h3>
+                    <p>We provide insights into why you might not be qualifying and recommendations for improving your financial profile. Many businesses become eligible after a few months of improved financials.</p>
+
+                    <h3>Is there a minimum revenue requirement?</h3>
+                    <p>Most lenders on our platform work with businesses generating at least $100,000 in annual revenue, though some specialize in smaller businesses.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="article-cta">
+            <div class="container">
+                <h2>Ready to See Your Offers?</h2>
+                <p>Connect your accounting software and get personalized loan offers in minutes. It takes less than 2 minutes to get started.</p>
+                <a href="/#cta" class="btn btn-primary" style="color: whitesmoke;">Get Started Now</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-inner">
+            <div class="footer-logo">
+                <img src="/logo.png" alt="Lenduck" width="36" height="36" style="border-radius: 12px;">
+                <span class="footer-logo-text">Lenduck</span>
+            </div>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="mailto:hello@lenduck.com">Contact Us</a>
+            </div>
+            <p class="footer-copy">2026 Lenduck. The natural way to find business financing.</p>
+        </div>
+    </footer>
+</body>
+</html>
