@@ -2394,9 +2394,10 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
   const error = req.query.error as string;
   const success = req.query.success as string;
 
-  const formatCurrency = (amount: number | null) => {
+  const formatCurrency = (amount: number | null, currency?: string) => {
     if (amount === null || amount === undefined) return 'N/A';
-    return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: company.currency || 'CZK', maximumFractionDigits: 0 }).format(amount);
+    const cur = currency || company.currency || 'CZK';
+    return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'cs-CZ', { style: 'currency', currency: cur, maximumFractionDigits: 0 }).format(amount);
   };
 
   // Calculate health score
@@ -2447,8 +2448,27 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
   // Invoice counts
   const unpaidReceivables = invoices.filter((i: any) => i.invoice_type === 'issued' && i.status !== 'paid');
   const unpaidPayables = invoices.filter((i: any) => i.invoice_type === 'received' && i.status !== 'paid');
-  const totalReceivables = unpaidReceivables.reduce((sum: number, i: any) => sum + (i.balance_due || 0), 0);
-  const totalPayables = unpaidPayables.reduce((sum: number, i: any) => sum + (i.balance_due || 0), 0);
+
+  // Group receivables by currency
+  const receivablesByCurrency: Record<string, number> = {};
+  unpaidReceivables.forEach((i: any) => {
+    const cur = i.currency || company.currency || 'CZK';
+    receivablesByCurrency[cur] = (receivablesByCurrency[cur] || 0) + (i.balance_due || 0);
+  });
+
+  // Group payables by currency
+  const payablesByCurrency: Record<string, number> = {};
+  unpaidPayables.forEach((i: any) => {
+    const cur = i.currency || company.currency || 'CZK';
+    payablesByCurrency[cur] = (payablesByCurrency[cur] || 0) + (i.balance_due || 0);
+  });
+
+  // Format grouped amounts
+  const formatGroupedAmounts = (grouped: Record<string, number>) => {
+    const entries = Object.entries(grouped);
+    if (entries.length === 0) return formatCurrency(0);
+    return entries.map(([cur, amount]) => formatCurrency(amount, cur)).join('<br>');
+  };
 
   const content = `
     <style>
@@ -2495,12 +2515,12 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
       </div>
       <div class="stat-card">
         <div class="stat-label">${tr.reportsPage.receivables}</div>
-        <div class="stat-value">${formatCurrency(totalReceivables)}</div>
+        <div class="stat-value">${formatGroupedAmounts(receivablesByCurrency)}</div>
         <div class="stat-change">${unpaidReceivables.length} ${tr.invoicesPage.unpaid.toLowerCase()}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">${tr.reportsPage.payables}</div>
-        <div class="stat-value">${formatCurrency(totalPayables)}</div>
+        <div class="stat-value">${formatGroupedAmounts(payablesByCurrency)}</div>
         <div class="stat-change">${unpaidPayables.length} ${tr.invoicesPage.unpaid.toLowerCase()}</div>
       </div>
       <div class="stat-card">
@@ -2537,7 +2557,7 @@ app.get('/company/:id/overview', requireAuth, (req: Request, res: Response) => {
                 <tr>
                   <td>${inv.invoice_number || '-'}</td>
                   <td>${inv.customer_name || '-'}</td>
-                  <td style="text-align:right">${formatCurrency(inv.total_amount)}</td>
+                  <td style="text-align:right">${formatCurrency(inv.total_amount, inv.currency)}</td>
                   <td><span class="badge ${inv.status === 'paid' ? 'badge-success' : 'badge-error'}">${inv.status === 'paid' ? tr.invoicesPage.paid : tr.invoicesPage.unpaid}</span></td>
                 </tr>
               `).join('') : `<tr><td colspan="4" class="empty-state">${tr.invoicesPage.noInvoices}</td></tr>`}
