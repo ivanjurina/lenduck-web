@@ -2831,22 +2831,25 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
   });
   const topSuppliers = Object.values(supplierTotals).sort((a, b) => b.total - a.total).slice(0, 5);
 
-  // Monthly overview (last 6 months)
+  // Monthly overview (last 6 months) - use native_total (CZK) to avoid mixing currencies
   const monthlyData: Record<string, { issued: number; received: number; issuedCount: number; receivedCount: number }> = {};
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     monthlyData[key] = { issued: 0, received: 0, issuedCount: 0, receivedCount: 0 };
   }
-  filteredInvoices.forEach((inv: any) => {
+  enrichedInvoices.forEach((inv: any) => {
     if (!inv.issue_date) return;
     const key = inv.issue_date.substring(0, 7);
     if (monthlyData[key]) {
+      // Use native_total (CZK) for consistent comparison across currencies
+      const rawNative = inv.extra?.native_total;
+      const nativeAmount = rawNative !== undefined && rawNative !== null ? parseFloat(rawNative) : parseFloat(inv.total_amount) || 0;
       if (inv.invoice_type === 'issued') {
-        monthlyData[key].issued += inv.total_amount || 0;
+        monthlyData[key].issued += isNaN(nativeAmount) ? 0 : nativeAmount;
         monthlyData[key].issuedCount++;
       } else {
-        monthlyData[key].received += inv.total_amount || 0;
+        monthlyData[key].received += isNaN(nativeAmount) ? 0 : nativeAmount;
         monthlyData[key].receivedCount++;
       }
     }
@@ -3245,14 +3248,14 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
                   <span style="width: 10px; height: 10px; border-radius: 2px; background: linear-gradient(135deg, #7cb77c, #5a9a5a);"></span>
                   <span style="font-size: 0.8rem; color: var(--color-text-muted);">${tr.invoicesPage.paid}</span>
                 </div>
-                <div style="font-size: 1.1rem; font-weight: 600; color: #5a9a5a;">${formatCurrency(filteredPaidAmount, primaryCurrency)}</div>
+                ${currenciesWithTotals.map(([cur, data]) => data.paid > 0 ? `<div style="font-size: 1rem; font-weight: 600; color: #5a9a5a;">${formatCurrency(data.paid, cur)}</div>` : '').join('')}
               </div>
               <div>
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                   <span style="width: 10px; height: 10px; border-radius: 2px; background: linear-gradient(135deg, #ef9a9a, #e57373);"></span>
                   <span style="font-size: 0.8rem; color: var(--color-text-muted);">${tr.invoicesPage.unpaid}</span>
                 </div>
-                <div style="font-size: 1.1rem; font-weight: 600; color: #e57373;">${formatCurrency(filteredUnpaidAmount, primaryCurrency)}</div>
+                ${currenciesWithTotals.map(([cur, data]) => data.unpaid > 0 ? `<div style="font-size: 1rem; font-weight: 600; color: #e57373;">${formatCurrency(data.unpaid, cur)}</div>` : '').join('')}
               </div>
             </div>
           </div>
@@ -3395,7 +3398,7 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
         data: {
           labels: ['${tr.invoicesPage.paid}', '${tr.invoicesPage.unpaid}'],
           datasets: [{
-            data: [${filteredPaidAmount}, ${filteredUnpaidAmount}],
+            data: [${nativePaidSum}, ${nativeUnpaidSum}],
             backgroundColor: ['#8BA88A', '#E57373'],
             borderWidth: 0
           }]
@@ -3466,7 +3469,7 @@ app.get('/company/:id/data/invoices', requireAuth, (req: Request, res: Response)
               beginAtZero: true,
               ticks: {
                 callback: function(value) {
-                  return new Intl.NumberFormat('${lang === 'en' ? 'en-US' : 'cs-CZ'}', { maximumFractionDigits: 0 }).format(value) + ' ${company.currency || 'CZK'}';
+                  return new Intl.NumberFormat('${lang === 'en' ? 'en-US' : 'cs-CZ'}', { maximumFractionDigits: 0 }).format(value) + ' CZK';
                 }
               }
             }
