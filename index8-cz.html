@@ -123,9 +123,14 @@
             left: 0;
             right: 0;
             z-index: 100;
-            background: rgba(250, 248, 243, 0.92);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(124, 154, 130, 0.2);
+            background: transparent;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        nav.nav-hidden {
+            transform: translateY(-100%);
         }
 
         .nav-inner {
@@ -150,7 +155,7 @@
         .logo-text {
             font-size: 1.5rem;
             font-weight: 800;
-            color: var(--color-forest);
+            color: white;
         }
 
         .nav-links {
@@ -160,7 +165,7 @@
         }
 
         .nav-links a {
-            color: var(--color-text-light);
+            color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
             font-size: 0.95rem;
             font-weight: 600;
@@ -169,7 +174,7 @@
         }
 
         .nav-links a:not(.btn):hover {
-            color: var(--color-forest);
+            color: white;
         }
 
         .nav-links a:not(.btn)::after {
@@ -179,7 +184,7 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: var(--color-forest);
+            background: white;
             border-radius: 2px;
             transition: width 0.3s;
         }
@@ -193,7 +198,15 @@
             gap: 4px;
             margin-left: 12px;
             padding-left: 16px;
-            border-left: 1px solid var(--color-border);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .lang-option {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .lang-option.active {
+            color: white !important;
         }
 
         .nav-login {
@@ -311,21 +324,30 @@
 
         /* Hero Section */
         .hero {
-            padding: 160px 0 120px;
+            padding: 80px 0 120px;
+            padding-top: 80px;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(180deg, var(--color-cream) 0%, var(--color-sage-pale) 100%);
+            background-image: url('https://images.pexels.com/photos/7434022/pexels-photo-7434022.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
         }
 
         .hero::before {
             content: '';
             position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 80%;
-            height: 150%;
-            background: radial-gradient(ellipse, rgba(124, 154, 130, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(15, 20, 25, 0.92) 0%, rgba(15, 20, 25, 0.88) 100%);
+            z-index: 1;
+        }
+
+        .hero .problem-grid {
+            margin-top: 80px;
         }
 
         .hero-leaf-1 {
@@ -343,44 +365,43 @@
             transform: rotate(45deg);
         }
 
-        .hero-grid {
+        .hero-unified {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-soft);
+            padding: 48px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 80px;
-            align-items: center;
-            position: relative;
-            z-index: 1;
+            gap: 48px;
+            align-items: start;
+        }
+
+        .hero-content {
+            display: flex;
+            flex-direction: column;
         }
 
         .hero h1 {
             font-size: clamp(2.5rem, 4.5vw, 3.5rem);
             line-height: 1.15;
             margin-bottom: 24px;
+            color: white;
         }
 
         .hero h1 em {
-            color: var(--color-moss);
+            color: var(--color-sage-light);
             font-style: normal;
-            position: relative;
-        }
-
-        .hero h1 em::after {
-            content: '';
-            position: absolute;
-            bottom: 5px;
-            left: 0;
-            width: 100%;
-            height: 8px;
-            background: rgba(74, 124, 89, 0.2);
-            border-radius: 4px;
-            z-index: -1;
         }
 
         .hero-subtitle {
             font-size: 1.15rem;
-            color: var(--color-text-light);
+            color: rgba(255,255,255,0.8);
             margin-bottom: 36px;
-            max-width: 500px;
             line-height: 1.8;
         }
 
@@ -434,15 +455,11 @@
             display: block;
         }
 
-        .hero-visual {
-            position: relative;
-        }
-
         .hero-image-container {
-            background: white;
+            background: rgba(255,255,255,0.08);
             border-radius: var(--radius-soft);
-            border: 1px solid var(--color-border);
-            box-shadow: var(--shadow-large);
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
             overflow: hidden;
             position: relative;
         }
@@ -467,13 +484,13 @@
             align-items: center;
             margin-bottom: 24px;
             padding-bottom: 16px;
-            border-bottom: 1px solid var(--color-border);
+            border-bottom: 1px solid rgba(255,255,255,0.15);
         }
 
         .dashboard-title {
             font-weight: 700;
             font-size: 0.95rem;
-            color: var(--color-forest-dark);
+            color: white;
         }
 
         .dashboard-status {
@@ -790,22 +807,23 @@
         }
 
         .time-card {
-            background: var(--color-cream);
+            background: rgba(255,255,255,0.08);
             border-radius: 16px;
             padding: 28px;
             text-align: center;
-            border: 2px solid var(--color-border);
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
             transition: all 0.3s;
         }
 
         .time-card.traditional {
-            opacity: 0.75;
+            opacity: 0.65;
         }
 
         .time-card.lenduck {
-            border-color: var(--color-forest);
-            background: linear-gradient(135deg, rgba(45, 90, 61, 0.05), rgba(124, 154, 130, 0.1));
-            box-shadow: 0 0 0 4px rgba(45, 90, 61, 0.1);
+            background: rgba(124, 154, 130, 0.15);
+            border: 1px solid var(--color-sage-light);
+            box-shadow: 0 0 0 2px rgba(124, 154, 130, 0.2);
         }
 
         .time-card h4 {
@@ -813,24 +831,24 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            color: var(--color-text-light);
+            color: rgba(255,255,255,0.7);
             margin-bottom: 16px;
         }
 
         .time-card .time {
             font-size: 3.5rem;
             font-weight: 800;
-            color: var(--color-text);
+            color: white;
             margin-bottom: 8px;
         }
 
         .time-card.lenduck .time {
-            color: var(--color-forest);
+            color: var(--color-sage-light);
         }
 
         .time-card .unit {
             font-size: 0.95rem;
-            color: var(--color-text-light);
+            color: rgba(255,255,255,0.8);
             font-weight: 500;
         }
 
@@ -1764,10 +1782,10 @@
         }
 
         .faq-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 24px;
-            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 900px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -1777,27 +1795,59 @@
             background: white;
             border: 1px solid var(--color-border);
             border-radius: 16px;
-            padding: 32px;
+            overflow: hidden;
             transition: all 0.3s ease;
         }
 
-        .faq-item:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-medium);
-            border-color: var(--color-sage);
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 32px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question:hover {
+            background: var(--color-sage-pale);
         }
 
         .faq-item h4 {
             font-weight: 700;
             font-size: 1.1rem;
-            margin-bottom: 14px;
             color: var(--color-forest-dark);
+            margin: 0;
         }
 
-        .faq-item p {
+        .faq-icon {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: var(--color-forest);
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+            margin-left: 16px;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: 0 32px 24px 32px;
+        }
+
+        .faq-answer p {
             color: var(--color-text-light);
             font-size: 0.95rem;
             line-height: 1.75;
+            margin: 0;
         }
 
         /* Blog Section */
@@ -2030,7 +2080,7 @@
 
         /* Responsive */
         @media (max-width: 1024px) {
-            .hero-grid,
+            .hero-unified,
             .problem-grid,
             .value-grid,
             .cta-grid {
@@ -2175,7 +2225,7 @@
                 text-align: center;
             }
 
-            .hero-grid {
+            .hero-unified {
                 grid-template-columns: 1fr;
             }
 
@@ -2291,10 +2341,10 @@
                 <a href="#pricing">Ceník</a>
                 <a href="#blog">Blog</a>
                 <a href="#faq">FAQ</a>
-                <a href="/login" class="btn btn-primary" style="color: whitesmoke;">Přihlášení</a>
+                <a href="https://app.lenduck.com/login" class="btn btn-primary" style="color: whitesmoke;">Přihlášení</a>
                 <div class="lang-switcher">
-                    <a href="/" class="lang-option">EN</a>
-                    <a href="/cz" class="lang-option active">CZ</a>
+                    <a href="index8.html" class="lang-option">EN</a>
+                    <a href="index8-cz.html" class="lang-option active">CZ</a>
                 </div>
             </div>
         </div>
@@ -2313,7 +2363,7 @@
             </svg>
 
             <div class="container">
-                <div class="hero-grid">
+                <div class="hero-unified">
                     <div class="hero-content">
                         <h1><em>Nejrychlejší</em> cesta k firemnímu financování</h1>
                         <p class="hero-subtitle">Propojte svůj účetní software jednou. Získejte personalizované nabídky úvěrů od více poskytovatelů okamžitě. Žádné papírování, žádné čekání, žádné hádání o sazbách.</p>
@@ -2322,8 +2372,7 @@
                             <a href="#how-it-works" class="btn btn-secondary btn-lg">Jak to funguje</a>
                         </div>
                     </div>
-                    <div class="hero-visual">
-                        <div class="hero-image-container">
+                    <div class="hero-image-container">
                             <div class="hero-dashboard">
                                 <div class="dashboard-header">
                                     <span class="dashboard-title">Vaše nabídky financování</span>
@@ -3072,28 +3121,58 @@
                 </div>
                 <div class="faq-grid">
                     <div class="faq-item">
-                        <h4>Je Lenduck pro firmy zdarma?</h4>
-                        <p>Ano, zcela zdarma. Platí nám poskytovatelé, když úspěšně poskytnou financování firmám prostřednictvím naší platformy. Nikdy nám nezaplatíte ani korunu.</p>
+                        <div class="faq-question">
+                            <h4>Je Lenduck pro firmy zdarma?</h4>
+                            <span class="faq-icon">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Ano, zcela zdarma. Platí nám poskytovatelé, když úspěšně poskytnou financování firmám prostřednictvím naší platformy. Nikdy nám nezaplatíte ani korunu.</p>
+                        </div>
                     </div>
                     <div class="faq-item">
-                        <h4>Jak chráníte moje data?</h4>
-                        <p>Vaše data jsou šifrována a zůstávají zcela anonymní. Poskytovatelé vidí pouze finanční profily - identita vaší společnosti je odhalena pouze tehdy, když se rozhodnete pokračovat s konkrétní nabídkou.</p>
+                        <div class="faq-question">
+                            <h4>Jak chráníte moje data?</h4>
+                            <span class="faq-icon">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Vaše data jsou šifrována a zůstávají zcela anonymní. Poskytovatelé vidí pouze finanční profily - identita vaší společnosti je odhalena pouze tehdy, když se rozhodnete pokračovat s konkrétní nabídkou.</p>
+                        </div>
                     </div>
                     <div class="faq-item">
-                        <h4>Které účetní softwary podporujete?</h4>
-                        <p>Podporujeme hlavní účetní platformy včetně Pohody, Money S3, ABRA, Helios a KROS. Potřebujete jinou integraci? Dejte nám vědět a můžeme to probrat.</p>
+                        <div class="faq-question">
+                            <h4>Které účetní softwary podporujete?</h4>
+                            <span class="faq-icon">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Podporujeme hlavní účetní platformy včetně Pohody, Money S3, ABRA, Helios a KROS. Potřebujete jinou integraci? Dejte nám vědět a můžeme to probrat.</p>
+                        </div>
                     </div>
                     <div class="faq-item">
-                        <h4>Ovlivní žádost moje kreditní skóre?</h4>
-                        <p>Ne. Párování a prohlížení nabídek neovlivňuje váš kredit. Tvrdý dotaz do registrů nastane pouze tehdy, když se rozhodnete pokračovat s konkrétním poskytovatelem.</p>
+                        <div class="faq-question">
+                            <h4>Ovlivní žádost moje kreditní skóre?</h4>
+                            <span class="faq-icon">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Ne. Párování a prohlížení nabídek neovlivňuje váš kredit. Tvrdý dotaz do registrů nastane pouze tehdy, když se rozhodnete pokračovat s konkrétním poskytovatelem.</p>
+                        </div>
                     </div>
                     <div class="faq-item">
-                        <h4>Jaké typy financování jsou k dispozici?</h4>
-                        <p>Firemní úvěry, úvěrové linky, faktoring, financování vybavení a další. Naše síť poskytovatelů pokrývá většinu potřeb financování malých a středních podniků.</p>
+                        <div class="faq-question">
+                            <h4>Jaké typy financování jsou k dispozici?</h4>
+                            <span class="faq-icon">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Firemní úvěry, úvěrové linky, faktoring, financování vybavení a další. Naše síť poskytovatelů pokrývá většinu potřeb financování malých a středních podniků.</p>
+                        </div>
                     </div>
                     <div class="faq-item">
-                        <h4>Jak Lenduck prospívá poskytovatelům?</h4>
-                        <p>Poskytovatelé získávají předkvalifikované leady s ověřenými finančními daty, což dramaticky snižuje jejich náklady na akvizici a čas posuzování. Platí pouze při uzavření obchodu.</p>
+                        <div class="faq-question">
+                            <h4>Jak Lenduck prospívá poskytovatelům?</h4>
+                            <span class="faq-icon">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Poskytovatelé získávají předkvalifikované leady s ověřenými finančními daty, což dramaticky snižuje jejich náklady na akvizici a čas posuzování. Platí pouze při uzavření obchodu.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3110,11 +3189,7 @@
                 <div class="blog-grid">
                     <a href="/blog/who-we-are" class="blog-card">
                         <div class="blog-card-image">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-                                <circle cx="9" cy="7" r="4"/>
-                                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
-                            </svg>
+                            <img src="https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Business team collaboration" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <div class="blog-card-content">
                             <span class="blog-card-category">O nás</span>
@@ -3130,10 +3205,7 @@
                     </a>
                     <a href="/blog/how-it-works" class="blog-card how-it-works">
                         <div class="blog-card-image">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <circle cx="12" cy="12" r="3"/>
-                                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
-                            </svg>
+                            <img src="https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Business workflow process" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <div class="blog-card-content">
                             <span class="blog-card-category">Průvodce</span>
@@ -3149,11 +3221,7 @@
                     </a>
                     <a href="/blog/open-finance" class="blog-card open-finance">
                         <div class="blog-card-image">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                <path d="M9 12l2 2 4-4"/>
-                                <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
-                            </svg>
+                            <img src="https://images.pexels.com/photos/669615/pexels-photo-669615.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Technology and data analytics" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <div class="blog-card-content">
                             <span class="blog-card-category">Odvětví</span>
@@ -3169,12 +3237,7 @@
                     </a>
                     <a href="/blog/case-study-10x-faster" class="blog-card case-study">
                         <div class="blog-card-image">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/>
-                                <polyline points="13 2 13 9 20 9"/>
-                                <line x1="10" y1="13" x2="14" y2="13"/>
-                                <line x1="10" y1="17" x2="14" y2="17"/>
-                            </svg>
+                            <img src="https://images.pexels.com/photos/590041/pexels-photo-590041.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Business growth and success" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <div class="blog-card-content">
                             <span class="blog-card-category">Případová studie</span>
@@ -3358,16 +3421,40 @@
             });
         });
 
-        // Nav background on scroll
+        // Hide navigation on scroll
+        let lastScrollTop = 0;
+        const nav = document.querySelector('nav');
+
         window.addEventListener('scroll', () => {
-            const nav = document.querySelector('nav');
-            if (window.scrollY > 50) {
-                nav.style.background = 'rgba(250, 248, 243, 0.98)';
-                nav.style.boxShadow = '0 4px 20px rgba(45, 90, 61, 0.08)';
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Scrolling down
+                nav.classList.add('nav-hidden');
             } else {
-                nav.style.background = 'rgba(250, 248, 243, 0.92)';
-                nav.style.boxShadow = 'none';
+                // Scrolling up
+                nav.classList.remove('nav-hidden');
             }
+
+            lastScrollTop = scrollTop;
+        });
+
+        // FAQ Collapsible
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', function() {
+                const faqItem = this.parentElement;
+                const wasActive = faqItem.classList.contains('active');
+
+                // Close all FAQ items
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                // Open clicked item if it wasn't already open
+                if (!wasActive) {
+                    faqItem.classList.add('active');
+                }
+            });
         });
     </script>
 </body>
