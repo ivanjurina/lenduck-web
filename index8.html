@@ -311,15 +311,17 @@
 
         /* Hero Section */
         .hero {
-            padding: 200px 0 140px;
+            padding: 140px 0 100px;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, rgba(45, 60, 75, 0.70), rgba(60, 80, 95, 0.70)),
-                        url('https://images.pexels.com/photos/3184296/pexels-photo-3184296.jpeg');
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.65), rgba(45, 55, 72, 0.65)),
+                        url('https://images.pexels.com/photos/7434022/pexels-photo-7434022.jpeg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            min-height: 100vh;
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
         }
 
         .hero::before {
@@ -329,13 +331,14 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(180deg, rgba(250, 248, 243, 0.93) 0%, rgba(212, 228, 215, 0.90) 100%);
+            background: linear-gradient(180deg, rgba(250, 248, 243, 0.90) 0%, rgba(212, 228, 215, 0.88) 100%);
             z-index: 0;
         }
 
         .hero .container {
             position: relative;
             z-index: 1;
+            width: 100%;
         }
 
         .hero::before {
@@ -377,7 +380,8 @@
             font-size: clamp(2.5rem, 4.5vw, 3.5rem);
             line-height: 1.15;
             margin-bottom: 24px;
-            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
+            color: var(--color-forest-dark);
+            font-weight: 800;
         }
 
         .hero h1 em {
@@ -400,8 +404,8 @@
 
         .hero-subtitle {
             font-size: 1.15rem;
-            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
-            color: var(--color-text-light);
+            color: var(--color-text);
+            font-weight: 600;
             margin-bottom: 36px;
             max-width: 500px;
             line-height: 1.8;

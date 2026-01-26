@@ -188,15 +188,17 @@
 
         /* Hero Section */
         .hero {
-            padding: 200px 0 140px;
+            padding: 140px 0 100px;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(51, 65, 85, 0.75)),
-                        url('https://images.pexels.com/photos/3184296/pexels-photo-3184296.jpeg');
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.65), rgba(30, 41, 59, 0.65)),
+                        url('https://images.pexels.com/photos/7434022/pexels-photo-7434022.jpeg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            min-height: 100vh;
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
         }
 
         .hero::before {
@@ -206,13 +208,14 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.90);
             z-index: 0;
         }
 
         .hero .container {
             position: relative;
             z-index: 1;
+            width: 100%;
         }
 
         .hero-grid {
@@ -226,8 +229,8 @@
             font-size: clamp(2.75rem, 5vw, 4rem);
             line-height: 1.1;
             margin-bottom: 24px;
-            color: var(--color-text);
-            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
+            color: #1e293b;
+            font-weight: 800;
         }
 
         .hero h1 em {
@@ -237,11 +240,11 @@
 
         .hero-subtitle {
             font-size: 1.2rem;
-            color: var(--color-text);
+            color: #334155;
             margin-bottom: 40px;
             max-width: 520px;
             line-height: 1.7;
-            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+            font-weight: 500;
         }
 
         .hero-cta {
