@@ -757,7 +757,10 @@
         /* Problem Section */
         .problem-section {
             padding: 120px 0;
-            background: var(--color-cream);
+            background-image: url('https://images.pexels.com/photos/3184296/pexels-photo-3184296.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             position: relative;
             overflow: hidden;
         }
@@ -765,14 +768,16 @@
         .problem-section::before {
             content: '';
             position: absolute;
-            top: 50%;
-            left: -10%;
-            width: 400px;
-            height: 400px;
-            background: var(--color-sage);
-            border-radius: 60% 40% 70% 30% / 40% 50% 50% 60%;
-            opacity: 0.05;
-            transform: translateY(-50%);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(250, 248, 243, 0.95) 0%, rgba(250, 248, 243, 0.92) 100%);
+            z-index: 1;
+        }
+
+        body.dark-theme .problem-section::before {
+            background: linear-gradient(135deg, rgba(15, 20, 25, 0.92) 0%, rgba(15, 20, 25, 0.88) 100%);
         }
 
         .problem-grid {
@@ -780,6 +785,8 @@
             grid-template-columns: 1fr 1fr;
             gap: 80px;
             align-items: center;
+            position: relative;
+            z-index: 2;
         }
 
         .section-label {
@@ -1264,7 +1271,10 @@
         /* Value Props */
         .value-section {
             padding: 120px 0;
-            background: var(--color-forest-dark);
+            background-image: url('https://freerangestock.com/sample/121621/handshake-between-two-parties-after-agreement.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: var(--color-text-inverse);
             position: relative;
             overflow: hidden;
@@ -1277,9 +1287,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%232d5a3d' fill-opacity='0.3' d='M30 20 Q40 10 50 20 T70 20 Q80 25 70 35 T50 45 Q40 50 30 45 T10 35 Q0 25 10 20 Z'/%3E%3C/svg%3E");
-            background-size: 200px;
-            opacity: 0.1;
+            background: linear-gradient(135deg, rgba(45, 90, 61, 0.95) 0%, rgba(45, 90, 61, 0.92) 100%);
+            z-index: 1;
+        }
+
+        body.dark-theme .value-section::before {
+            background: linear-gradient(135deg, rgba(45, 90, 61, 0.93) 0%, rgba(15, 20, 25, 0.90) 100%);
         }
 
         .value-grid {
@@ -1287,7 +1300,7 @@
             grid-template-columns: 1fr 1fr;
             gap: 48px;
             position: relative;
-            z-index: 1;
+            z-index: 2;
         }
 
         .value-card {
@@ -1700,7 +1713,10 @@
         /* About Section */
         .about-section {
             padding: 120px 0;
-            background: linear-gradient(135deg, var(--color-forest-dark) 0%, var(--color-forest) 100%);
+            background-image: url('https://images.pexels.com/photos/7434022/pexels-photo-7434022.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: white;
             position: relative;
             overflow: hidden;
@@ -1709,23 +1725,16 @@
         .about-section::before {
             content: '';
             position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(124, 154, 130, 0.2) 0%, transparent 70%);
-            border-radius: 50%;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(45, 90, 61, 0.93) 0%, rgba(45, 90, 61, 0.90) 100%);
+            z-index: 1;
         }
 
-        .about-section::after {
-            content: '';
-            position: absolute;
-            bottom: -30%;
-            left: -10%;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(196, 167, 125, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
+        body.dark-theme .about-section::before {
+            background: linear-gradient(135deg, rgba(45, 90, 61, 0.90) 0%, rgba(15, 20, 25, 0.88) 100%);
         }
 
         .about-content {
@@ -1733,7 +1742,7 @@
             margin: 0 auto;
             text-align: center;
             position: relative;
-            z-index: 1;
+            z-index: 2;
         }
 
         .about-content .section-label {
@@ -2275,6 +2284,13 @@
             .problem-grid {
                 grid-template-columns: 1fr;
                 gap: 40px;
+            }
+
+            /* Disable fixed backgrounds on mobile for better performance */
+            .problem-section,
+            .value-section,
+            .about-section {
+                background-attachment: scroll;
             }
 
             .problem-visual {
