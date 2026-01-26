@@ -333,8 +333,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(45, 90, 61, 0.93) 0%, rgba(15, 20, 25, 0.90) 100%);
+            background: linear-gradient(135deg, rgba(15, 20, 25, 0.92) 0%, rgba(15, 20, 25, 0.88) 100%);
             z-index: 1;
+        }
+
+        .hero .problem-grid {
+            margin-top: 80px;
         }
 
         .hero-leaf-1 {
@@ -698,28 +702,7 @@
             height: 28px;
         }
 
-        /* Problem Section */
-        .problem-section {
-            padding: 120px 0;
-            background-image: url('https://images.pexels.com/photos/3184296/pexels-photo-3184296.jpeg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .problem-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(15, 20, 25, 0.92) 0%, rgba(15, 20, 25, 0.88) 100%);
-            z-index: 1;
-        }
-
+        /* Problem Section (merged into hero) */
         .problem-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -729,23 +712,23 @@
             z-index: 2;
         }
 
-        .problem-section .section-label {
+        .hero .section-label {
             color: var(--color-sage-light);
         }
 
-        .problem-section .section-label::before {
+        .hero .section-label::before {
             background: var(--color-sage-light);
         }
 
-        .problem-section .section-title {
+        .hero .section-title {
             color: white;
         }
 
-        .problem-section .section-text {
+        .hero .section-text {
             color: rgba(255,255,255,0.9);
         }
 
-        .problem-section .problem-list li {
+        .hero .problem-list li {
             color: rgba(255,255,255,0.85);
         }
 
@@ -1247,7 +1230,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(45, 90, 61, 0.95) 0%, rgba(45, 90, 61, 0.92) 100%);
+            background: linear-gradient(135deg, rgba(45, 90, 61, 0.93) 0%, rgba(15, 20, 25, 0.90) 100%);
             z-index: 1;
         }
 
@@ -2231,7 +2214,6 @@
 
             /* Disable fixed backgrounds on mobile for better performance */
             .hero,
-            .problem-section,
             .value-section,
             .about-section {
                 background-attachment: scroll;
@@ -2416,60 +2398,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- Logos Section -->
-        <section class="logos-section">
-            <div class="container">
-                <p class="logos-label">Integrates with your accounting software</p>
-                <div class="logos-grid">
-                    <div class="logo-item">
-                        <svg viewBox="0 0 28 28" fill="currentColor">
-                            <circle cx="14" cy="14" r="12"/>
-                            <circle cx="14" cy="14" r="6" fill="white"/>
-                        </svg>
-                        QuickBooks
-                    </div>
-                    <div class="logo-item">
-                        <svg viewBox="0 0 28 28" fill="currentColor">
-                            <rect x="2" y="2" width="24" height="24" rx="4"/>
-                            <path d="M7 14h14M14 7v14" stroke="white" stroke-width="2"/>
-                        </svg>
-                        Xero
-                    </div>
-                    <div class="logo-item">
-                        <svg viewBox="0 0 28 28" fill="currentColor">
-                            <path d="M14 2l12 6v12l-12 6-12-6V8z"/>
-                        </svg>
-                        Sage
-                    </div>
-                    <div class="logo-item">
-                        <svg viewBox="0 0 28 28" fill="currentColor">
-                            <rect x="2" y="4" width="24" height="20" rx="2"/>
-                            <path d="M6 10h8M6 14h12M6 18h6" stroke="white" stroke-width="2"/>
-                        </svg>
-                        FreshBooks
-                    </div>
-                    <div class="logo-item">
-                        <svg viewBox="0 0 28 28" fill="currentColor">
-                            <rect x="4" y="4" width="8" height="8" rx="2"/>
-                            <rect x="16" y="4" width="8" height="8" rx="2"/>
-                            <rect x="4" y="16" width="8" height="8" rx="2"/>
-                            <rect x="16" y="16" width="8" height="8" rx="2"/>
-                        </svg>
-                        NetSuite
-                    </div>
-                    <div class="logo-item" style="opacity: 0.5;">
-                        + more on request
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Problem Section -->
-        <section class="problem-section">
-            <div class="container">
                 <div class="problem-grid">
                     <div class="problem-content">
                         <p class="section-label">The Problem</p>
@@ -2533,6 +2462,54 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Logos Section -->
+        <section class="logos-section">
+            <div class="container">
+                <p class="logos-label">Integrates with your accounting software</p>
+                <div class="logos-grid">
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <circle cx="14" cy="14" r="12"/>
+                            <circle cx="14" cy="14" r="6" fill="white"/>
+                        </svg>
+                        QuickBooks
+                    </div>
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <rect x="2" y="2" width="24" height="24" rx="4"/>
+                            <path d="M7 14h14M14 7v14" stroke="white" stroke-width="2"/>
+                        </svg>
+                        Xero
+                    </div>
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <path d="M14 2l12 6v12l-12 6-12-6V8z"/>
+                        </svg>
+                        Sage
+                    </div>
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <rect x="2" y="4" width="24" height="20" rx="2"/>
+                            <path d="M6 10h8M6 14h12M6 18h6" stroke="white" stroke-width="2"/>
+                        </svg>
+                        FreshBooks
+                    </div>
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <rect x="4" y="4" width="8" height="8" rx="2"/>
+                            <rect x="16" y="4" width="8" height="8" rx="2"/>
+                            <rect x="4" y="16" width="8" height="8" rx="2"/>
+                            <rect x="16" y="16" width="8" height="8" rx="2"/>
+                        </svg>
+                        NetSuite
+                    </div>
+                    <div class="logo-item" style="opacity: 0.5;">
+                        + more on request
                     </div>
                 </div>
             </div>
