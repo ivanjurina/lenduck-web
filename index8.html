@@ -43,43 +43,33 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --primary-blue: #0052FF;
-            --primary-purple: #6C5CE7;
-            --primary-cyan: #00D4FF;
-            --dark-navy: #0A0E27;
-            --dark-blue: #1A1F3A;
-            --medium-blue: #2D3561;
-            --light-blue: #E8F0FE;
-            --accent-orange: #FF6B35;
-            --accent-green: #00D9A3;
-            --text-primary: #0A0E27;
-            --text-secondary: #5A6785;
-            --text-light: #8B95B0;
-            --bg-white: #FFFFFF;
-            --bg-light: #F8FAFC;
-            --gradient-primary: linear-gradient(135deg, #0052FF 0%, #6C5CE7 100%);
-            --gradient-hero: linear-gradient(135deg, #0A0E27 0%, #1A1F3A 50%, #2D3561 100%);
-            --gradient-card: linear-gradient(135deg, rgba(108, 92, 231, 0.1) 0%, rgba(0, 82, 255, 0.1) 100%);
-            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            --font-display: 'Space Grotesk', var(--font-primary);
-            --shadow-sm: 0 2px 8px rgba(10, 14, 39, 0.04);
-            --shadow-md: 0 4px 16px rgba(10, 14, 39, 0.08);
-            --shadow-lg: 0 8px 32px rgba(10, 14, 39, 0.12);
-            --shadow-xl: 0 16px 64px rgba(10, 14, 39, 0.16);
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        :root {
+            --color-bg: #0A0D1A;
+            --color-surface: #131621;
+            --color-surface-light: #1A1F2E;
+            --color-border: rgba(255, 255, 255, 0.08);
+            --color-text: #FFFFFF;
+            --color-text-muted: #A0A8B8;
+            --color-text-dim: #6B7280;
+            --color-primary: #3B82F6;
+            --color-primary-dark: #2563EB;
+            --color-accent: #8B5CF6;
+            --color-success: #10B981;
+            --color-warning: #F59E0B;
+            --gradient-primary: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            --gradient-accent: linear-gradient(135deg, #F093FB 0%, #F5576C 100%);
+            --gradient-success: linear-gradient(135deg, #4ADE80 0%, #06B6D4 100%);
+            --shadow-glow: 0 0 40px rgba(102, 126, 234, 0.3);
+            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
         }
 
         html {
@@ -87,26 +77,18 @@
         }
 
         body {
-            font-family: var(--font-primary);
-            background: var(--bg-white);
-            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
             line-height: 1.6;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
         .container {
-            max-width: 1280px;
+            max-width: 1320px;
             margin: 0 auto;
-            padding: 0 32px;
-        }
-
-        h1, h2, h3, h4, h5, h6 {
-            font-family: var(--font-display);
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            line-height: 1.2;
+            padding: 0 40px;
         }
 
         /* Navigation */
@@ -116,21 +98,21 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(10, 13, 26, 0.8);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(90, 103, 133, 0.1);
-            transition: all 0.3s ease;
+            border-bottom: 1px solid var(--color-border);
         }
 
         nav.scrolled {
-            box-shadow: var(--shadow-md);
+            background: rgba(10, 13, 26, 0.95);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
         }
 
         .nav-inner {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
+            padding: 24px 0;
         }
 
         .logo {
@@ -141,15 +123,14 @@
         }
 
         .logo-icon {
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
         }
 
         .logo-text {
-            font-family: var(--font-display);
             font-size: 1.5rem;
-            font-weight: 700;
-            background: var(--gradient-primary);
+            font-weight: 800;
+            background: linear-gradient(135deg, #667EEA 0%, #F093FB 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -157,75 +138,74 @@
 
         .nav-links {
             display: flex;
-            gap: 40px;
+            gap: 48px;
             align-items: center;
         }
 
         .nav-links a {
-            color: var(--text-secondary);
+            color: var(--color-text-muted);
             text-decoration: none;
             font-size: 0.95rem;
-            font-weight: 600;
-            transition: color 0.3s;
+            font-weight: 500;
+            transition: all 0.3s;
             position: relative;
         }
 
-        .nav-links a:not(.btn):hover {
-            color: var(--primary-blue);
+        .nav-links a:hover {
+            color: var(--color-text);
+        }
+
+        .nav-login {
+            color: var(--color-text) !important;
+            font-weight: 600 !important;
         }
 
         .lang-switcher {
             display: flex;
-            gap: 4px;
-            margin-left: 16px;
-            padding-left: 16px;
-            border-left: 1px solid rgba(90, 103, 133, 0.2);
+            gap: 6px;
+            margin-left: 20px;
+            padding-left: 20px;
+            border-left: 1px solid var(--color-border);
         }
 
         .lang-option {
             padding: 6px 12px;
-            border-radius: var(--radius-sm);
+            border-radius: 8px;
             font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-light);
+            font-weight: 600;
+            color: var(--color-text-dim);
             text-decoration: none;
             transition: all 0.3s;
         }
 
         .lang-option:hover {
-            background: var(--light-blue);
-            color: var(--primary-blue);
+            background: var(--color-surface-light);
+            color: var(--color-text);
         }
 
         .lang-option.active {
-            background: var(--gradient-primary);
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
             color: white;
-        }
-
-        .nav-login {
-            color: var(--primary-blue) !important;
-            font-weight: 700 !important;
         }
 
         .mobile-menu-btn {
             display: none;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
             width: 32px;
             height: 32px;
             background: none;
             border: none;
             cursor: pointer;
-            padding: 4px;
         }
 
         .mobile-menu-btn span {
             display: block;
             width: 100%;
             height: 2px;
-            background: var(--dark-navy);
+            background: var(--color-text);
             border-radius: 2px;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
 
         /* Buttons */
@@ -234,58 +214,52 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            padding: 14px 32px;
-            border-radius: var(--radius-lg);
-            font-weight: 700;
-            font-size: 0.95rem;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             cursor: pointer;
             border: none;
-            font-family: var(--font-primary);
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-primary {
-            background: var(--gradient-primary);
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
             color: white;
-            box-shadow: 0 4px 16px rgba(0, 82, 255, 0.3);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 82, 255, 0.4);
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.6);
         }
 
         .btn-secondary {
-            background: white;
-            color: var(--primary-blue);
-            border: 2px solid var(--primary-blue);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .btn-secondary:hover {
-            background: var(--light-blue);
-        }
-
-        .btn-dark {
-            background: var(--dark-navy);
-            color: white;
-        }
-
-        .btn-dark:hover {
-            background: var(--medium-blue);
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
         .btn-lg {
-            padding: 18px 40px;
-            font-size: 1.05rem;
+            padding: 20px 40px;
+            font-size: 1.1rem;
+            border-radius: 16px;
         }
 
-        /* Hero Section */
+        /* Hero */
         .hero {
             position: relative;
-            padding: 140px 0 100px;
-            background: var(--gradient-hero);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 160px 0 100px;
             overflow: hidden;
         }
 
@@ -293,71 +267,61 @@
             content: '';
             position: absolute;
             top: 0;
-            right: 0;
-            width: 60%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 1400px;
             height: 100%;
-            background: radial-gradient(ellipse at top right, rgba(108, 92, 231, 0.2), transparent 60%);
-            pointer-events: none;
-        }
-
-        .hero::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 50%;
-            height: 50%;
-            background: radial-gradient(ellipse at bottom left, rgba(0, 212, 255, 0.15), transparent 50%);
+            background: radial-gradient(ellipse at top, rgba(102, 126, 234, 0.15) 0%, transparent 60%);
             pointer-events: none;
         }
 
         .hero-grid {
             display: grid;
-            grid-template-columns: 1.1fr 1fr;
-            gap: 80px;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 100px;
             align-items: center;
             position: relative;
-            z-index: 1;
         }
 
         .hero h1 {
-            font-size: clamp(2.75rem, 5vw, 4rem);
-            color: white;
-            margin-bottom: 24px;
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 800;
             line-height: 1.1;
+            margin-bottom: 32px;
+            letter-spacing: -0.02em;
         }
 
-        .hero h1 .highlight {
-            background: linear-gradient(135deg, #00D4FF 0%, #00D9A3 100%);
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, #667EEA 0%, #F093FB 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .hero-subtitle {
-            font-size: 1.25rem;
-            color: rgba(255, 255, 255, 0.85);
-            margin-bottom: 40px;
+            font-size: 1.4rem;
+            color: var(--color-text-muted);
+            margin-bottom: 48px;
             line-height: 1.7;
-            max-width: 600px;
+            font-weight: 400;
         }
 
         .hero-cta {
             display: flex;
-            gap: 16px;
-            margin-bottom: 60px;
+            gap: 20px;
+            margin-bottom: 80px;
         }
 
         .hero-trust {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 20px;
-            padding: 20px 28px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-lg);
-            width: fit-content;
+            gap: 24px;
+            padding: 24px 32px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--color-border);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
         }
 
         .hero-trust-avatars {
@@ -365,126 +329,133 @@
         }
 
         .hero-trust-avatars .avatar {
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            margin-left: -12px;
-            background: var(--gradient-primary);
+            border: 3px solid var(--color-bg);
+            margin-left: -16px;
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
             color: white;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
         }
 
         .hero-trust-avatars .avatar:first-child {
             margin-left: 0;
         }
 
-        .hero-trust-text {
-            font-size: 0.95rem;
-            color: rgba(255, 255, 255, 0.7);
+        .hero-trust-text strong {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
         }
 
-        .hero-trust-text strong {
-            color: white;
-            display: block;
-            font-size: 1.1rem;
+        .hero-trust-text span {
+            color: var(--color-text-muted);
+            font-size: 0.95rem;
         }
 
         .hero-visual {
             position: relative;
         }
 
-        .hero-dashboard {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: var(--radius-xl);
-            padding: 32px;
-            box-shadow: var(--shadow-xl);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .dashboard-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: var(--shadow-card);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667EEA 0%, #F093FB 50%, #764BA2 100%);
         }
 
         .dashboard-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 28px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(90, 103, 133, 0.1);
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--color-border);
         }
 
         .dashboard-title {
             font-weight: 700;
-            font-size: 1rem;
-            color: var(--dark-navy);
+            font-size: 1.1rem;
         }
 
         .dashboard-status {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            color: var(--accent-green);
+            gap: 10px;
+            color: var(--color-success);
             font-weight: 600;
+            font-size: 0.9rem;
         }
 
         .dashboard-status::before {
             content: '';
-            width: 10px;
-            height: 10px;
-            background: var(--accent-green);
+            width: 8px;
+            height: 8px;
+            background: var(--color-success);
             border-radius: 50%;
-            animation: pulse 2s infinite;
+            animation: pulse-glow 2s infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.1); }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
         }
 
-        .offer-card {
-            background: var(--gradient-card);
-            border: 2px solid rgba(108, 92, 231, 0.2);
-            border-radius: var(--radius-lg);
-            padding: 24px;
+        .offer-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--color-border);
+            border-radius: 16px;
+            padding: 28px;
             margin-bottom: 16px;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
 
-        .offer-card:hover {
-            border-color: var(--primary-purple);
+        .offer-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(102, 126, 234, 0.3);
             transform: translateX(4px);
         }
 
-        .offer-card.best {
-            background: var(--gradient-primary);
-            border-color: transparent;
-        }
-
-        .offer-card.best * {
-            color: white !important;
+        .offer-item.best {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+            border-color: rgba(102, 126, 234, 0.4);
         }
 
         .offer-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .offer-lender {
             font-weight: 700;
             font-size: 1.1rem;
-            color: var(--dark-navy);
         }
 
         .offer-badge {
-            padding: 4px 12px;
-            background: rgba(0, 217, 163, 0.15);
-            color: var(--accent-green);
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #10B981 0%, #06B6D4 100%);
+            color: white;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 700;
@@ -492,328 +463,307 @@
             letter-spacing: 0.05em;
         }
 
-        .offer-card.best .offer-badge {
-            background: rgba(255, 255, 255, 0.25);
-            color: white;
-        }
-
         .offer-rate {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: 800;
-            color: var(--primary-blue);
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #667EEA 0%, #F093FB 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .offer-rate small {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-left: 4px;
+            font-size: 1.2rem;
+            opacity: 0.7;
         }
 
         .offer-details {
             display: flex;
-            gap: 24px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
+            gap: 32px;
+            color: var(--color-text-muted);
+            font-size: 0.95rem;
         }
 
-        .offer-details span {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        /* Section Styles */
+        section {
+            padding: 120px 0;
+            position: relative;
+        }
+
+        .section-label {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 20px;
+            color: #667EEA;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+        }
+
+        .section-subtitle {
+            font-size: 1.3rem;
+            color: var(--color-text-muted);
+            line-height: 1.7;
+            margin-bottom: 64px;
         }
 
         /* Logos Section */
         .logos-section {
-            padding: 80px 0;
-            background: var(--bg-light);
+            padding: 100px 0;
+            background: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--color-border);
         }
 
-        .section-label {
+        .logos-label {
             text-align: center;
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-light);
+            color: var(--color-text-dim);
+            font-size: 0.9rem;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            margin-bottom: 32px;
+            margin-bottom: 48px;
         }
 
         .logos-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 48px;
             align-items: center;
-            opacity: 0.6;
+            opacity: 0.4;
         }
 
         .logo-item {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            text-align: center;
             font-weight: 700;
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            padding: 20px;
-            background: white;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-sm);
+            font-size: 1.3rem;
+            color: var(--color-text);
+            padding: 24px;
         }
 
         /* Problem Section */
         .problem-section {
-            padding: 120px 0;
             position: relative;
-            background: url('https://images.pexels.com/photos/3184296/pexels-photo-3184296.jpeg') center/cover no-repeat;
+            background: url('https://images.pexels.com/photos/3184296/pexels-photo-3184296.jpeg') center/cover no-repeat fixed;
+            padding: 160px 0;
         }
 
         .problem-section::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(29, 31, 58, 0.92) 100%);
+            background: linear-gradient(135deg, rgba(10, 13, 26, 0.95) 0%, rgba(19, 22, 33, 0.92) 100%);
         }
 
         .problem-content {
             position: relative;
-            z-index: 1;
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
             text-align: center;
         }
 
-        .problem-section .section-label {
-            color: var(--primary-cyan);
-        }
-
-        .problem-section h2 {
-            font-size: clamp(2rem, 4vw, 3rem);
-            color: white;
-            margin-bottom: 24px;
-        }
-
-        .problem-section p {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 48px;
-            line-height: 1.8;
-        }
-
-        .pain-points {
+        .pain-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 60px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin: 64px 0;
         }
 
-        .pain-point {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            color: rgba(255, 255, 255, 0.85);
+        .pain-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--color-border);
+            border-radius: 20px;
+            padding: 32px;
             text-align: left;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
 
-        .pain-point:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 107, 53, 0.5);
+        .pain-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(245, 158, 11, 0.3);
+            transform: translateY(-4px);
         }
 
-        .pain-point::before {
+        .pain-card::before {
             content: '✕';
-            display: block;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 107, 53, 0.2);
-            color: var(--accent-orange);
-            border-radius: 50%;
-            display: flex;
+            display: inline-flex;
+            width: 48px;
+            height: 48px;
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--color-warning);
+            border-radius: 12px;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             font-weight: 700;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
-        .comparison-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(0, 212, 255, 0.3);
-            border-radius: var(--radius-xl);
-            padding: 40px;
+        .comparison-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 24px;
+            padding: 56px;
             display: grid;
             grid-template-columns: 1fr auto 1fr;
-            gap: 40px;
+            gap: 56px;
             align-items: center;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .comparison-side {
-            text-align: center;
-        }
-
-        .comparison-label {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 12px;
-        }
-
-        .comparison-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: white;
-        }
-
-        .comparison-divider {
-            width: 2px;
-            height: 80px;
-            background: linear-gradient(180deg, transparent, rgba(0, 212, 255, 0.5), transparent);
+            max-width: 900px;
+            margin: 80px auto 0;
+            position: relative;
         }
 
         .comparison-badge {
             position: absolute;
-            top: -16px;
+            top: -20px;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--gradient-primary);
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
             color: white;
-            padding: 8px 24px;
-            border-radius: 20px;
+            border-radius: 24px;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             white-space: nowrap;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
         }
 
-        /* How It Works Section */
+        .comparison-item {
+            text-align: center;
+        }
+
+        .comparison-label {
+            font-size: 0.95rem;
+            color: var(--color-text-muted);
+            margin-bottom: 16px;
+        }
+
+        .comparison-value {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667EEA 0%, #F093FB 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .comparison-vs {
+            width: 2px;
+            height: 100px;
+            background: linear-gradient(180deg, transparent, rgba(102, 126, 234, 0.5), transparent);
+        }
+
+        /* How Section */
         .how-section {
-            padding: 120px 0;
-            background: var(--bg-white);
-        }
-
-        .how-section .section-label {
-            color: var(--primary-blue);
+            background: var(--color-bg);
         }
 
         .how-header {
             text-align: center;
-            max-width: 700px;
+            max-width: 800px;
             margin: 0 auto 80px;
         }
 
-        .how-header h2 {
-            font-size: clamp(2rem, 4vw, 3rem);
-            color: var(--dark-navy);
-            margin-bottom: 20px;
+        .flow-container {
+            margin: 80px 0;
         }
 
-        .how-header p {
-            font-size: 1.15rem;
-            color: var(--text-secondary);
-            line-height: 1.8;
-        }
-
-        .diagram-title {
+        .flow-title {
             text-align: center;
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: var(--dark-navy);
-            margin-bottom: 60px;
+            margin-bottom: 64px;
         }
 
-        .flow-diagram {
+        .flow-grid {
             display: grid;
             grid-template-columns: 1fr auto 1fr auto 1fr;
-            gap: 32px;
+            gap: 40px;
             align-items: center;
-            margin-bottom: 60px;
         }
 
-        .flow-column {
-            background: white;
-            border: 2px solid rgba(108, 92, 231, 0.1);
-            border-radius: var(--radius-xl);
-            padding: 32px;
-            box-shadow: var(--shadow-md);
+        .flow-box {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow-card);
         }
 
-        .flow-column.center {
-            background: var(--gradient-primary);
-            border-color: transparent;
-            color: white;
+        .flow-box.highlight {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-color: rgba(102, 126, 234, 0.3);
         }
 
-        .flow-column.center * {
-            color: white !important;
+        .flow-box h3 {
+            font-size: 1.3rem;
+            margin-bottom: 24px;
+            font-weight: 700;
         }
 
-        .flow-column h3 {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            color: var(--dark-navy);
+        .flow-detail {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 0.95rem;
         }
 
-        .flow-item {
-            background: var(--bg-light);
-            padding: 16px;
-            border-radius: var(--radius-md);
-            margin-bottom: 12px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .flow-item strong {
-            color: var(--dark-navy);
+        .flow-detail strong {
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
+            color: var(--color-text);
         }
 
-        .flow-column.center .flow-item {
-            background: rgba(255, 255, 255, 0.15);
+        .flow-detail span {
+            color: var(--color-text-muted);
         }
 
         .flow-arrow {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: var(--primary-purple);
+            font-size: 2rem;
+            color: #667EEA;
         }
 
-        .privacy-note {
-            background: rgba(0, 217, 163, 0.1);
-            border: 2px solid var(--accent-green);
-            border-radius: var(--radius-lg);
-            padding: 32px;
+        .privacy-box {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 20px;
+            padding: 48px;
             text-align: center;
+            margin-top: 80px;
         }
 
-        .privacy-note strong {
+        .privacy-box strong {
             display: block;
-            font-size: 1.2rem;
-            color: var(--dark-navy);
-            margin-bottom: 12px;
+            font-size: 1.4rem;
+            margin-bottom: 16px;
         }
 
-        .privacy-note p {
-            color: var(--text-secondary);
+        .privacy-box p {
+            color: var(--color-text-muted);
             line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         /* Process Section */
         .process-section {
-            padding: 120px 0;
-            background: var(--bg-light);
-        }
-
-        .process-section .section-label {
-            color: var(--primary-purple);
+            background: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--color-border);
         }
 
         .process-header {
@@ -822,143 +772,126 @@
             margin: 0 auto 80px;
         }
 
-        .process-header h2 {
-            font-size: clamp(2rem, 4vw, 3rem);
-            color: var(--dark-navy);
-            margin-bottom: 20px;
-        }
-
-        .process-steps {
+        .steps-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 32px;
         }
 
-        .process-step {
-            background: white;
-            border-radius: var(--radius-xl);
-            padding: 40px;
-            box-shadow: var(--shadow-md);
+        .step-card {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 24px;
+            padding: 48px 40px;
             position: relative;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
 
-        .process-step:hover {
+        .step-card:hover {
             transform: translateY(-8px);
-            box-shadow: var(--shadow-xl);
+            border-color: rgba(102, 126, 234, 0.4);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
         }
 
         .step-number {
             position: absolute;
-            top: -16px;
-            left: 32px;
-            width: 48px;
-            height: 48px;
-            background: var(--gradient-primary);
+            top: -20px;
+            left: 40px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
             color: white;
-            border-radius: 50%;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 12px rgba(0, 82, 255, 0.3);
+            font-size: 1.5rem;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
         }
 
-        .process-step h3 {
-            font-size: 1.3rem;
-            margin-bottom: 16px;
-            color: var(--dark-navy);
-            padding-top: 16px;
+        .step-card h3 {
+            font-size: 1.5rem;
+            margin: 24px 0 16px;
+            font-weight: 700;
         }
 
-        .process-step p {
-            color: var(--text-secondary);
-            line-height: 1.7;
+        .step-card p {
+            color: var(--color-text-muted);
+            line-height: 1.8;
         }
 
         /* Value Section */
         .value-section {
-            padding: 120px 0;
             position: relative;
-            background: url('https://freerangestock.com/sample/121621/handshake-between-two-parties-after-agreement.jpg') center/cover no-repeat;
+            background: url('https://freerangestock.com/sample/121621/handshake-between-two-parties-after-agreement.jpg') center/cover no-repeat fixed;
+            padding: 160px 0;
         }
 
         .value-section::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, rgba(10, 14, 39, 0.97) 0%, rgba(45, 53, 97, 0.95) 100%);
+            background: linear-gradient(135deg, rgba(10, 13, 26, 0.96) 0%, rgba(19, 22, 33, 0.94) 100%);
         }
 
         .value-grid {
             position: relative;
-            z-index: 1;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+            gap: 48px;
         }
 
-        .value-card {
-            background: rgba(255, 255, 255, 0.05);
+        .value-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--color-border);
+            border-radius: 28px;
+            padding: 56px;
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-xl);
-            padding: 48px;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
 
-        .value-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(0, 212, 255, 0.3);
-            transform: translateY(-4px);
+        .value-box:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(102, 126, 234, 0.4);
+            transform: translateY(-8px);
         }
 
-        .value-badge {
-            display: inline-block;
-            padding: 8px 16px;
-            background: var(--gradient-primary);
-            color: white;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 24px;
+        .value-box .section-label {
+            margin-bottom: 28px;
         }
 
-        .value-card h3 {
-            font-size: 2rem;
-            color: white;
-            margin-bottom: 16px;
+        .value-box h3 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
         }
 
-        .value-card > p {
-            font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 32px;
+        .value-box > p {
+            font-size: 1.2rem;
+            color: var(--color-text-muted);
+            margin-bottom: 40px;
             line-height: 1.7;
         }
 
-        .value-features {
+        .features-list {
             display: grid;
-            gap: 20px;
-            margin-bottom: 32px;
+            gap: 28px;
+            margin-bottom: 48px;
         }
 
-        .value-feature {
+        .feature-item {
             display: flex;
-            gap: 16px;
+            gap: 20px;
             align-items: flex-start;
         }
 
-        .value-feature::before {
-            content: '✓';
-            width: 28px;
-            height: 28px;
-            background: rgba(0, 217, 163, 0.2);
-            color: var(--accent-green);
-            border-radius: 50%;
+        .feature-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--color-success);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -966,26 +899,20 @@
             flex-shrink: 0;
         }
 
-        .value-feature strong {
+        .feature-content strong {
             display: block;
-            color: white;
-            margin-bottom: 4px;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
         }
 
-        .value-feature p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.95rem;
-            line-height: 1.6;
+        .feature-content p {
+            color: var(--color-text-muted);
+            line-height: 1.7;
         }
 
         /* Pricing Section */
         .pricing-section {
-            padding: 120px 0;
-            background: var(--bg-white);
-        }
-
-        .pricing-section .section-label {
-            color: var(--primary-blue);
+            background: var(--color-bg);
         }
 
         .pricing-header {
@@ -994,120 +921,110 @@
             margin: 0 auto 80px;
         }
 
-        .pricing-header h2 {
-            font-size: clamp(2rem, 4vw, 3rem);
-            color: var(--dark-navy);
-            margin-bottom: 16px;
-        }
-
-        .pricing-header p {
-            font-size: 1.15rem;
-            color: var(--text-secondary);
-        }
-
         .pricing-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 32px;
-            max-width: 1100px;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
-        .pricing-card {
-            background: white;
-            border: 2px solid rgba(108, 92, 231, 0.15);
-            border-radius: var(--radius-xl);
-            padding: 40px;
+        .pricing-box {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 28px;
+            padding: 48px;
             display: flex;
             flex-direction: column;
             position: relative;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
 
-        .pricing-card:hover {
-            border-color: var(--primary-purple);
+        .pricing-box:hover {
+            border-color: rgba(102, 126, 234, 0.4);
             transform: translateY(-8px);
-            box-shadow: var(--shadow-xl);
         }
 
-        .pricing-card.featured {
-            background: var(--gradient-primary);
-            border-color: transparent;
-            color: white;
+        .pricing-box.featured {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-color: rgba(102, 126, 234, 0.4);
+            box-shadow: 0 0 60px rgba(102, 126, 234, 0.2);
         }
 
-        .pricing-card.featured * {
-            color: white !important;
-        }
-
-        .pricing-popular {
+        .pricing-tag {
             position: absolute;
-            top: -12px;
-            right: 32px;
-            background: var(--accent-orange);
+            top: -16px;
+            right: 48px;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #F093FB 0%, #F5576C 100%);
             color: white;
-            padding: 6px 16px;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 700;
             text-transform: uppercase;
         }
 
-        .pricing-card h3 {
-            font-size: 1.5rem;
-            color: var(--dark-navy);
-            margin-bottom: 8px;
+        .pricing-box h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
         }
 
         .pricing-desc {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            margin-bottom: 24px;
+            color: var(--color-text-muted);
+            margin-bottom: 32px;
         }
 
         .pricing-price {
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
         .pricing-amount {
-            font-size: 3rem;
+            font-size: 4rem;
             font-weight: 800;
-            color: var(--dark-navy);
+            background: linear-gradient(135deg, #667EEA 0%, #F093FB 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .pricing-period {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
+            font-size: 1.2rem;
+            color: var(--color-text-muted);
         }
 
         .pricing-save {
-            font-size: 0.85rem;
-            color: var(--accent-green);
+            color: var(--color-success);
             font-weight: 600;
-            margin-bottom: 24px;
+            margin-bottom: 32px;
         }
 
         .pricing-features {
             list-style: none;
-            margin: 32px 0;
+            margin: 40px 0;
             flex-grow: 1;
         }
 
         .pricing-features li {
-            padding: 12px 0;
-            color: var(--text-secondary);
+            padding: 16px 0;
+            color: var(--color-text-muted);
             display: flex;
-            align-items: center;
-            gap: 12px;
+            align-items: flex-start;
+            gap: 16px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
         }
 
         .pricing-features li::before {
             content: '✓';
             width: 24px;
             height: 24px;
-            background: rgba(0, 217, 163, 0.15);
-            color: var(--accent-green);
-            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--color-success);
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1115,191 +1032,165 @@
             flex-shrink: 0;
         }
 
-        .pricing-card.featured .pricing-features li::before {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-        }
-
         .pricing-form {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            margin-top: 24px;
+            gap: 16px;
+            margin-top: 32px;
         }
 
         .pricing-form input {
-            padding: 14px 18px;
-            border: 2px solid rgba(108, 92, 231, 0.2);
-            border-radius: var(--radius-md);
-            font-family: var(--font-primary);
-            font-size: 0.95rem;
+            padding: 18px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            color: var(--color-text);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
             transition: all 0.3s;
         }
 
         .pricing-form input:focus {
             outline: none;
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(0, 82, 255, 0.1);
+            border-color: #667EEA;
+            background: rgba(255, 255, 255, 0.08);
         }
 
         /* CTA Section */
         .cta-section {
-            padding: 120px 0;
-            background: var(--bg-light);
+            background: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--color-border);
         }
 
         .cta-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 48px;
         }
 
-        .cta-card {
-            background: white;
-            border-radius: var(--radius-xl);
-            padding: 48px;
-            box-shadow: var(--shadow-lg);
-            transition: all 0.3s ease;
+        .cta-box {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 28px;
+            padding: 56px;
+            transition: all 0.3s;
         }
 
-        .cta-card:hover {
+        .cta-box:hover {
+            border-color: rgba(102, 126, 234, 0.4);
             transform: translateY(-4px);
-            box-shadow: var(--shadow-xl);
         }
 
-        .cta-badge {
-            display: inline-block;
-            padding: 6px 14px;
-            background: var(--gradient-card);
-            color: var(--primary-blue);
-            border-radius: 16px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
+        .cta-box .section-label {
+            margin-bottom: 28px;
+        }
+
+        .cta-box h3 {
+            font-size: 2.5rem;
+            font-weight: 800;
             margin-bottom: 20px;
         }
 
-        .cta-card h3 {
-            font-size: 2rem;
-            color: var(--dark-navy);
-            margin-bottom: 16px;
-        }
-
-        .cta-card p {
-            color: var(--text-secondary);
-            font-size: 1.05rem;
+        .cta-box p {
+            font-size: 1.2rem;
+            color: var(--color-text-muted);
+            margin-bottom: 40px;
             line-height: 1.7;
-            margin-bottom: 32px;
         }
 
         .cta-form {
             display: flex;
-            gap: 12px;
-            margin-bottom: 16px;
+            gap: 16px;
+            margin-bottom: 20px;
         }
 
         .cta-form input {
             flex: 1;
-            padding: 16px 20px;
-            border: 2px solid rgba(108, 92, 231, 0.2);
-            border-radius: var(--radius-md);
-            font-family: var(--font-primary);
-            font-size: 0.95rem;
+            padding: 20px 28px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            color: var(--color-text);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
             transition: all 0.3s;
         }
 
         .cta-form input:focus {
             outline: none;
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(0, 82, 255, 0.1);
+            border-color: #667EEA;
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .cta-note {
-            font-size: 0.85rem;
-            color: var(--text-light);
+            font-size: 0.9rem;
+            color: var(--color-text-dim);
         }
 
         /* About Section */
         .about-section {
-            padding: 120px 0;
             position: relative;
-            background: url('https://images.pexels.com/photos/7434022/pexels-photo-7434022.jpeg') center/cover no-repeat;
+            background: url('https://images.pexels.com/photos/7434022/pexels-photo-7434022.jpeg') center/cover no-repeat fixed;
+            padding: 160px 0;
         }
 
         .about-section::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, rgba(10, 14, 39, 0.96) 0%, rgba(29, 31, 58, 0.94) 100%);
+            background: linear-gradient(135deg, rgba(10, 13, 26, 0.96) 0%, rgba(19, 22, 33, 0.94) 100%);
         }
 
         .about-content {
             position: relative;
-            z-index: 1;
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             text-align: center;
         }
 
-        .about-section .section-label {
-            color: var(--primary-cyan);
-        }
-
-        .about-section h2 {
-            font-size: clamp(2rem, 4vw, 3rem);
-            color: white;
-            margin-bottom: 32px;
-        }
-
-        .about-section p {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.85);
-            margin-bottom: 32px;
+        .about-text {
+            font-size: 1.4rem;
+            color: var(--color-text-muted);
             line-height: 1.8;
+            margin-bottom: 40px;
         }
 
         .values-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 32px;
-            margin-top: 80px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 100px;
         }
 
-        .value-item {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-xl);
-            padding: 40px;
-            transition: all 0.3s ease;
+        .value-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--color-border);
+            border-radius: 24px;
+            padding: 48px;
+            transition: all 0.3s;
         }
 
-        .value-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(0, 212, 255, 0.3);
+        .value-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(102, 126, 234, 0.4);
         }
 
-        .value-item h3 {
-            font-size: 1.5rem;
-            color: white;
-            margin-bottom: 16px;
+        .value-card h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 20px;
         }
 
-        .value-item p {
-            font-size: 1rem;
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.7;
+        .value-card p {
+            color: var(--color-text-muted);
+            line-height: 1.8;
+            font-size: 1.1rem;
         }
 
         /* FAQ Section */
         .faq-section {
-            padding: 120px 0;
-            background: var(--bg-white);
-        }
-
-        .faq-section .section-label {
-            color: var(--primary-blue);
+            background: var(--color-bg);
         }
 
         .faq-header {
@@ -1308,51 +1199,41 @@
             margin: 0 auto 80px;
         }
 
-        .faq-header h2 {
-            font-size: clamp(2rem, 4vw, 3rem);
-            color: var(--dark-navy);
-        }
-
-        .faq-grid {
-            max-width: 900px;
+        .faq-list {
+            max-width: 1000px;
             margin: 0 auto;
             display: grid;
-            gap: 20px;
+            gap: 24px;
         }
 
         .faq-item {
-            background: white;
-            border: 2px solid rgba(108, 92, 231, 0.1);
-            border-radius: var(--radius-lg);
-            padding: 32px;
-            transition: all 0.3s ease;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 20px;
+            padding: 40px;
+            transition: all 0.3s;
         }
 
         .faq-item:hover {
-            border-color: var(--primary-purple);
-            box-shadow: var(--shadow-md);
+            border-color: rgba(102, 126, 234, 0.4);
         }
 
-        .faq-question {
-            font-size: 1.2rem;
+        .faq-q {
+            font-size: 1.3rem;
             font-weight: 700;
-            color: var(--dark-navy);
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
-        .faq-answer {
-            color: var(--text-secondary);
+        .faq-a {
+            color: var(--color-text-muted);
             line-height: 1.8;
+            font-size: 1.05rem;
         }
 
         /* Blog Section */
         .blog-section {
-            padding: 120px 0;
-            background: var(--bg-light);
-        }
-
-        .blog-section .section-label {
-            color: var(--primary-purple);
+            background: var(--color-surface);
+            border-top: 1px solid var(--color-border);
         }
 
         .blog-header {
@@ -1361,193 +1242,172 @@
             margin: 0 auto 80px;
         }
 
-        .blog-header h2 {
-            font-size: clamp(2rem, 4vw, 3rem);
-            color: var(--dark-navy);
-            margin-bottom: 16px;
-        }
-
-        .blog-header p {
-            font-size: 1.15rem;
-            color: var(--text-secondary);
-        }
-
         .blog-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 32px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
         }
 
         .blog-card {
-            background: white;
-            border-radius: var(--radius-xl);
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 24px;
             overflow: hidden;
-            box-shadow: var(--shadow-md);
-            transition: all 0.3s ease;
             text-decoration: none;
             display: block;
+            transition: all 0.3s;
         }
 
         .blog-card:hover {
             transform: translateY(-8px);
-            box-shadow: var(--shadow-xl);
+            border-color: rgba(102, 126, 234, 0.4);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
         }
 
-        .blog-category {
+        .blog-tag {
             display: inline-block;
-            padding: 8px 16px;
-            background: var(--gradient-primary);
+            margin: 32px 0 0 32px;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
             color: white;
-            border-radius: 16px;
+            border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
-            margin: 24px 0 0 24px;
         }
 
-        .blog-content {
-            padding: 24px 32px 32px;
+        .blog-body {
+            padding: 28px 40px 40px;
         }
 
         .blog-title {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: var(--dark-navy);
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             line-height: 1.4;
+            color: var(--color-text);
         }
 
         .blog-excerpt {
-            color: var(--text-secondary);
+            color: var(--color-text-muted);
             line-height: 1.7;
         }
 
         /* Footer */
         footer {
-            background: var(--dark-navy);
-            padding: 60px 0 40px;
-            color: rgba(255, 255, 255, 0.7);
+            background: var(--color-bg);
+            padding: 80px 0 48px;
+            border-top: 1px solid var(--color-border);
         }
 
         .footer-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
-        }
-
-        .footer-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            margin-bottom: 48px;
         }
 
         .footer-logo-text {
-            font-family: var(--font-display);
             font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667EEA 0%, #F093FB 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .footer-links {
             display: flex;
-            gap: 32px;
+            gap: 40px;
         }
 
         .footer-links a {
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--color-text-muted);
             text-decoration: none;
-            font-size: 0.95rem;
+            font-weight: 500;
             transition: color 0.3s;
         }
 
         .footer-links a:hover {
-            color: white;
+            color: var(--color-text);
         }
 
         .footer-bottom {
             text-align: center;
-            padding-top: 32px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.9rem;
+            padding-top: 40px;
+            border-top: 1px solid var(--color-border);
+            color: var(--color-text-dim);
         }
 
-        /* Toast Notification */
+        /* Toast */
         .toast {
             position: fixed;
-            bottom: 32px;
-            right: 32px;
-            background: white;
-            color: var(--dark-navy);
-            padding: 20px 28px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-xl);
+            bottom: 40px;
+            right: 40px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+            padding: 24px 32px;
+            border-radius: 16px;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
             display: none;
-            align-items: center;
-            gap: 16px;
             z-index: 10000;
             animation: slideUp 0.3s ease;
         }
 
         .toast.show {
-            display: flex;
+            display: block;
         }
 
         .toast.success {
-            border-left: 4px solid var(--accent-green);
+            border-left: 4px solid var(--color-success);
         }
 
         .toast.error {
-            border-left: 4px solid var(--accent-orange);
+            border-left: 4px solid var(--color-warning);
         }
 
         @keyframes slideUp {
-            from {
-                transform: translateY(100px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
-        /* Responsive Design */
+        /* Responsive */
         @media (max-width: 1024px) {
-            .flow-diagram {
+            .flow-grid {
                 grid-template-columns: 1fr;
-                gap: 20px;
+                gap: 24px;
             }
 
             .flow-arrow {
                 transform: rotate(90deg);
             }
 
-            .value-grid {
-                grid-template-columns: 1fr;
-            }
-
             .hero-grid {
                 grid-template-columns: 1fr;
-                gap: 60px;
+                gap: 80px;
+            }
+
+            .value-grid {
+                grid-template-columns: 1fr;
             }
         }
 
         @media (max-width: 768px) {
             .container {
-                padding: 0 20px;
+                padding: 0 24px;
             }
 
             .nav-links {
                 position: fixed;
-                top: 80px;
+                top: 85px;
                 left: 0;
                 right: 0;
-                background: white;
+                background: var(--color-bg);
                 flex-direction: column;
-                padding: 32px;
-                gap: 24px;
-                box-shadow: var(--shadow-lg);
+                padding: 40px;
+                gap: 32px;
+                border-bottom: 1px solid var(--color-border);
                 display: none;
             }
 
@@ -1571,30 +1431,19 @@
                 width: 100%;
             }
 
-            .pain-points {
+            .comparison-box {
                 grid-template-columns: 1fr;
+                gap: 32px;
             }
 
-            .comparison-card {
-                grid-template-columns: 1fr;
-                gap: 24px;
-            }
-
-            .comparison-divider {
-                width: 80%;
+            .comparison-vs {
+                width: 100px;
                 height: 2px;
                 margin: 0 auto;
             }
 
-            .process-steps {
-                grid-template-columns: 1fr;
-            }
-
             .pricing-grid,
-            .blog-grid {
-                grid-template-columns: 1fr;
-            }
-
+            .blog-grid,
             .cta-grid {
                 grid-template-columns: 1fr;
             }
@@ -1605,24 +1454,22 @@
 
             .footer-content {
                 flex-direction: column;
-                gap: 32px;
+                gap: 40px;
                 text-align: center;
             }
 
             .footer-links {
                 flex-direction: column;
-                gap: 16px;
+                gap: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Toast Notification -->
     <div id="toast" class="toast">
         <span id="toast-message"></span>
     </div>
 
-    <!-- Navigation -->
     <nav id="nav">
         <div class="container">
             <div class="nav-inner">
@@ -1654,12 +1501,11 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero">
         <div class="container">
             <div class="hero-grid">
                 <div class="hero-content">
-                    <h1>The <span class="highlight">fastest</span> way to find business financing</h1>
+                    <h1>The <span class="gradient-text">fastest</span> way to find business financing</h1>
                     <p class="hero-subtitle">Connect your accounting software once. Get personalized loan offers from multiple lenders instantly. No paperwork, no waiting, no guessing about rates.</p>
 
                     <div class="hero-cta">
@@ -1675,19 +1521,19 @@
                         </div>
                         <div class="hero-trust-text">
                             <strong>$2,340</strong>
-                            Avg. savings per year
+                            <span>Avg. savings per year</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="hero-visual">
-                    <div class="hero-dashboard">
+                    <div class="dashboard-card">
                         <div class="dashboard-header">
                             <span class="dashboard-title">Your Loan Offers</span>
                             <span class="dashboard-status">3 New Offers</span>
                         </div>
 
-                        <div class="offer-card best">
+                        <div class="offer-item best">
                             <div class="offer-header">
                                 <span class="offer-lender">Lender ███</span>
                                 <span class="offer-badge">Best Rate</span>
@@ -1699,7 +1545,7 @@
                             </div>
                         </div>
 
-                        <div class="offer-card">
+                        <div class="offer-item">
                             <div class="offer-header">
                                 <span class="offer-lender">Lender ███</span>
                             </div>
@@ -1710,7 +1556,7 @@
                             </div>
                         </div>
 
-                        <div class="offer-card">
+                        <div class="offer-item">
                             <div class="offer-header">
                                 <span class="offer-lender">Lender ███</span>
                             </div>
@@ -1726,44 +1572,42 @@
         </div>
     </section>
 
-    <!-- Logos Section -->
     <section class="logos-section">
         <div class="container">
-            <div class="section-label">Integrates with your accounting software</div>
+            <div class="logos-label">Integrates with your accounting software</div>
             <div class="logos-grid">
                 <div class="logo-item">QuickBooks</div>
                 <div class="logo-item">Xero</div>
                 <div class="logo-item">Sage</div>
                 <div class="logo-item">FreshBooks</div>
                 <div class="logo-item">NetSuite</div>
-                <div class="logo-item">+ more on request</div>
+                <div class="logo-item">+ more</div>
             </div>
         </div>
     </section>
 
-    <!-- Problem Section -->
     <section class="problem-section">
         <div class="container">
             <div class="problem-content">
-                <div class="section-label">The Problem</div>
-                <h2>Getting business financing shouldn't be this painful</h2>
-                <p>Traditional business lending is broken. You spend weeks filling out paperwork, visiting multiple banks, and still have no idea if you're getting the best rate. Most SMEs give up or accept whatever their bank offers.</p>
+                <span class="section-label">The Problem</span>
+                <h2 class="section-title">Getting business financing shouldn't be this painful</h2>
+                <p class="section-subtitle">Traditional business lending is broken. You spend weeks filling out paperwork, visiting multiple banks, and still have no idea if you're getting the best rate. Most SMEs give up or accept whatever their bank offers.</p>
 
-                <div class="pain-points">
-                    <div class="pain-point">Fill out the same forms for every single bank</div>
-                    <div class="pain-point">Wait 2-4 weeks just to hear back on each application</div>
-                    <div class="pain-point">No transparency - you never know if you're getting the best rate</div>
-                    <div class="pain-point">Complex requirements make it hard to even qualify</div>
+                <div class="pain-grid">
+                    <div class="pain-card">Fill out the same forms for every single bank</div>
+                    <div class="pain-card">Wait 2-4 weeks just to hear back on each application</div>
+                    <div class="pain-card">No transparency - you never know if you're getting the best rate</div>
+                    <div class="pain-card">Complex requirements make it hard to even qualify</div>
                 </div>
 
-                <div class="comparison-card" style="position: relative;">
+                <div class="comparison-box">
                     <div class="comparison-badge">10x faster financing</div>
-                    <div class="comparison-side">
+                    <div class="comparison-item">
                         <div class="comparison-label">Traditional Way</div>
                         <div class="comparison-value">14+ days</div>
                     </div>
-                    <div class="comparison-divider"></div>
-                    <div class="comparison-side">
+                    <div class="comparison-vs"></div>
+                    <div class="comparison-item">
                         <div class="comparison-label">With Lenduck</div>
                         <div class="comparison-value">24 hours</div>
                     </div>
@@ -1772,106 +1616,106 @@
         </div>
     </section>
 
-    <!-- How It Works Section -->
     <section class="how-section" id="how-it-works">
         <div class="container">
-            <div class="section-label">How It Works</div>
             <div class="how-header">
-                <h2>Your accounting data unlocks better financing</h2>
-                <p>Lenduck connects to your existing accounting software, analyzes your financial health, and matches you with lenders who are most likely to approve you - at the best rates.</p>
+                <span class="section-label">How It Works</span>
+                <h2 class="section-title">Your accounting data unlocks better financing</h2>
+                <p class="section-subtitle">Lenduck connects to your existing accounting software, analyzes your financial health, and matches you with lenders who are most likely to approve you - at the best rates.</p>
             </div>
 
-            <div class="diagram-title">The Lenduck Data Flow</div>
+            <div class="flow-container">
+                <div class="flow-title">The Lenduck Data Flow</div>
 
-            <div class="flow-diagram">
-                <div class="flow-column">
-                    <h3>Your Accounting Software</h3>
-                    <div class="flow-item">
-                        <strong>QuickBooks</strong>
-                        Invoices, ledger, bank
+                <div class="flow-grid">
+                    <div class="flow-box">
+                        <h3>Your Accounting Software</h3>
+                        <div class="flow-detail">
+                            <strong>QuickBooks</strong>
+                            <span>Invoices, ledger, bank</span>
+                        </div>
+                        <div class="flow-detail">
+                            <strong>Xero</strong>
+                            <span>Invoices, ledger, bank</span>
+                        </div>
+                        <div class="flow-detail">
+                            <strong>Sage, FreshBooks...</strong>
+                            <span>Invoices, ledger, bank</span>
+                        </div>
                     </div>
-                    <div class="flow-item">
-                        <strong>Xero</strong>
-                        Invoices, ledger, bank
-                    </div>
-                    <div class="flow-item">
-                        <strong>Sage, FreshBooks...</strong>
-                        Invoices, ledger, bank
-                    </div>
-                </div>
 
-                <div class="flow-arrow">→</div>
+                    <div class="flow-arrow">→</div>
 
-                <div class="flow-column center">
-                    <h3>Lenduck Platform</h3>
-                    <div class="flow-item">
-                        <strong>Smart Matching Engine</strong>
-                        AI-powered analysis
+                    <div class="flow-box highlight">
+                        <h3>Lenduck Platform</h3>
+                        <div class="flow-detail">
+                            <strong>Smart Matching Engine</strong>
+                            <span>AI-powered analysis</span>
+                        </div>
+                        <div class="flow-detail">
+                            <strong>Financial health score</strong>
+                            <span>Cash flow analysis</span>
+                        </div>
+                        <div class="flow-detail">
+                            <strong>Risk profiling</strong>
+                            <span>Lender matching</span>
+                        </div>
                     </div>
-                    <div class="flow-item">
-                        <strong>Financial health score</strong>
-                        Cash flow analysis
-                    </div>
-                    <div class="flow-item">
-                        <strong>Risk profiling</strong>
-                        Lender matching
-                    </div>
-                </div>
 
-                <div class="flow-arrow">→</div>
+                    <div class="flow-arrow">→</div>
 
-                <div class="flow-column">
-                    <h3>Lender Network</h3>
-                    <div class="flow-item">
-                        <strong>Traditional Banks</strong>
-                        Major & regional banks
-                    </div>
-                    <div class="flow-item">
-                        <strong>Alternative Lenders</strong>
-                        Fintech, P2P platforms
-                    </div>
-                    <div class="flow-item">
-                        <strong>Factoring Companies</strong>
-                        Invoice financing
+                    <div class="flow-box">
+                        <h3>Lender Network</h3>
+                        <div class="flow-detail">
+                            <strong>Traditional Banks</strong>
+                            <span>Major & regional banks</span>
+                        </div>
+                        <div class="flow-detail">
+                            <strong>Alternative Lenders</strong>
+                            <span>Fintech, P2P platforms</span>
+                        </div>
+                        <div class="flow-detail">
+                            <strong>Factoring Companies</strong>
+                            <span>Invoice financing</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="privacy-note">
+            <div class="privacy-box">
                 <strong>🔒 Your data stays anonymous until you decide</strong>
                 <p>Lenders only see anonymized financial profiles. Your company identity is revealed only when you choose to proceed with a specific offer and start the lending agreement process. You stay in full control.</p>
             </div>
         </div>
     </section>
 
-    <!-- Process Section -->
     <section class="process-section">
         <div class="container">
-            <div class="section-label">Your Journey</div>
             <div class="process-header">
-                <h2>From application to funding in 4 steps</h2>
+                <span class="section-label">Your Journey</span>
+                <h2 class="section-title">From application to funding in 4 steps</h2>
             </div>
 
-            <div class="process-steps">
-                <div class="process-step">
+            <div class="steps-grid">
+                <div class="step-card">
                     <div class="step-number">1</div>
                     <h3>Connect Securely</h3>
                     <p>Link your accounting software with one click. Your data is encrypted and never shared without consent.</p>
                 </div>
 
-                <div class="process-step">
+                <div class="step-card">
                     <div class="step-number">2</div>
                     <h3>Get Analyzed</h3>
                     <p>Our AI reviews your financials and creates an anonymized profile that lenders can trust.</p>
                 </div>
 
-                <div class="process-step">
+                <div class="step-card">
                     <div class="step-number">3</div>
                     <h3>Receive Offers</h3>
                     <p>Multiple lenders compete to offer you their best rates. Compare them side by side.</p>
                 </div>
 
-                <div class="process-step">
+                <div class="step-card">
                     <div class="step-number">4</div>
                     <h3>Get Funded</h3>
                     <p>Choose your preferred offer and complete the process. Funds arrive within days.</p>
@@ -1880,39 +1724,42 @@
         </div>
     </section>
 
-    <!-- Value Section -->
     <section class="value-section" id="for-business">
         <div class="container">
             <div class="value-grid">
-                <div class="value-card" id="for-business">
-                    <span class="value-badge">For Businesses</span>
+                <div class="value-box">
+                    <span class="section-label">For Businesses</span>
                     <h3>For Businesses</h3>
                     <p>Stop wasting time on applications. Get financing offers that actually match your business profile - faster and at better rates than going bank to bank.</p>
 
-                    <div class="value-features">
-                        <div class="value-feature">
-                            <div>
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <div class="feature-icon">✓</div>
+                            <div class="feature-content">
                                 <strong>One Application, Multiple Offers</strong>
                                 <p>Apply once, get offers from 15+ lenders. No more repetitive paperwork.</p>
                             </div>
                         </div>
 
-                        <div class="value-feature">
-                            <div>
+                        <div class="feature-item">
+                            <div class="feature-icon">✓</div>
+                            <div class="feature-content">
                                 <strong>See Your Actual Rates</strong>
                                 <p>Know exactly what you qualify for before committing. No more guessing.</p>
                             </div>
                         </div>
 
-                        <div class="value-feature">
-                            <div>
+                        <div class="feature-item">
+                            <div class="feature-icon">✓</div>
+                            <div class="feature-content">
                                 <strong>Completely Free</strong>
                                 <p>No fees, ever. Lenders pay us when they win your business.</p>
                             </div>
                         </div>
 
-                        <div class="value-feature">
-                            <div>
+                        <div class="feature-item">
+                            <div class="feature-icon">✓</div>
+                            <div class="feature-content">
                                 <strong>Financial Health Dashboard</strong>
                                 <p>Get detailed statistics and reports about your company's financial health. Understand your cash flow, profitability, and growth trends at a glance.</p>
                             </div>
@@ -1922,35 +1769,39 @@
                     <a href="#cta" class="btn btn-primary btn-lg">Find Financing</a>
                 </div>
 
-                <div class="value-card" id="for-lenders">
-                    <span class="value-badge">For Lenders</span>
+                <div class="value-box" id="for-lenders">
+                    <span class="section-label">For Lenders</span>
                     <h3>For Lenders</h3>
                     <p>Get access to pre-qualified SME leads with verified financial data. Reduce acquisition costs and underwriting time dramatically.</p>
 
-                    <div class="value-features">
-                        <div class="value-feature">
-                            <div>
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <div class="feature-icon">✓</div>
+                            <div class="feature-content">
                                 <strong>Verified Financial Data</strong>
                                 <p>Direct API access to real accounting data. No manual verification needed.</p>
                             </div>
                         </div>
 
-                        <div class="value-feature">
-                            <div>
+                        <div class="feature-item">
+                            <div class="feature-icon">✓</div>
+                            <div class="feature-content">
                                 <strong>Pre-Qualified Leads</strong>
                                 <p>Only receive businesses that match your risk criteria. Higher conversion rates.</p>
                             </div>
                         </div>
 
-                        <div class="value-feature">
-                            <div>
+                        <div class="feature-item">
+                            <div class="feature-icon">✓</div>
+                            <div class="feature-content">
                                 <strong>Pay Per Success</strong>
                                 <p>Only pay when you successfully fund a deal. No upfront costs.</p>
                             </div>
                         </div>
 
-                        <div class="value-feature">
-                            <div>
+                        <div class="feature-item">
+                            <div class="feature-icon">✓</div>
+                            <div class="feature-content">
                                 <strong>Client Portfolio Monitoring</strong>
                                 <p>Monitor the financial health of your borrowers in real-time. Get early warning signals and track repayment capacity of clients who owe you money.</p>
                             </div>
@@ -1963,18 +1814,16 @@
         </div>
     </section>
 
-    <!-- Pricing Section -->
     <section class="pricing-section" id="pricing">
         <div class="container">
-            <div class="section-label">Pricing</div>
             <div class="pricing-header">
-                <h2>Choose the right plan for your business</h2>
-                <p>Start free and upgrade as you grow. All plans include our core financial health features.</p>
+                <span class="section-label">Pricing</span>
+                <h2 class="section-title">Choose the right plan for your business</h2>
+                <p class="section-subtitle">Start free and upgrade as you grow. All plans include our core financial health features.</p>
             </div>
 
             <div class="pricing-grid">
-                <!-- Free Plan -->
-                <div class="pricing-card">
+                <div class="pricing-box">
                     <h3>Free</h3>
                     <p class="pricing-desc">For small companies and freelancers</p>
                     <div class="pricing-price">
@@ -1991,9 +1840,8 @@
                     <a href="#cta" class="btn btn-secondary btn-lg">Get Started Free</a>
                 </div>
 
-                <!-- Pro Plan -->
-                <div class="pricing-card featured">
-                    <div class="pricing-popular">Most Popular</div>
+                <div class="pricing-box featured">
+                    <div class="pricing-tag">Most Popular</div>
                     <h3>Pro</h3>
                     <p class="pricing-desc">For growing businesses</p>
                     <div class="pricing-price">
@@ -2010,17 +1858,16 @@
                         <li>Financial diagnostics & recommendations</li>
                         <li>Advanced reports & notifications</li>
                     </ul>
-                    <a href="#cta" class="btn btn-dark btn-lg">Start Pro Trial</a>
+                    <a href="#cta" class="btn btn-primary btn-lg">Start Pro Trial</a>
                 </div>
 
-                <!-- Partner Plan -->
-                <div class="pricing-card">
+                <div class="pricing-box">
                     <h3>Partner</h3>
                     <p class="pricing-desc">For banks, lenders & financial advisors</p>
                     <div class="pricing-price">
-                        <span class="pricing-amount" style="font-size: 2rem;">Custom</span>
+                        <span class="pricing-amount" style="font-size: 2.5rem;">Custom</span>
                     </div>
-                    <p class="pricing-desc" style="margin-bottom: 24px;">Tailored to your needs</p>
+                    <p class="pricing-desc" style="margin-bottom: 32px;">Tailored to your needs</p>
                     <ul class="pricing-features">
                         <li>Access client accounting data (with consent)</li>
                         <li>Monitor client financial health</li>
@@ -2039,12 +1886,11 @@
         </div>
     </section>
 
-    <!-- CTA Section -->
     <section class="cta-section" id="cta">
         <div class="container">
             <div class="cta-grid">
-                <div class="cta-card">
-                    <span class="cta-badge">For Businesses</span>
+                <div class="cta-box">
+                    <span class="section-label">For Businesses</span>
                     <h3>Find better financing</h3>
                     <p>Connect your accounting software and see what rates you qualify for. It takes less than 2 minutes.</p>
                     <form class="cta-form" onsubmit="handleBusinessForm(event)">
@@ -2054,8 +1900,8 @@
                     <p class="cta-note">We'll never share your email. Free forever for businesses.</p>
                 </div>
 
-                <div class="cta-card">
-                    <span class="cta-badge">For Lenders</span>
+                <div class="cta-box">
+                    <span class="section-label">For Lenders</span>
                     <h3>Partner with us</h3>
                     <p>Reach thousands of pre-qualified SMEs looking for financing. Let's discuss how Lenduck can grow your loan portfolio.</p>
                     <form class="cta-form" onsubmit="handleLenderForm(event)">
@@ -2068,27 +1914,26 @@
         </div>
     </section>
 
-    <!-- About Section -->
     <section class="about-section" id="about">
         <div class="container">
             <div class="about-content">
-                <div class="section-label">About Us</div>
-                <h2>Why we built Lenduck</h2>
-                <p>SME financing is inefficient. Businesses waste weeks on repetitive applications and rarely know if they're getting competitive rates. Lenders spend too much on acquisition and manual verification. We built Lenduck to solve both problems.</p>
-                <p>We connect accounting data directly to lending decisions. Businesses get multiple offers fast. Lenders get verified financials without the paperwork. Simple.</p>
+                <span class="section-label">About Us</span>
+                <h2 class="section-title">Why we built Lenduck</h2>
+                <p class="about-text">SME financing is inefficient. Businesses waste weeks on repetitive applications and rarely know if they're getting competitive rates. Lenders spend too much on acquisition and manual verification. We built Lenduck to solve both problems.</p>
+                <p class="about-text">We connect accounting data directly to lending decisions. Businesses get multiple offers fast. Lenders get verified financials without the paperwork. Simple.</p>
 
                 <div class="values-grid">
-                    <div class="value-item">
+                    <div class="value-card">
                         <h3>Your Data, Your Control</h3>
                         <p>You decide what gets shared and when. Nothing happens without your explicit consent.</p>
                     </div>
 
-                    <div class="value-item">
+                    <div class="value-card">
                         <h3>Works for Both Sides</h3>
                         <p>Better rates for businesses. Better clients for lenders. That's the model.</p>
                     </div>
 
-                    <div class="value-item">
+                    <div class="value-card">
                         <h3>No Nonsense</h3>
                         <p>We automate the boring stuff so you can focus on running your business.</p>
                     </div>
@@ -2097,85 +1942,83 @@
         </div>
     </section>
 
-    <!-- FAQ Section -->
     <section class="faq-section" id="faq">
         <div class="container">
-            <div class="section-label">FAQ</div>
             <div class="faq-header">
-                <h2>Common questions</h2>
+                <span class="section-label">FAQ</span>
+                <h2 class="section-title">Common questions</h2>
             </div>
 
-            <div class="faq-grid">
+            <div class="faq-list">
                 <div class="faq-item">
-                    <div class="faq-question">Is Lenduck free for businesses?</div>
-                    <div class="faq-answer">Yes, completely free. We're paid by lenders when they successfully provide financing to businesses through our platform. You'll never pay us a cent.</div>
+                    <div class="faq-q">Is Lenduck free for businesses?</div>
+                    <div class="faq-a">Yes, completely free. We're paid by lenders when they successfully provide financing to businesses through our platform. You'll never pay us a cent.</div>
                 </div>
 
                 <div class="faq-item">
-                    <div class="faq-question">How do you protect my data?</div>
-                    <div class="faq-answer">Your data is encrypted and stays completely anonymous. Lenders only see financial profiles - your company identity is only revealed when you choose to proceed with a specific offer.</div>
+                    <div class="faq-q">How do you protect my data?</div>
+                    <div class="faq-a">Your data is encrypted and stays completely anonymous. Lenders only see financial profiles - your company identity is only revealed when you choose to proceed with a specific offer.</div>
                 </div>
 
                 <div class="faq-item">
-                    <div class="faq-question">Which accounting software do you support?</div>
-                    <div class="faq-answer">We support major accounting platforms including QuickBooks, Xero, Sage, FreshBooks, and NetSuite. Need a different integration? Let us know and we can discuss.</div>
+                    <div class="faq-q">Which accounting software do you support?</div>
+                    <div class="faq-a">We support major accounting platforms including QuickBooks, Xero, Sage, FreshBooks, and NetSuite. Need a different integration? Let us know and we can discuss.</div>
                 </div>
 
                 <div class="faq-item">
-                    <div class="faq-question">Does applying affect my credit score?</div>
-                    <div class="faq-answer">No. Getting matched and viewing offers doesn't affect your credit. A hard credit check only happens if you choose to proceed with a specific lender.</div>
+                    <div class="faq-q">Does applying affect my credit score?</div>
+                    <div class="faq-a">No. Getting matched and viewing offers doesn't affect your credit. A hard credit check only happens if you choose to proceed with a specific lender.</div>
                 </div>
 
                 <div class="faq-item">
-                    <div class="faq-question">What types of financing are available?</div>
-                    <div class="faq-answer">Business loans, lines of credit, invoice factoring, equipment financing, and more. Our lender network covers most SME financing needs.</div>
+                    <div class="faq-q">What types of financing are available?</div>
+                    <div class="faq-a">Business loans, lines of credit, invoice factoring, equipment financing, and more. Our lender network covers most SME financing needs.</div>
                 </div>
 
                 <div class="faq-item">
-                    <div class="faq-question">How do lenders benefit from Lenduck?</div>
-                    <div class="faq-answer">Lenders get pre-qualified leads with verified financial data, dramatically reducing their acquisition costs and underwriting time. They only pay when they fund a deal.</div>
+                    <div class="faq-q">How do lenders benefit from Lenduck?</div>
+                    <div class="faq-a">Lenders get pre-qualified leads with verified financial data, dramatically reducing their acquisition costs and underwriting time. They only pay when they fund a deal.</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Blog Section -->
     <section class="blog-section" id="blog">
         <div class="container">
-            <div class="section-label">Blog</div>
             <div class="blog-header">
-                <h2>Insights & Resources</h2>
-                <p>Learn more about open finance, SME lending, and how Lenduck is changing the game.</p>
+                <span class="section-label">Blog</span>
+                <h2 class="section-title">Insights & Resources</h2>
+                <p class="section-subtitle">Learn more about open finance, SME lending, and how Lenduck is changing the game.</p>
             </div>
 
             <div class="blog-grid">
                 <a href="/blog/who-we-are" class="blog-card">
-                    <span class="blog-category">About Us</span>
-                    <div class="blog-content">
+                    <span class="blog-tag">About Us</span>
+                    <div class="blog-body">
                         <h3 class="blog-title">Who We Are and Why We Do What We Do</h3>
                         <p class="blog-excerpt">Meet the team behind Lenduck and discover our mission to make business financing accessible, transparent, and fair for everyone.</p>
                     </div>
                 </a>
 
                 <a href="/blog/how-it-works" class="blog-card">
-                    <span class="blog-category">Guide</span>
-                    <div class="blog-content">
+                    <span class="blog-tag">Guide</span>
+                    <div class="blog-body">
                         <h3 class="blog-title">How Lenduck Works: From Connection to Funding</h3>
                         <p class="blog-excerpt">A step-by-step guide to using Lenduck, from connecting your accounting software to receiving competitive loan offers in minutes.</p>
                     </div>
                 </a>
 
                 <a href="/blog/open-finance" class="blog-card">
-                    <span class="blog-category">Industry</span>
-                    <div class="blog-content">
+                    <span class="blog-tag">Industry</span>
+                    <div class="blog-body">
                         <h3 class="blog-title">What is Open Finance and Why Accounting Data Aggregation Matters</h3>
                         <p class="blog-excerpt">Explore the revolution of open finance and how accounting data aggregation is transforming lending decisions for SMEs worldwide.</p>
                     </div>
                 </a>
 
                 <a href="/blog/case-study-10x-faster" class="blog-card">
-                    <span class="blog-category">Case Study</span>
-                    <div class="blog-content">
+                    <span class="blog-tag">Case Study</span>
+                    <div class="blog-body">
                         <h3 class="blog-title">How We Helped a Business Get Financing 10x Faster</h3>
                         <p class="blog-excerpt">A real success story of how one SME secured better financing terms in days instead of months using Lenduck's platform.</p>
                     </div>
@@ -2184,7 +2027,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -2206,7 +2048,6 @@
         </div>
     </footer>
 
-    <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -2257,7 +2098,6 @@
     </script>
 
     <script>
-        // Mobile menu toggle
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const navLinks = document.getElementById('navLinks');
 
@@ -2266,7 +2106,6 @@
             navLinks.classList.toggle('active');
         });
 
-        // Close mobile menu when clicking a link
         navLinks.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 mobileMenuBtn.classList.remove('active');
@@ -2274,7 +2113,6 @@
             });
         });
 
-        // Nav scroll effect
         const nav = document.getElementById('nav');
         window.addEventListener('scroll', () => {
             if (window.scrollY > 50) {
@@ -2284,20 +2122,14 @@
             }
         });
 
-        // Toast notification function
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toast-message');
-
             toastMessage.textContent = message;
             toast.className = `toast ${type} show`;
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 4000);
+            setTimeout(() => toast.classList.remove('show'), 4000);
         }
 
-        // Form handlers
         async function handleBusinessForm(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -2370,7 +2202,6 @@
             }
         }
 
-        // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 const href = this.getAttribute('href');
