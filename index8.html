@@ -389,7 +389,7 @@
             padding: 160px 0 120px;
             position: relative;
             overflow: hidden;
-            background-image: url('https://images.pexels.com/photos/3184296/pexels-photo-3184296.jpeg');
+            background-image: url('https://images.pexels.com/photos/7434022/pexels-photo-7434022.jpeg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -426,21 +426,16 @@
             transform: rotate(45deg);
         }
 
-        .hero-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 48px;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-        }
-
-        .hero-content {
+        .hero-unified {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: var(--radius-soft);
             padding: 48px;
             backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 2;
+            max-width: 900px;
+            margin: 0 auto;
         }
 
         .hero h1 {
@@ -472,7 +467,6 @@
             font-size: 1.15rem;
             color: rgba(255,255,255,0.8);
             margin-bottom: 36px;
-            max-width: 500px;
             line-height: 1.8;
         }
 
@@ -526,15 +520,6 @@
             display: block;
         }
 
-        .hero-visual {
-            position: relative;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: var(--radius-soft);
-            padding: 48px;
-            backdrop-filter: blur(10px);
-        }
-
         .hero-image-container {
             background: rgba(255,255,255,0.08);
             border-radius: var(--radius-soft);
@@ -542,6 +527,7 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.15);
             overflow: hidden;
             position: relative;
+            margin-top: 32px;
         }
 
         .hero-image-container::before {
@@ -1737,7 +1723,7 @@
         /* About Section */
         .about-section {
             padding: 120px 0;
-            background-image: url('https://images.pexels.com/photos/7434022/pexels-photo-7434022.jpeg');
+            background-image: url('https://images.pexels.com/photos/3184296/pexels-photo-3184296.jpeg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -2138,7 +2124,6 @@
 
         /* Responsive */
         @media (max-width: 1024px) {
-            .hero-grid,
             .problem-grid,
             .value-grid,
             .cta-grid {
@@ -2158,10 +2143,6 @@
 
             .pricing-card.featured:hover {
                 transform: translateY(-8px);
-            }
-
-            .hero-visual {
-                order: -1;
             }
 
             .diagram-flow {
@@ -2293,20 +2274,12 @@
                 text-align: center;
             }
 
-            .hero-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .hero-content {
+            .hero-unified {
                 text-align: center;
                 padding: 32px;
             }
 
-            .hero-visual {
-                padding: 32px;
-            }
-
-            .hero-content h1 {
+            .hero-unified h1 {
                 font-size: 2rem;
             }
 
@@ -2454,124 +2427,72 @@
             </svg>
 
             <div class="container">
-                <div class="hero-grid">
-                    <div class="hero-content">
-                        <h1>The <em>fastest</em> way to find business financing</h1>
-                        <p class="hero-subtitle">Connect your accounting software once. Get personalized loan offers from multiple lenders instantly. No paperwork, no waiting, no guessing about rates.</p>
-                        <div class="hero-cta">
-                            <a href="#cta" class="btn btn-primary btn-lg">Find Financing</a>
-                            <a href="#how-it-works" class="btn btn-secondary btn-lg">See How It Works</a>
-                        </div>
+                <div class="hero-unified">
+                    <h1>The <em>fastest</em> way to find business financing</h1>
+                    <p class="hero-subtitle">Connect your accounting software once. Get personalized loan offers from multiple lenders instantly. No paperwork, no waiting, no guessing about rates.</p>
+                    <div class="hero-cta">
+                        <a href="#cta" class="btn btn-primary btn-lg">Find Financing</a>
+                        <a href="#how-it-works" class="btn btn-secondary btn-lg">See How It Works</a>
                     </div>
-                    <div class="hero-visual">
-                        <div class="hero-image-container">
-                            <div class="hero-dashboard">
-                                <div class="dashboard-header">
-                                    <span class="dashboard-title">Your Financing Offers</span>
-                                    <span class="dashboard-status">3 offers available</span>
+                    <div class="hero-image-container">
+                        <div class="hero-dashboard">
+                            <div class="dashboard-header">
+                                <span class="dashboard-title">Your Financing Offers</span>
+                                <span class="dashboard-status">3 offers available</span>
+                            </div>
+                            <div class="offer-cards">
+                                <div class="offer-card">
+                                    <div class="offer-logo" style="background: linear-gradient(135deg, #2d5a3d, #4a7c59);">Bank</div>
+                                    <div class="offer-info">
+                                        <h4><span class="lender-name">Regional Bank</span> <span class="offer-badge">Best Rate</span></h4>
+                                        <p>$50,000 - 36 months - Approved</p>
+                                    </div>
+                                    <div class="offer-rate">
+                                        <div class="rate">4.2%</div>
+                                        <div class="label">APR</div>
+                                    </div>
                                 </div>
-                                <div class="offer-cards">
-                                    <div class="offer-card">
-                                        <div class="offer-logo" style="background: linear-gradient(135deg, #2d5a3d, #4a7c59);">Bank</div>
-                                        <div class="offer-info">
-                                            <h4><span class="lender-name">Regional Bank</span> <span class="offer-badge">Best Rate</span></h4>
-                                            <p>$50,000 - 36 months - Approved</p>
-                                        </div>
-                                        <div class="offer-rate">
-                                            <div class="rate">4.2%</div>
-                                            <div class="label">APR</div>
-                                        </div>
+                                <div class="offer-card">
+                                    <div class="offer-logo" style="background: linear-gradient(135deg, #7c9a82, #a8c4ad);">Fin</div>
+                                    <div class="offer-info">
+                                        <h4><span class="lender-name">Fintech Lender</span></h4>
+                                        <p>$50,000 - 36 months - Approved</p>
                                     </div>
-                                    <div class="offer-card">
-                                        <div class="offer-logo" style="background: linear-gradient(135deg, #7c9a82, #a8c4ad);">Fin</div>
-                                        <div class="offer-info">
-                                            <h4><span class="lender-name">Fintech Lender</span></h4>
-                                            <p>$50,000 - 36 months - Approved</p>
-                                        </div>
-                                        <div class="offer-rate">
-                                            <div class="rate" style="color: var(--color-sage);">5.1%</div>
-                                            <div class="label">APR</div>
-                                        </div>
+                                    <div class="offer-rate">
+                                        <div class="rate" style="color: var(--color-sage);">5.1%</div>
+                                        <div class="label">APR</div>
                                     </div>
-                                    <div class="offer-card">
-                                        <div class="offer-logo" style="background: linear-gradient(135deg, #c4a77d, #8b7355);">Alt</div>
-                                        <div class="offer-info">
-                                            <h4><span class="lender-name">Alternative Lender</span></h4>
-                                            <p>$50,000 - 36 months - Approved</p>
-                                        </div>
-                                        <div class="offer-rate">
-                                            <div class="rate" style="color: var(--color-earth);">5.8%</div>
-                                            <div class="label">APR</div>
-                                        </div>
+                                </div>
+                                <div class="offer-card">
+                                    <div class="offer-logo" style="background: linear-gradient(135deg, #c4a77d, #8b7355);">Alt</div>
+                                    <div class="offer-info">
+                                        <h4><span class="lender-name">Alternative Lender</span></h4>
+                                        <p>$50,000 - 36 months - Approved</p>
+                                    </div>
+                                    <div class="offer-rate">
+                                        <div class="rate" style="color: var(--color-earth);">5.8%</div>
+                                        <div class="label">APR</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="floating-card top-left">
-                            <div class="floating-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="22" height="22">
-                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                                </svg>
-                            </div>
-                            <div class="floating-text">
-                                <strong>Data stays private</strong>
-                                Until you decide
-                            </div>
+                    </div>
+                    <div class="floating-card top-left">
+                        <div class="floating-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="22" height="22">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
                         </div>
-                        <div class="floating-card bottom-right">
-                            <div class="floating-text" style="text-align: center;">
-                                <strong style="font-size: 1.6rem; color: var(--color-forest);">$2,340</strong>
-                                <span style="display: block; font-size: 0.8rem; color: var(--color-text-light);">Avg. savings per year</span>
-                            </div>
+                        <div class="floating-text">
+                            <strong>Data stays private</strong>
+                            Until you decide
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Logos Section -->
-        <section class="logos-section">
-            <div class="container">
-                <p class="logos-label">Integrates with your accounting software</p>
-                <div class="logos-grid">
-                    <div class="logo-item">
-                        <svg viewBox="0 0 28 28" fill="currentColor">
-                            <circle cx="14" cy="14" r="12"/>
-                            <circle cx="14" cy="14" r="6" fill="white"/>
-                        </svg>
-                        QuickBooks
-                    </div>
-                    <div class="logo-item">
-                        <svg viewBox="0 0 28 28" fill="currentColor">
-                            <rect x="2" y="2" width="24" height="24" rx="4"/>
-                            <path d="M7 14h14M14 7v14" stroke="white" stroke-width="2"/>
-                        </svg>
-                        Xero
-                    </div>
-                    <div class="logo-item">
-                        <svg viewBox="0 0 28 28" fill="currentColor">
-                            <path d="M14 2l12 6v12l-12 6-12-6V8z"/>
-                        </svg>
-                        Sage
-                    </div>
-                    <div class="logo-item">
-                        <svg viewBox="0 0 28 28" fill="currentColor">
-                            <rect x="2" y="4" width="24" height="20" rx="2"/>
-                            <path d="M6 10h8M6 14h12M6 18h6" stroke="white" stroke-width="2"/>
-                        </svg>
-                        FreshBooks
-                    </div>
-                    <div class="logo-item">
-                        <svg viewBox="0 0 28 28" fill="currentColor">
-                            <rect x="4" y="4" width="8" height="8" rx="2"/>
-                            <rect x="16" y="4" width="8" height="8" rx="2"/>
-                            <rect x="4" y="16" width="8" height="8" rx="2"/>
-                            <rect x="16" y="16" width="8" height="8" rx="2"/>
-                        </svg>
-                        NetSuite
-                    </div>
-                    <div class="logo-item" style="opacity: 0.5;">
-                        + more on request
+                    <div class="floating-card bottom-right">
+                        <div class="floating-text" style="text-align: center;">
+                            <strong style="font-size: 1.6rem; color: var(--color-forest);">$2,340</strong>
+                            <span style="display: block; font-size: 0.8rem; color: var(--color-text-light);">Avg. savings per year</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2643,6 +2564,54 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Logos Section -->
+        <section class="logos-section">
+            <div class="container">
+                <p class="logos-label">Integrates with your accounting software</p>
+                <div class="logos-grid">
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <circle cx="14" cy="14" r="12"/>
+                            <circle cx="14" cy="14" r="6" fill="white"/>
+                        </svg>
+                        QuickBooks
+                    </div>
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <rect x="2" y="2" width="24" height="24" rx="4"/>
+                            <path d="M7 14h14M14 7v14" stroke="white" stroke-width="2"/>
+                        </svg>
+                        Xero
+                    </div>
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <path d="M14 2l12 6v12l-12 6-12-6V8z"/>
+                        </svg>
+                        Sage
+                    </div>
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <rect x="2" y="4" width="24" height="20" rx="2"/>
+                            <path d="M6 10h8M6 14h12M6 18h6" stroke="white" stroke-width="2"/>
+                        </svg>
+                        FreshBooks
+                    </div>
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <rect x="4" y="4" width="8" height="8" rx="2"/>
+                            <rect x="16" y="4" width="8" height="8" rx="2"/>
+                            <rect x="4" y="16" width="8" height="8" rx="2"/>
+                            <rect x="16" y="16" width="8" height="8" rx="2"/>
+                        </svg>
+                        NetSuite
+                    </div>
+                    <div class="logo-item" style="opacity: 0.5;">
+                        + more on request
                     </div>
                 </div>
             </div>
