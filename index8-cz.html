@@ -314,7 +314,27 @@
             padding: 160px 0 120px;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(180deg, var(--color-cream) 0%, var(--color-sage-pale) 100%);
+            background: linear-gradient(135deg, rgba(45, 90, 61, 0.85), rgba(124, 154, 130, 0.85)),
+                        url('https://freerangestock.com/sample/121621/handshake-between-two-parties-after-agreement.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(250, 248, 243, 0.97) 0%, rgba(212, 228, 215, 0.95) 100%);
+            z-index: 0;
+        }
+
+        .hero .container {
+            position: relative;
+            z-index: 1;
         }
 
         .hero::before {
@@ -685,6 +705,25 @@
             background: var(--color-cream);
             position: relative;
             overflow: hidden;
+        }
+
+        .problem-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.pexels.com/photos/7434022/pexels-photo-7434022.jpeg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.03;
+            z-index: 0;
+        }
+
+        .problem-section .container {
+            position: relative;
+            z-index: 1;
         }
 
         .problem-section::before {
@@ -1319,6 +1358,25 @@
             position: relative;
         }
 
+        .pricing-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.pexels.com/photos/3184296/pexels-photo-3184296.jpeg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.02;
+            z-index: 0;
+        }
+
+        .pricing-section .container {
+            position: relative;
+            z-index: 1;
+        }
+
         .pricing-header {
             text-align: center;
             max-width: 600px;
@@ -1507,6 +1565,26 @@
             padding: 120px 0;
             background: white;
             position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(212, 228, 215, 0.95)),
+                        url('https://freerangestock.com/sample/121621/handshake-between-two-parties-after-agreement.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
+
+        .cta-section .container {
+            position: relative;
+            z-index: 1;
         }
 
         .cta-grid {
