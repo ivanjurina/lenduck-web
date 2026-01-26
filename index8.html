@@ -311,14 +311,15 @@
 
         /* Hero Section */
         .hero {
-            padding: 160px 0 120px;
+            padding: 200px 0 140px;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, rgba(45, 90, 61, 0.85), rgba(124, 154, 130, 0.85)),
-                        url('https://freerangestock.com/sample/121621/handshake-between-two-parties-after-agreement.jpg');
+            background: linear-gradient(135deg, rgba(45, 60, 75, 0.70), rgba(60, 80, 95, 0.70)),
+                        url('https://images.pexels.com/photos/3184296/pexels-photo-3184296.jpeg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
+            min-height: 100vh;
         }
 
         .hero::before {
@@ -328,7 +329,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(180deg, rgba(250, 248, 243, 0.97) 0%, rgba(212, 228, 215, 0.95) 100%);
+            background: linear-gradient(180deg, rgba(250, 248, 243, 0.93) 0%, rgba(212, 228, 215, 0.90) 100%);
             z-index: 0;
         }
 
@@ -376,6 +377,7 @@
             font-size: clamp(2.5rem, 4.5vw, 3.5rem);
             line-height: 1.15;
             margin-bottom: 24px;
+            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
         }
 
         .hero h1 em {
@@ -398,6 +400,7 @@
 
         .hero-subtitle {
             font-size: 1.15rem;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
             color: var(--color-text-light);
             margin-bottom: 36px;
             max-width: 500px;
