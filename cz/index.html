@@ -1,0 +1,3461 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="apple-touch-icon" href="/logo.png">
+    <title>Lenduck | Tržiště financování pro firmy - Porovnejte podnikatelské úvěry</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Lenduck je nejrychlejší způsob, jak najít firemní financování. Propojte svůj účetní software jednou, získejte personalizované nabídky úvěrů od více poskytovatelů okamžitě.">
+    <meta name="keywords" content="firemní financování, podnikatelské úvěry, firemní úvěry, srovnání úvěrů, půjčky pro firmy, SME financování, tržiště úvěrů">
+    <meta name="author" content="Lenduck">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://lenduck.com/cz">
+    <link rel="alternate" hreflang="en" href="https://lenduck.com/">
+    <link rel="alternate" hreflang="cs" href="https://lenduck.com/cz">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://lenduck.com/cz">
+    <meta property="og:title" content="Lenduck | Tržiště financování pro firmy">
+    <meta property="og:description" content="Nejrychlejší způsob, jak najít firemní financování. Získejte personalizované nabídky úvěrů od více poskytovatelů okamžitě.">
+    <meta property="og:image" content="https://lenduck.com/og-image.png">
+    <meta property="og:locale" content="cs_CZ">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://lenduck.com/cz">
+    <meta name="twitter:title" content="Lenduck | Tržiště financování pro firmy">
+    <meta name="twitter:description" content="Nejrychlejší způsob, jak najít firemní financování. Získejte personalizované nabídky úvěrů okamžitě.">
+    <meta name="twitter:image" content="https://lenduck.com/og-image.png">
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JC8J014HF3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-JC8J014HF3');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-forest: #2d5a3d;
+            --color-forest-dark: #1e3d29;
+            --color-forest-light: #3d7a52;
+            --color-sage: #7c9a82;
+            --color-sage-light: #a8c4ad;
+            --color-sage-pale: #d4e4d7;
+            --color-cream: #faf8f3;
+            --color-cream-dark: #f0ebe0;
+            --color-brown: #5c4d3c;
+            --color-brown-light: #8b7355;
+            --color-earth: #c4a77d;
+            --color-moss: #4a7c59;
+            --color-leaf: #228b22;
+            --color-text: #3d3d3d;
+            --color-text-light: #6b6b6b;
+            --color-text-inverse: #faf8f3;
+            --color-border: #d4d4c4;
+            --color-border-dark: #4a5a4d;
+            --font-main: 'Nunito', sans-serif;
+            --shadow-soft: 0 4px 20px rgba(45, 90, 61, 0.08);
+            --shadow-medium: 0 8px 30px rgba(45, 90, 61, 0.12);
+            --shadow-large: 0 16px 50px rgba(45, 90, 61, 0.15);
+            --radius-soft: 20px;
+            --radius-round: 50px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--color-cream);
+            color: var(--color-text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        h1, h2, h3 {
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--color-forest-dark);
+        }
+
+        /* Organic Decorative Elements */
+        .leaf-decoration {
+            position: absolute;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .organic-blob {
+            position: absolute;
+            border-radius: 60% 40% 70% 30% / 40% 50% 50% 60%;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 20px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: transparent;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        nav.nav-hidden {
+            transform: translateY(-100%);
+        }
+
+        .nav-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 36px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:not(.btn):hover {
+            color: white;
+        }
+
+        .nav-links a:not(.btn)::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        .nav-links a:not(.btn):hover::after {
+            width: 100%;
+        }
+
+        .lang-switcher {
+            display: flex;
+            gap: 4px;
+            margin-left: 12px;
+            padding-left: 16px;
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .lang-option {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .lang-option.active {
+            color: white !important;
+        }
+
+        .nav-login {
+            color: var(--color-forest) !important;
+            font-weight: 700 !important;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            width: 32px;
+            height: 32px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            z-index: 1001;
+        }
+
+        .mobile-menu-btn span {
+            display: block;
+            width: 100%;
+            height: 2px;
+            background: var(--color-forest);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .mobile-menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        .lang-option {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--color-text-light);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .lang-option:hover {
+            background: var(--color-sage-pale);
+            color: var(--color-forest);
+        }
+
+        .lang-option.active {
+            background: var(--color-forest);
+            color: white;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: var(--radius-round);
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-family: var(--font-main);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            color: white;
+            box-shadow: 0 4px 15px rgba(45, 90, 61, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(45, 90, 61, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--color-cream);
+            color: var(--color-forest);
+            border: 2px solid var(--color-sage);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-sage-pale);
+            border-color: var(--color-forest);
+        }
+
+        .btn-dark {
+            background: var(--color-brown);
+            color: white;
+        }
+
+        .btn-dark:hover {
+            background: var(--color-brown-light);
+            transform: translateY(-2px);
+        }
+
+        .btn-lg {
+            padding: 16px 36px;
+            font-size: 1rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 80px 0 120px;
+            padding-top: 80px;
+            position: relative;
+            overflow: hidden;
+            background-image: url('https://images.pexels.com/photos/7434022/pexels-photo-7434022.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(15, 20, 25, 0.92) 0%, rgba(15, 20, 25, 0.88) 100%);
+            z-index: 1;
+        }
+
+        .hero .problem-grid {
+            margin-top: 80px;
+        }
+
+        .hero-leaf-1 {
+            top: 80px;
+            left: 5%;
+            width: 120px;
+            height: 120px;
+        }
+
+        .hero-leaf-2 {
+            bottom: 100px;
+            right: 8%;
+            width: 80px;
+            height: 80px;
+            transform: rotate(45deg);
+        }
+
+        .hero-unified {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-soft);
+            padding: 48px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: start;
+        }
+
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 4.5vw, 3.5rem);
+            line-height: 1.15;
+            margin-bottom: 24px;
+            color: white;
+        }
+
+        .hero h1 em {
+            color: var(--color-sage-light);
+            font-style: normal;
+        }
+
+        .hero-subtitle {
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 36px;
+            line-height: 1.8;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+
+        .hero-trust {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 24px;
+            background: white;
+            border-radius: var(--radius-soft);
+            box-shadow: var(--shadow-soft);
+            width: fit-content;
+        }
+
+        .hero-trust-avatars {
+            display: flex;
+        }
+
+        .hero-trust-avatars .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid white;
+            margin-left: -10px;
+            background: linear-gradient(135deg, var(--color-forest), var(--color-sage));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 0.75rem;
+        }
+
+        .hero-trust-avatars .avatar:first-child {
+            margin-left: 0;
+        }
+
+        .hero-trust-text {
+            font-size: 0.9rem;
+            color: var(--color-text-light);
+        }
+
+        .hero-trust-text strong {
+            color: var(--color-forest);
+            display: block;
+        }
+
+        .hero-image-container {
+            background: rgba(255,255,255,0.08);
+            border-radius: var(--radius-soft);
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hero-image-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-forest), var(--color-sage), var(--color-earth));
+        }
+
+        .hero-dashboard {
+            padding: 28px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .dashboard-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: white;
+        }
+
+        .dashboard-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--color-moss);
+            font-weight: 600;
+        }
+
+        .dashboard-status::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: var(--color-moss);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .offer-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .offer-card {
+            background: var(--color-cream);
+            border: 1px solid var(--color-border);
+            border-radius: 16px;
+            padding: 18px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 16px;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .offer-card:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .offer-card:first-child {
+            border-color: var(--color-forest);
+            background: linear-gradient(135deg, rgba(45, 90, 61, 0.05), rgba(124, 154, 130, 0.08));
+            box-shadow: 0 0 0 3px rgba(45, 90, 61, 0.1);
+        }
+
+        .offer-card:first-child .offer-badge {
+            display: inline-block;
+        }
+
+        .offer-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.7rem;
+            color: white;
+            filter: blur(4px);
+            user-select: none;
+        }
+
+        .offer-info h4 {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            color: var(--color-forest-dark);
+        }
+
+        .offer-info .lender-name {
+            filter: blur(4px);
+            user-select: none;
+        }
+
+        .offer-info p {
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+        }
+
+        .offer-badge {
+            display: none;
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-left: 8px;
+        }
+
+        .offer-rate {
+            text-align: right;
+        }
+
+        .offer-rate .rate {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--color-forest);
+        }
+
+        .offer-rate .label {
+            font-size: 0.75rem;
+            color: var(--color-text-light);
+            font-weight: 600;
+        }
+
+        .floating-card {
+            position: absolute;
+            background: white;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: var(--shadow-medium);
+            border: 1px solid var(--color-border);
+        }
+
+        .floating-card.top-left {
+            top: -24px;
+            left: -48px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .floating-card.bottom-right {
+            bottom: -24px;
+            right: -36px;
+        }
+
+        .floating-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--color-forest), var(--color-sage));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-text {
+            font-size: 0.85rem;
+        }
+
+        .floating-text strong {
+            display: block;
+            font-size: 0.95rem;
+            color: var(--color-forest-dark);
+        }
+
+        /* Logos Section */
+        .logos-section {
+            padding: 60px 0;
+            background: white;
+            border-top: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .logos-label {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 32px;
+            font-weight: 600;
+        }
+
+        .logos-grid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 48px;
+            flex-wrap: wrap;
+        }
+
+        .logo-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--color-text-light);
+            font-weight: 700;
+            font-size: 1rem;
+            opacity: 0.6;
+            transition: all 0.3s;
+        }
+
+        .logo-item:hover {
+            opacity: 1;
+            color: var(--color-forest);
+        }
+
+        .logo-item svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        /* Problem Section */
+        .problem-section {
+            padding: 120px 0;
+            background: var(--color-cream);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .problem-section::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: var(--color-sage);
+            border-radius: 60% 40% 70% 30% / 40% 50% 50% 60%;
+            opacity: 0.05;
+            transform: translateY(-50%);
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .section-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--color-moss);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-label::before {
+            content: '';
+            width: 24px;
+            height: 2px;
+            background: var(--color-moss);
+            border-radius: 2px;
+        }
+
+        .section-title {
+            font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+            line-height: 1.25;
+            margin-bottom: 24px;
+        }
+
+        .section-text {
+            font-size: 1.1rem;
+            color: var(--color-text-light);
+            line-height: 1.85;
+            margin-bottom: 32px;
+        }
+
+        .problem-list {
+            list-style: none;
+        }
+
+        .problem-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 18px;
+            font-size: 1rem;
+            color: var(--color-text-light);
+        }
+
+        .problem-list .icon {
+            width: 28px;
+            height: 28px;
+            background: #fce8e8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .problem-list .icon svg {
+            width: 14px;
+            height: 14px;
+            color: #c53030;
+        }
+
+        .problem-visual {
+            position: relative;
+        }
+
+        .problem-illustration {
+            background: white;
+            border-radius: var(--radius-soft);
+            padding: 48px;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .time-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .time-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .time-card.traditional {
+            opacity: 0.65;
+        }
+
+        .time-card.lenduck {
+            background: rgba(124, 154, 130, 0.15);
+            border: 1px solid var(--color-sage-light);
+            box-shadow: 0 0 0 2px rgba(124, 154, 130, 0.2);
+        }
+
+        .time-card h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 16px;
+        }
+
+        .time-card .time {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .time-card.lenduck .time {
+            color: var(--color-sage-light);
+        }
+
+        .time-card .unit {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.8);
+            font-weight: 500;
+        }
+
+        .time-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 32px 0 0;
+        }
+
+        .time-arrow-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            color: white;
+            padding: 14px 28px;
+            border-radius: var(--radius-round);
+            font-weight: 700;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 15px rgba(45, 90, 61, 0.3);
+        }
+
+        /* How It Works Diagram */
+        .how-section {
+            padding: 120px 0;
+            background: linear-gradient(180deg, white 0%, var(--color-sage-pale) 100%);
+            position: relative;
+        }
+
+        .how-section::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 200'%3E%3Cpath fill='%23d4e4d7' fill-opacity='0.3' d='M0,100 C360,180 720,20 1080,100 C1260,140 1380,80 1440,100 L1440,200 L0,200 Z'/%3E%3C/svg%3E");
+            background-size: cover;
+            pointer-events: none;
+        }
+
+        .how-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 80px;
+        }
+
+        .diagram-container {
+            background: white;
+            border-radius: var(--radius-soft);
+            padding: 60px;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-large);
+            position: relative;
+            z-index: 1;
+        }
+
+        .diagram-title {
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--color-text-light);
+            margin-bottom: 48px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .diagram-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            position: relative;
+        }
+
+        .diagram-column {
+            flex: 1;
+            max-width: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .diagram-column:nth-child(3) {
+            justify-content: center;
+        }
+
+        .diagram-column-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .diagram-column-header h4 {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            color: var(--color-forest-dark);
+        }
+
+        .diagram-column-header p {
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+        }
+
+        .diagram-node {
+            background: var(--color-cream);
+            border: 2px solid var(--color-border);
+            border-radius: 16px;
+            padding: 22px;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .diagram-node:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .diagram-node.software {
+            border-color: var(--color-sage);
+            background: linear-gradient(135deg, rgba(124, 154, 130, 0.08), transparent);
+        }
+
+        .diagram-node.software:hover {
+            border-color: var(--color-forest);
+        }
+
+        .diagram-node.lenduck-hub {
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            border: none;
+            color: white;
+            padding: 48px 32px;
+            box-shadow: var(--shadow-large), 0 0 60px rgba(45, 90, 61, 0.2);
+            border-radius: var(--radius-soft);
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .diagram-node.lender {
+            border-color: var(--color-earth);
+            background: linear-gradient(135deg, rgba(196, 167, 125, 0.1), transparent);
+        }
+
+        .diagram-node.lender:hover {
+            border-color: var(--color-brown);
+        }
+
+        .diagram-node-icon {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 14px;
+            background: white;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .diagram-node.lenduck-hub .diagram-node-icon {
+            background: rgba(255,255,255,0.2);
+            box-shadow: none;
+        }
+
+        .diagram-node h5 {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+
+        .diagram-node p {
+            font-size: 0.8rem;
+            color: var(--color-text-light);
+        }
+
+        .diagram-node.lenduck-hub h5,
+        .diagram-node.lenduck-hub p {
+            color: white;
+        }
+
+        .diagram-node.lenduck-hub p {
+            opacity: 0.85;
+        }
+
+        .diagram-arrow {
+            flex: 0 0 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .diagram-arrow svg {
+            width: 60px;
+            color: var(--color-forest);
+        }
+
+        .diagram-arrow-label {
+            font-size: 0.75rem;
+            color: var(--color-text-light);
+            text-align: center;
+            margin-top: 10px;
+            max-width: 80px;
+            font-weight: 600;
+        }
+
+        .lenduck-features {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .lenduck-feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.95);
+            font-weight: 500;
+        }
+
+        .lenduck-feature svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        /* Privacy Note */
+        .privacy-note {
+            margin-top: 48px;
+            padding: 28px;
+            background: linear-gradient(135deg, rgba(45, 90, 61, 0.06), rgba(124, 154, 130, 0.08));
+            border: 1px solid rgba(45, 90, 61, 0.15);
+            border-radius: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .privacy-note-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .privacy-note-icon svg {
+            width: 26px;
+            height: 26px;
+            color: white;
+        }
+
+        .privacy-note-content h4 {
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 10px;
+            color: var(--color-forest-dark);
+        }
+
+        .privacy-note-content p {
+            font-size: 0.95rem;
+            color: var(--color-text-light);
+            line-height: 1.7;
+        }
+
+        /* Process Steps */
+        .process-section {
+            padding: 120px 0;
+            background: var(--color-cream);
+            position: relative;
+        }
+
+        .process-header {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 80px;
+        }
+
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+        }
+
+        .process-step {
+            text-align: center;
+            position: relative;
+        }
+
+        .process-step::after {
+            content: '';
+            position: absolute;
+            top: 50px;
+            left: calc(50% + 60px);
+            width: calc(100% - 70px);
+            height: 3px;
+            background: linear-gradient(90deg, var(--color-sage), var(--color-border));
+            border-radius: 2px;
+        }
+
+        .process-step:last-child::after {
+            display: none;
+        }
+
+        .process-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 28px;
+            box-shadow: var(--shadow-medium);
+            position: relative;
+        }
+
+        .process-icon::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 34px;
+            border: 2px dashed var(--color-sage);
+            opacity: 0.5;
+        }
+
+        .process-icon svg {
+            width: 40px;
+            height: 40px;
+            color: white;
+        }
+
+        .process-step h4 {
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin-bottom: 14px;
+            color: var(--color-forest-dark);
+        }
+
+        .process-step p {
+            font-size: 0.95rem;
+            color: var(--color-text-light);
+            line-height: 1.7;
+        }
+
+        /* Value Props */
+        .value-section {
+            padding: 120px 0;
+            background: var(--color-forest-dark);
+            color: var(--color-text-inverse);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .value-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%232d5a3d' fill-opacity='0.3' d='M30 20 Q40 10 50 20 T70 20 Q80 25 70 35 T50 45 Q40 50 30 45 T10 35 Q0 25 10 20 Z'/%3E%3C/svg%3E");
+            background-size: 200px;
+            opacity: 0.1;
+        }
+
+        .value-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .value-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-soft);
+            padding: 48px;
+            backdrop-filter: blur(10px);
+        }
+
+        .value-card-header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .value-card-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--color-sage), var(--color-sage-light));
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .value-card-icon svg {
+            width: 30px;
+            height: 30px;
+            color: var(--color-forest-dark);
+        }
+
+        .value-card h3 {
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .value-card > p {
+            color: rgba(255,255,255,0.7);
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-bottom: 32px;
+        }
+
+        .value-features {
+            display: grid;
+            gap: 22px;
+        }
+
+        .value-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .value-feature-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--color-moss);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .value-feature-icon svg {
+            width: 16px;
+            height: 16px;
+            color: white;
+        }
+
+        .value-feature div h5 {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 6px;
+            color: white;
+        }
+
+        .value-feature div p {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.6);
+            line-height: 1.6;
+        }
+
+        .value-cta {
+            margin-top: 36px;
+        }
+
+        .value-card.lender .value-card-icon {
+            background: linear-gradient(135deg, var(--color-earth), var(--color-brown-light));
+        }
+
+        .value-card.lender .value-feature-icon {
+            background: var(--color-brown);
+        }
+
+        /* Pricing Section */
+        .pricing-section {
+            padding: 120px 0;
+            background: white;
+            position: relative;
+        }
+
+        .pricing-header {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 64px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            align-items: stretch;
+        }
+
+        .pricing-card {
+            background: var(--color-cream);
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-soft);
+            padding: 40px 32px;
+            position: relative;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-large);
+        }
+
+        .pricing-card.featured {
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            border: none;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: var(--shadow-large);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-8px);
+        }
+
+        .pricing-card.partner {
+            background: linear-gradient(135deg, rgba(92, 77, 60, 0.05), rgba(139, 115, 85, 0.1));
+            border-color: var(--color-earth);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-earth);
+            color: white;
+            padding: 6px 20px;
+            border-radius: var(--radius-round);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pricing-card-header h3 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .pricing-card.featured .pricing-card-header h3 {
+            color: white;
+        }
+
+        .pricing-desc {
+            font-size: 0.95rem;
+            color: var(--color-text-light);
+            margin-bottom: 24px;
+        }
+
+        .pricing-card.featured .pricing-desc {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .pricing-price {
+            margin-bottom: 8px;
+        }
+
+        .pricing-price .price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--color-forest-dark);
+        }
+
+        .pricing-card.featured .pricing-price .price {
+            color: white;
+        }
+
+        .pricing-price .price.custom {
+            font-size: 2rem;
+        }
+
+        .pricing-price .period {
+            font-size: 1rem;
+            color: var(--color-text-light);
+            font-weight: 500;
+        }
+
+        .pricing-card.featured .pricing-price .period {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .pricing-annual {
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+            margin-bottom: 28px;
+        }
+
+        .pricing-card.featured .pricing-annual {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 32px;
+            flex-grow: 1;
+        }
+
+        .pricing-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 14px;
+            font-size: 0.95rem;
+            color: var(--color-text);
+        }
+
+        .pricing-card.featured .pricing-features li {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .pricing-features li svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            color: var(--color-moss);
+            margin-top: 2px;
+        }
+
+        .pricing-card.featured .pricing-features li svg {
+            color: var(--color-sage-light);
+        }
+
+        .pricing-btn {
+            width: 100%;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .partner-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .partner-form input {
+            padding: 14px 18px;
+            border: 2px solid var(--color-border);
+            border-radius: 12px;
+            background: white;
+            color: var(--color-text);
+            font-size: 0.95rem;
+            font-family: var(--font-main);
+            transition: all 0.3s ease;
+        }
+
+        .partner-form input:focus {
+            outline: none;
+            border-color: var(--color-brown);
+            box-shadow: 0 0 0 4px rgba(92, 77, 60, 0.1);
+        }
+
+        .partner-form input::placeholder {
+            color: var(--color-text-light);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 120px 0;
+            background: white;
+            position: relative;
+        }
+
+        .cta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        .cta-card {
+            border-radius: var(--radius-soft);
+            padding: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 200px;
+            height: 200px;
+            border-radius: 60% 40% 70% 30% / 40% 50% 50% 60%;
+            opacity: 0.1;
+        }
+
+        .cta-card.business {
+            background: linear-gradient(135deg, rgba(45, 90, 61, 0.08), rgba(124, 154, 130, 0.12));
+            border: 1px solid rgba(45, 90, 61, 0.2);
+        }
+
+        .cta-card.business::before {
+            background: var(--color-forest);
+        }
+
+        .cta-card.lender {
+            background: linear-gradient(135deg, rgba(196, 167, 125, 0.1), rgba(139, 115, 85, 0.12));
+            border: 1px solid rgba(139, 115, 85, 0.2);
+        }
+
+        .cta-card.lender::before {
+            background: var(--color-brown);
+        }
+
+        .cta-card-badge {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: var(--radius-round);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 24px;
+        }
+
+        .cta-card.business .cta-card-badge {
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            color: white;
+        }
+
+        .cta-card.lender .cta-card-badge {
+            background: linear-gradient(135deg, var(--color-brown), var(--color-brown-light));
+            color: white;
+        }
+
+        .cta-card h3 {
+            font-size: 1.75rem;
+            margin-bottom: 16px;
+        }
+
+        .cta-card > p {
+            color: var(--color-text-light);
+            font-size: 1.05rem;
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }
+
+        .cta-form {
+            display: flex;
+            gap: 14px;
+        }
+
+        .cta-form input {
+            flex: 1;
+            padding: 16px 22px;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-round);
+            background: white;
+            color: var(--color-text);
+            font-size: 1rem;
+            font-family: var(--font-main);
+            transition: all 0.3s ease;
+        }
+
+        .cta-form input:focus {
+            outline: none;
+            border-color: var(--color-forest);
+            box-shadow: 0 0 0 4px rgba(45, 90, 61, 0.1);
+        }
+
+        .cta-form input::placeholder {
+            color: var(--color-text-light);
+        }
+
+        .cta-card.lender .cta-form input:focus {
+            border-color: var(--color-brown);
+            box-shadow: 0 0 0 4px rgba(92, 77, 60, 0.1);
+        }
+
+        .cta-note {
+            margin-top: 18px;
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+        }
+
+        /* About Section */
+        .about-section {
+            padding: 120px 0;
+            background: linear-gradient(135deg, var(--color-forest-dark) 0%, var(--color-forest) 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(124, 154, 130, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .about-section::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(196, 167, 125, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .about-content {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .about-content .section-label {
+            color: var(--color-sage-light);
+        }
+
+        .about-content .section-label::before {
+            background: var(--color-sage-light);
+        }
+
+        .about-content .section-title {
+            color: white;
+            margin-bottom: 32px;
+        }
+
+        .about-lead {
+            font-size: 1.25rem;
+            line-height: 1.9;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 48px;
+        }
+
+        .about-values {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-top: 64px;
+        }
+
+        .about-value {
+            text-align: center;
+            padding: 32px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .about-value:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .about-value-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--color-sage), var(--color-sage-light));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .about-value-icon svg {
+            width: 32px;
+            height: 32px;
+            color: var(--color-forest-dark);
+        }
+
+        .about-value h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: white;
+        }
+
+        .about-value p {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.7;
+        }
+
+        @media (max-width: 768px) {
+            .about-values {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            padding: 120px 0;
+            background: var(--color-sage-pale);
+            position: relative;
+        }
+
+        .faq-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(180deg, white 0%, transparent 100%);
+        }
+
+        .faq-header {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 64px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .faq-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .faq-item {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 32px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question:hover {
+            background: var(--color-sage-pale);
+        }
+
+        .faq-item h4 {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--color-forest-dark);
+            margin: 0;
+        }
+
+        .faq-icon {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: var(--color-forest);
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+            margin-left: 16px;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: 0 32px 24px 32px;
+        }
+
+        .faq-answer p {
+            color: var(--color-text-light);
+            font-size: 0.95rem;
+            line-height: 1.75;
+            margin: 0;
+        }
+
+        /* Blog Section */
+        .blog-section {
+            padding: 120px 0;
+            background: white;
+            position: relative;
+        }
+
+        .blog-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(180deg, var(--color-sage-pale) 0%, transparent 100%);
+        }
+
+        .blog-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 64px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .blog-card {
+            background: var(--color-cream);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-soft);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-large);
+            border-color: var(--color-sage);
+        }
+
+        .blog-card-image {
+            height: 200px;
+            background: linear-gradient(135deg, var(--color-forest), var(--color-moss));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blog-card-image svg {
+            width: 80px;
+            height: 80px;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .blog-card-image::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(0deg, var(--color-cream), transparent);
+        }
+
+        .blog-card.case-study .blog-card-image {
+            background: linear-gradient(135deg, var(--color-earth), var(--color-brown));
+        }
+
+        .blog-card.how-it-works .blog-card-image {
+            background: linear-gradient(135deg, var(--color-sage), var(--color-forest-light));
+        }
+
+        .blog-card.open-finance .blog-card-image {
+            background: linear-gradient(135deg, var(--color-moss), var(--color-forest));
+        }
+
+        .blog-card-content {
+            padding: 28px 32px 32px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .blog-card-category {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-forest);
+            margin-bottom: 12px;
+        }
+
+        .blog-card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--color-forest-dark);
+            margin-bottom: 14px;
+            line-height: 1.35;
+        }
+
+        .blog-card-excerpt {
+            color: var(--color-text-light);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            flex: 1;
+        }
+
+        .blog-card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--color-forest);
+            transition: gap 0.3s ease;
+        }
+
+        .blog-card:hover .blog-card-link {
+            gap: 12px;
+        }
+
+        .blog-card-link svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .blog-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .blog-card-image {
+                height: 160px;
+            }
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 0;
+            background: var(--color-forest-dark);
+            color: var(--color-text-inverse);
+        }
+
+        .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 36px;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-copy {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9rem;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--color-forest);
+            color: white;
+            padding: 18px 28px;
+            border-radius: var(--radius-soft);
+            font-weight: 600;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: var(--shadow-large);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast svg {
+            width: 22px;
+            height: 22px;
+            color: var(--color-sage-light);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-unified,
+            .problem-grid,
+            .value-grid,
+            .cta-grid {
+                grid-template-columns: 1fr;
+                gap: 48px;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                max-width: 450px;
+                margin: 0 auto;
+            }
+
+            .pricing-card.featured {
+                transform: none;
+            }
+
+            .pricing-card.featured:hover {
+                transform: translateY(-8px);
+            }
+
+            .hero-visual {
+                order: -1;
+            }
+
+            .diagram-flow {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .diagram-column {
+                max-width: 100%;
+            }
+
+            .diagram-arrow {
+                transform: rotate(90deg);
+                padding: 24px 0;
+            }
+
+            .process-steps {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .process-step::after {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex;
+                position: relative;
+                z-index: 1002;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background-color: #faf8f3;
+                display: none;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 24px;
+                z-index: 1001;
+                padding: 80px 24px 40px;
+            }
+
+            .nav-links.active {
+                display: flex !important;
+            }
+
+            .nav-links a {
+                font-size: 1.25rem;
+            }
+
+            .nav-links .btn {
+                width: 100%;
+                max-width: 280px;
+                text-align: center;
+            }
+
+            .lang-switcher {
+                margin-left: 0;
+                padding-left: 0;
+                border-left: none;
+                margin-top: 16px;
+                padding-top: 16px;
+                border-top: 1px solid var(--color-border);
+            }
+
+            .process-steps {
+                grid-template-columns: 1fr;
+            }
+
+            .faq-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-form {
+                flex-direction: column;
+            }
+
+            .footer-inner {
+                flex-direction: column;
+                gap: 28px;
+                text-align: center;
+            }
+
+            .floating-card {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            .logos-grid {
+                gap: 24px;
+            }
+
+            .logo-item {
+                font-size: 0.9rem;
+            }
+
+            .privacy-note {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .diagram-container {
+                padding: 32px 20px;
+            }
+
+            .hero-cta {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .hero-cta .btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .hero-unified {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-content {
+                text-align: center;
+            }
+
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .problem-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .problem-visual {
+                overflow-x: visible;
+            }
+
+            .time-comparison {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .problem-illustration {
+                padding: 24px;
+            }
+
+            .diagram-flow {
+                flex-direction: column;
+                gap: 24px;
+            }
+
+            .diagram-column {
+                max-width: 100%;
+            }
+
+            .diagram-arrow {
+                transform: rotate(90deg);
+                padding: 16px 0;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .about-values {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Lenduck",
+        "url": "https://lenduck.com",
+        "logo": "https://lenduck.com/logo.png",
+        "description": "Tržiště financování pro firmy - Porovnejte podnikatelské úvěry od více poskytovatelů"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Lenduck",
+        "url": "https://lenduck.com",
+        "inLanguage": "cs"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FinancialService",
+        "name": "Lenduck",
+        "description": "Porovnejte nabídky firemního financování od více poskytovatelů. Získejte personalizované nabídky úvěrů okamžitě.",
+        "url": "https://lenduck.com/cz",
+        "areaServed": {
+            "@type": "Country",
+            "name": "Česká republika"
+        },
+        "serviceType": "Srovnání podnikatelských úvěrů"
+    }
+    </script>
+</head>
+<body>
+    <nav>
+        <div class="container nav-inner">
+            <a href="#" class="logo">
+                <img src="logo.png" alt="Lenduck" class="logo-icon">
+                <span class="logo-text">Lenduck</span>
+            </a>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Přepnout menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-links" id="navLinks">
+                <a href="#how-it-works">Jak to funguje</a>
+                <a href="#for-business">Pro firmy</a>
+                <a href="#for-lenders">Pro poskytovatele</a>
+                <a href="#pricing">Ceník</a>
+                <a href="#blog">Blog</a>
+                <a href="#faq">FAQ</a>
+                <a href="https://app.lenduck.com/login" class="btn btn-primary" style="color: whitesmoke;">Přihlášení</a>
+                <div class="lang-switcher">
+                    <a href="index8.html" class="lang-option">EN</a>
+                    <a href="index8-cz.html" class="lang-option active">CZ</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <!-- Decorative leaf elements -->
+            <svg class="leaf-decoration hero-leaf-1" viewBox="0 0 100 100" fill="var(--color-forest)">
+                <path d="M50 5 C70 20 90 50 50 95 C10 50 30 20 50 5 Z"/>
+                <path d="M50 20 L50 80" stroke="white" stroke-width="2" fill="none"/>
+            </svg>
+            <svg class="leaf-decoration hero-leaf-2" viewBox="0 0 100 100" fill="var(--color-sage)">
+                <path d="M50 5 C70 20 90 50 50 95 C10 50 30 20 50 5 Z"/>
+            </svg>
+
+            <div class="container">
+                <div class="hero-unified">
+                    <div class="hero-content">
+                        <h1><em>Nejrychlejší</em> cesta k firemnímu financování</h1>
+                        <p class="hero-subtitle">Propojte svůj účetní software jednou. Získejte personalizované nabídky úvěrů od více poskytovatelů okamžitě. Žádné papírování, žádné čekání, žádné hádání o sazbách.</p>
+                        <div class="hero-cta">
+                            <a href="#cta" class="btn btn-primary btn-lg">Najít financování</a>
+                            <a href="#how-it-works" class="btn btn-secondary btn-lg">Jak to funguje</a>
+                        </div>
+                    </div>
+                    <div class="hero-image-container">
+                            <div class="hero-dashboard">
+                                <div class="dashboard-header">
+                                    <span class="dashboard-title">Vaše nabídky financování</span>
+                                    <span class="dashboard-status">3 nabídky k dispozici</span>
+                                </div>
+                                <div class="offer-cards">
+                                    <div class="offer-card">
+                                        <div class="offer-logo" style="background: linear-gradient(135deg, #2d5a3d, #4a7c59);">Banka</div>
+                                        <div class="offer-info">
+                                            <h4><span class="lender-name">Regionální banka</span> <span class="offer-badge">Nejlepší sazba</span></h4>
+                                            <p>1 000 000 Kč - 36 měsíců - Schváleno</p>
+                                        </div>
+                                        <div class="offer-rate">
+                                            <div class="rate">4,2%</div>
+                                            <div class="label">p.a.</div>
+                                        </div>
+                                    </div>
+                                    <div class="offer-card">
+                                        <div class="offer-logo" style="background: linear-gradient(135deg, #7c9a82, #a8c4ad);">Fin</div>
+                                        <div class="offer-info">
+                                            <h4><span class="lender-name">Fintech poskytovatel</span></h4>
+                                            <p>1 000 000 Kč - 36 měsíců - Schváleno</p>
+                                        </div>
+                                        <div class="offer-rate">
+                                            <div class="rate" style="color: var(--color-sage);">5,1%</div>
+                                            <div class="label">p.a.</div>
+                                        </div>
+                                    </div>
+                                    <div class="offer-card">
+                                        <div class="offer-logo" style="background: linear-gradient(135deg, #c4a77d, #8b7355);">Alt</div>
+                                        <div class="offer-info">
+                                            <h4><span class="lender-name">Alternativní poskytovatel</span></h4>
+                                            <p>1 000 000 Kč - 36 měsíců - Schváleno</p>
+                                        </div>
+                                        <div class="offer-rate">
+                                            <div class="rate" style="color: var(--color-earth);">5,8%</div>
+                                            <div class="label">p.a.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="floating-card top-left">
+                            <div class="floating-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="22" height="22">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                </svg>
+                            </div>
+                            <div class="floating-text">
+                                <strong>Data zůstávají soukromá</strong>
+                                Dokud se nerozhodnete
+                            </div>
+                        </div>
+                        <div class="floating-card bottom-right">
+                            <div class="floating-text" style="text-align: center;">
+                                <strong style="font-size: 1.6rem; color: var(--color-forest);">58 500 Kč</strong>
+                                <span style="display: block; font-size: 0.8rem; color: var(--color-text-light);">Prům. úspora ročně</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Logos Section -->
+        <section class="logos-section">
+            <div class="container">
+                <p class="logos-label">Propojuje se s vaším účetním softwarem</p>
+                <div class="logos-grid">
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <circle cx="14" cy="14" r="12"/>
+                            <circle cx="14" cy="14" r="6" fill="white"/>
+                        </svg>
+                        Pohoda
+                    </div>
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <rect x="2" y="2" width="24" height="24" rx="4"/>
+                            <path d="M7 14h14M14 7v14" stroke="white" stroke-width="2"/>
+                        </svg>
+                        Money S3
+                    </div>
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <path d="M14 2l12 6v12l-12 6-12-6V8z"/>
+                        </svg>
+                        ABRA
+                    </div>
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <rect x="2" y="4" width="24" height="20" rx="2"/>
+                            <path d="M6 10h8M6 14h12M6 18h6" stroke="white" stroke-width="2"/>
+                        </svg>
+                        Helios
+                    </div>
+                    <div class="logo-item">
+                        <svg viewBox="0 0 28 28" fill="currentColor">
+                            <rect x="4" y="4" width="8" height="8" rx="2"/>
+                            <rect x="16" y="4" width="8" height="8" rx="2"/>
+                            <rect x="4" y="16" width="8" height="8" rx="2"/>
+                            <rect x="16" y="16" width="8" height="8" rx="2"/>
+                        </svg>
+                        KROS
+                    </div>
+                    <div class="logo-item" style="opacity: 0.5;">
+                        + další na vyžádání
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Problem Section -->
+        <section class="problem-section">
+            <div class="container">
+                <div class="problem-grid">
+                    <div class="problem-content">
+                        <p class="section-label">Problém</p>
+                        <h2 class="section-title">Získání firemního financování by nemělo být tak bolestivé</h2>
+                        <p class="section-text">Tradiční firemní půjčování je rozbité. Trávíte týdny vyplňováním papírů, navštěvujete více bank a stále netušíte, zda dostáváte nejlepší sazbu. Většina malých a středních podniků to vzdá nebo přijme cokoli, co jejich banka nabídne.</p>
+                        <ul class="problem-list">
+                            <li>
+                                <span class="icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 6L6 18M6 6l12 12"/>
+                                    </svg>
+                                </span>
+                                <span>Vyplňování stejných formulářů pro každou banku zvlášť</span>
+                            </li>
+                            <li>
+                                <span class="icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 6L6 18M6 6l12 12"/>
+                                    </svg>
+                                </span>
+                                <span>Čekání 2-4 týdny na odpověď na každou žádost</span>
+                            </li>
+                            <li>
+                                <span class="icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 6L6 18M6 6l12 12"/>
+                                    </svg>
+                                </span>
+                                <span>Žádná transparentnost - nikdy nevíte, zda máte nejlepší sazbu</span>
+                            </li>
+                            <li>
+                                <span class="icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 6L6 18M6 6l12 12"/>
+                                    </svg>
+                                </span>
+                                <span>Složité požadavky ztěžují splnění podmínek</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="problem-visual">
+                        <div class="problem-illustration">
+                            <div class="time-comparison">
+                                <div class="time-card traditional">
+                                    <h4>Tradiční způsob</h4>
+                                    <div class="time">14+</div>
+                                    <div class="unit">dní na získání nabídek</div>
+                                </div>
+                                <div class="time-card lenduck">
+                                    <h4>S Lenduckem</h4>
+                                    <div class="time">24</div>
+                                    <div class="unit">hodin na získání nabídek</div>
+                                </div>
+                            </div>
+                            <div class="time-arrow">
+                                <div class="time-arrow-content">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                        <path d="M13 17l5-5-5-5M6 17l5-5-5-5"/>
+                                    </svg>
+                                    10x rychlejší financování
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works - Diagram -->
+        <section class="how-section" id="how-it-works">
+            <div class="container">
+                <div class="how-header">
+                    <p class="section-label">Jak to funguje</p>
+                    <h2 class="section-title">Vaše účetní data odemknou lepší financování</h2>
+                    <p class="section-text">Lenduck se propojí s vaším stávajícím účetním softwarem, analyzuje vaše finanční zdraví a spojí vás s poskytovateli, kteří vás nejpravděpodobněji schválí - za nejlepší sazby.</p>
+                </div>
+
+                <div class="diagram-container">
+                    <p class="diagram-title">Tok dat v Lenducku</p>
+                    <div class="diagram-flow">
+                        <!-- Left Column: Accounting Software -->
+                        <div class="diagram-column">
+                            <div class="diagram-column-header">
+                                <h4>Váš účetní software</h4>
+                                <p>Jednou bezpečně propojte</p>
+                            </div>
+                            <div class="diagram-node software">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#4a7c59" stroke-width="2" width="24" height="24">
+                                        <circle cx="12" cy="12" r="9"/>
+                                        <path d="M12 6v6l4 2"/>
+                                    </svg>
+                                </div>
+                                <h5>Pohoda</h5>
+                                <p>Faktury, účetnictví, banka</p>
+                            </div>
+                            <div class="diagram-node software">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#4a7c59" stroke-width="2" width="24" height="24">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                        <path d="M3 9h18M9 21V9"/>
+                                    </svg>
+                                </div>
+                                <h5>Money S3</h5>
+                                <p>Faktury, účetnictví, banka</p>
+                            </div>
+                            <div class="diagram-node software">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#4a7c59" stroke-width="2" width="24" height="24">
+                                        <path d="M4 6h16M4 12h16M4 18h10"/>
+                                    </svg>
+                                </div>
+                                <h5>ABRA, Helios...</h5>
+                                <p>Faktury, účetnictví, banka</p>
+                            </div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="diagram-arrow">
+                            <svg viewBox="0 0 60 24" fill="none">
+                                <path d="M0 12h50M45 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="diagram-arrow-label">Šifrované připojení</span>
+                        </div>
+
+                        <!-- Center: Lenduck -->
+                        <div class="diagram-column">
+                            <div class="diagram-column-header">
+                                <h4>Platforma Lenduck</h4>
+                                <p>Analýza poháněná AI</p>
+                            </div>
+                            <div class="diagram-node lenduck-hub">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="28" height="28">
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4"/>
+                                    </svg>
+                                </div>
+                                <h5>Chytrý párovací engine</h5>
+                                <p>Analyzujeme a normalizujeme vaše data</p>
+                                <div class="lenduck-features">
+                                    <div class="lenduck-feature">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 6L9 17l-5-5"/>
+                                        </svg>
+                                        Skóre finančního zdraví
+                                    </div>
+                                    <div class="lenduck-feature">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 6L9 17l-5-5"/>
+                                        </svg>
+                                        Analýza cash flow
+                                    </div>
+                                    <div class="lenduck-feature">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 6L9 17l-5-5"/>
+                                        </svg>
+                                        Profilování rizik
+                                    </div>
+                                    <div class="lenduck-feature">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 6L9 17l-5-5"/>
+                                        </svg>
+                                        Párování s poskytovateli
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="diagram-arrow">
+                            <svg viewBox="0 0 60 24" fill="none">
+                                <path d="M0 12h50M45 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="diagram-arrow-label">Anonymizované profily</span>
+                        </div>
+
+                        <!-- Right Column: Lenders -->
+                        <div class="diagram-column">
+                            <div class="diagram-column-header">
+                                <h4>Síť poskytovatelů</h4>
+                                <p>Soutěží o vaši zakázku</p>
+                            </div>
+                            <div class="diagram-node lender">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#8b7355" stroke-width="2" width="24" height="24">
+                                        <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>
+                                    </svg>
+                                </div>
+                                <h5>Tradiční banky</h5>
+                                <p>Velké i regionální banky</p>
+                            </div>
+                            <div class="diagram-node lender">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#8b7355" stroke-width="2" width="24" height="24">
+                                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                                    </svg>
+                                </div>
+                                <h5>Alternativní poskytovatelé</h5>
+                                <p>Fintech, P2P platformy</p>
+                            </div>
+                            <div class="diagram-node lender">
+                                <div class="diagram-node-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#8b7355" stroke-width="2" width="24" height="24">
+                                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                                        <path d="M7 15h0M2 10h20"/>
+                                    </svg>
+                                </div>
+                                <h5>Faktoringové společnosti</h5>
+                                <p>Financování faktur</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Privacy Note -->
+                    <div class="privacy-note">
+                        <div class="privacy-note-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                <path d="M9 12l2 2 4-4"/>
+                            </svg>
+                        </div>
+                        <div class="privacy-note-content">
+                            <h4>Vaše data zůstávají anonymní, dokud se nerozhodnete</h4>
+                            <p>Poskytovatelé vidí pouze anonymizované finanční profily. Identita vaší společnosti je odhalena pouze tehdy, když se rozhodnete pokračovat s konkrétní nabídkou a zahájit proces úvěrové smlouvy. Máte plnou kontrolu.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Steps -->
+        <section class="process-section">
+            <div class="container">
+                <div class="process-header">
+                    <p class="section-label">Vaše cesta</p>
+                    <h2 class="section-title">Od žádosti k financování ve 4 krocích</h2>
+                </div>
+                <div class="process-steps">
+                    <div class="process-step">
+                        <div class="process-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                <path d="M9 12l2 2 4-4"/>
+                            </svg>
+                        </div>
+                        <h4>Bezpečné propojení</h4>
+                        <p>Propojte svůj účetní software jedním kliknutím. Vaše data jsou šifrována a nikdy nejsou sdílena bez vašeho souhlasu.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="process-icon" style="background: linear-gradient(135deg, #7c9a82, #a8c4ad);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4"/>
+                            </svg>
+                        </div>
+                        <h4>Analýza</h4>
+                        <p>Naše AI analyzuje vaše finance a vytvoří anonymizovaný profil, kterému poskytovatelé mohou důvěřovat.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="process-icon" style="background: linear-gradient(135deg, #c4a77d, #8b7355);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                                <circle cx="8.5" cy="7" r="4"/>
+                                <path d="M20 8v6M23 11h-6"/>
+                            </svg>
+                        </div>
+                        <h4>Příjem nabídek</h4>
+                        <p>Více poskytovatelů soutěží o to, aby vám nabídli své nejlepší sazby. Porovnejte je vedle sebe.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="process-icon" style="background: linear-gradient(135deg, #5c4d3c, #8b7355);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                                <path d="M22 4L12 14.01l-3-3"/>
+                            </svg>
+                        </div>
+                        <h4>Získání financování</h4>
+                        <p>Vyberte si preferovanou nabídku a dokončete proces. Prostředky dorazí během několika dní.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Value Props -->
+        <section class="value-section" id="for-business">
+            <div class="container">
+                <div class="value-grid">
+                    <div class="value-card business">
+                        <div class="value-card-header">
+                            <div class="value-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                                    <path d="M9 22V12h6v10"/>
+                                </svg>
+                            </div>
+                            <h3>Pro firmy</h3>
+                        </div>
+                        <p>Přestaňte ztrácet čas s žádostmi. Získejte nabídky financování, které skutečně odpovídají profilu vaší firmy - rychleji a za lepší sazby než obcházením jednotlivých bank.</p>
+                        <div class="value-features">
+                            <div class="value-feature">
+                                <div class="value-feature-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 6L9 17l-5-5"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h5>Jedna žádost, více nabídek</h5>
+                                    <p>Zažádejte jednou, získejte nabídky od 15+ poskytovatelů. Žádné opakované papírování.</p>
+                                </div>
+                            </div>
+                            <div class="value-feature">
+                                <div class="value-feature-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 6L9 17l-5-5"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h5>Vidíte skutečné sazby</h5>
+                                    <p>Přesně víte, na co máte nárok, ještě před závazkem. Žádné hádání.</p>
+                                </div>
+                            </div>
+                            <div class="value-feature">
+                                <div class="value-feature-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 6L9 17l-5-5"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h5>Zcela zdarma</h5>
+                                    <p>Žádné poplatky, nikdy. Poskytovatelé nám platí, když získají vaši zakázku.</p>
+                                </div>
+                            </div>
+                            <div class="value-feature">
+                                <div class="value-feature-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 6L9 17l-5-5"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h5>Přehled finančního zdraví</h5>
+                                    <p>Získejte podrobné statistiky a reporty o finančním zdraví vaší společnosti. Pochopte svůj cash flow, ziskovost a růstové trendy na první pohled.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="value-cta">
+                            <a href="#cta" class="btn btn-primary btn-lg">Najít financování</a>
+                        </div>
+                    </div>
+                    <div class="value-card lender" id="for-lenders">
+                        <div class="value-card-header">
+                            <div class="value-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>
+                                </svg>
+                            </div>
+                            <h3>Pro poskytovatele</h3>
+                        </div>
+                        <p>Získejte přístup k předkvalifikovaným leadům malých a středních podniků s ověřenými finančními daty. Dramaticky snižte náklady na akvizici a čas potřebný pro posouzení.</p>
+                        <div class="value-features">
+                            <div class="value-feature">
+                                <div class="value-feature-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 6L9 17l-5-5"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h5>Ověřená finanční data</h5>
+                                    <p>Přímý API přístup ke skutečným účetním datům. Bez manuálního ověřování.</p>
+                                </div>
+                            </div>
+                            <div class="value-feature">
+                                <div class="value-feature-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 6L9 17l-5-5"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h5>Předkvalifikované leady</h5>
+                                    <p>Dostáváte pouze firmy odpovídající vašim rizikovým kritériím. Vyšší konverzní poměry.</p>
+                                </div>
+                            </div>
+                            <div class="value-feature">
+                                <div class="value-feature-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 6L9 17l-5-5"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h5>Platba za úspěch</h5>
+                                    <p>Platíte pouze při úspěšném financování obchodu. Žádné předběžné náklady.</p>
+                                </div>
+                            </div>
+                            <div class="value-feature">
+                                <div class="value-feature-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 6L9 17l-5-5"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h5>Monitoring portfolia klientů</h5>
+                                    <p>Sledujte finanční zdraví vašich dlužníků v reálném čase. Získejte včasná varování a sledujte schopnost splácení klientů, kteří vám dluží peníze.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="value-cta">
+                            <a href="#cta" class="btn btn-dark btn-lg">Stát se partnerem</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section class="pricing-section" id="pricing">
+            <div class="container">
+                <div class="pricing-header">
+                    <p class="section-label">Ceník</p>
+                    <h2 class="section-title">Vyberte si správný plán pro vaši firmu</h2>
+                    <p class="section-text">Začněte zdarma a upgradujte podle potřeby. Všechny plány zahrnují naše základní funkce finančního zdraví.</p>
+                </div>
+                <div class="pricing-grid">
+                    <!-- Free Plan -->
+                    <div class="pricing-card">
+                        <div class="pricing-card-header">
+                            <h3>Zdarma</h3>
+                            <p class="pricing-desc">Pro malé firmy a freelancery</p>
+                        </div>
+                        <div class="pricing-price">
+                            <span class="price">0 Kč</span>
+                            <span class="period">navždy</span>
+                        </div>
+                        <ul class="pricing-features">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Reporty finančního zdraví
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Základní monitoring zdraví
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Nejlepší nabídky financování do 3 dnů
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                1 propojení účetního softwaru
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                1 společnost
+                            </li>
+                        </ul>
+                        <a href="#cta" class="btn btn-secondary btn-lg pricing-btn">Začít zdarma</a>
+                    </div>
+
+                    <!-- Pro Plan -->
+                    <div class="pricing-card featured">
+                        <div class="pricing-badge">Nejoblíbenější</div>
+                        <div class="pricing-card-header">
+                            <h3>Pro</h3>
+                            <p class="pricing-desc">Pro rostoucí firmy</p>
+                        </div>
+                        <div class="pricing-price">
+                            <span class="price">2 490 Kč</span>
+                            <span class="period">/měsíc</span>
+                        </div>
+                        <p class="pricing-annual">nebo 24 990 Kč/rok (ušetříte 17%)</p>
+                        <ul class="pricing-features">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Vše ze Zdarma, plus:
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Nejlepší nabídky financování do 24 hodin
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Více společností
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Více propojení účetních systémů
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                AI skórovací model
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Finanční diagnostika a doporučení
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Pokročilé reporty a notifikace
+                            </li>
+                        </ul>
+                        <a href="#cta" class="btn btn-primary btn-lg pricing-btn">Vyzkoušet Pro</a>
+                    </div>
+
+                    <!-- Partner Plan -->
+                    <div class="pricing-card partner">
+                        <div class="pricing-card-header">
+                            <h3>Partner</h3>
+                            <p class="pricing-desc">Pro banky, poskytovatele a finanční poradce</p>
+                        </div>
+                        <div class="pricing-price">
+                            <span class="price custom">Individuální</span>
+                        </div>
+                        <p class="pricing-annual">Přizpůsobeno vašim potřebám</p>
+                        <ul class="pricing-features">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Přístup k účetním datům klientů (se souhlasem)
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Monitoring finančního zdraví klientů
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Využití našich AI skórovacích modelů
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Plný přístup k API
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                White-label možnosti
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                Dedikovaná podpora
+                            </li>
+                        </ul>
+                        <form class="partner-form" id="partner-form">
+                            <input type="text" name="company_name" placeholder="Název společnosti" required>
+                            <input type="email" name="email" placeholder="Pracovní e-mail" required>
+                            <button type="submit" class="btn btn-dark btn-lg pricing-btn">Kontaktujte nás</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section" id="cta">
+            <div class="container">
+                <div class="cta-grid">
+                    <div class="cta-card business">
+                        <span class="cta-card-badge">Pro firmy</span>
+                        <h3>Najděte lepší financování</h3>
+                        <p>Propojte svůj účetní software a zjistěte, na jaké sazby máte nárok. Trvá to méně než 2 minuty.</p>
+                        <form class="cta-form" id="business-form">
+                            <input type="email" name="email" placeholder="Zadejte svůj pracovní e-mail" required>
+                            <button type="submit" class="btn btn-primary" style="color: whitesmoke;">Začít</button>
+                        </form>
+                        <p class="cta-note">Váš e-mail nikdy nesdílíme. Pro firmy navždy zdarma.</p>
+                    </div>
+                    <div class="cta-card lender">
+                        <span class="cta-card-badge">Pro poskytovatele</span>
+                        <h3>Staňte se partnerem</h3>
+                        <p>Oslovte tisíce předkvalifikovaných malých a středních podniků hledajících financování. Pojďme diskutovat, jak Lenduck může rozšířit vaše úvěrové portfolio.</p>
+                        <form class="cta-form" id="lender-form">
+                            <input type="email" name="email" placeholder="Zadejte svůj pracovní e-mail" required>
+                            <button type="submit" class="btn btn-dark">Rezervovat demo</button>
+                        </form>
+                        <p class="cta-note">Ozveme se do 24 hodin a domluvíme hovor.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="about-section" id="about">
+            <div class="container">
+                <div class="about-content">
+                    <p class="section-label">O nás</p>
+                    <h2 class="section-title">Proč jsme vytvořili Lenduck</h2>
+                    <p class="about-lead">
+                        Financování malých a středních podniků je neefektivní. Firmy ztrácejí týdny opakovaným vyplňováním žádostí a málokdy vědí, jestli dostávají konkurenční sazby. Poskytovatelé utrácejí příliš za akvizici a manuální ověřování. Lenduck jsme vytvořili, abychom vyřešili oba problémy.
+                    </p>
+                    <p class="about-lead">
+                        Propojujeme účetní data přímo s úvěrovými rozhodnutími. Firmy dostanou více nabídek rychle. Poskytovatelé dostanou ověřené finance bez papírování. Jednoduché.
+                    </p>
+                    <div class="about-values">
+                        <div class="about-value">
+                            <div class="about-value-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                </svg>
+                            </div>
+                            <h4>Vaše data, vaše kontrola</h4>
+                            <p>Rozhodujete, co se sdílí a kdy. Nic se neděje bez vašeho výslovného souhlasu.</p>
+                        </div>
+                        <div class="about-value">
+                            <div class="about-value-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                                </svg>
+                            </div>
+                            <h4>Funguje pro obě strany</h4>
+                            <p>Lepší sazby pro firmy. Lepší klienti pro poskytovatele. To je náš model.</p>
+                        </div>
+                        <div class="about-value">
+                            <div class="about-value-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>
+                                </svg>
+                            </div>
+                            <h4>Bez zbytečností</h4>
+                            <p>Automatizujeme nudnou práci, abyste se mohli soustředit na své podnikání.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq-section" id="faq">
+            <div class="container">
+                <div class="faq-header">
+                    <p class="section-label">FAQ</p>
+                    <h2 class="section-title">Časté dotazy</h2>
+                </div>
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h4>Je Lenduck pro firmy zdarma?</h4>
+                            <span class="faq-icon">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Ano, zcela zdarma. Platí nám poskytovatelé, když úspěšně poskytnou financování firmám prostřednictvím naší platformy. Nikdy nám nezaplatíte ani korunu.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h4>Jak chráníte moje data?</h4>
+                            <span class="faq-icon">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Vaše data jsou šifrována a zůstávají zcela anonymní. Poskytovatelé vidí pouze finanční profily - identita vaší společnosti je odhalena pouze tehdy, když se rozhodnete pokračovat s konkrétní nabídkou.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h4>Které účetní softwary podporujete?</h4>
+                            <span class="faq-icon">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Podporujeme hlavní účetní platformy včetně Pohody, Money S3, ABRA, Helios a KROS. Potřebujete jinou integraci? Dejte nám vědět a můžeme to probrat.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h4>Ovlivní žádost moje kreditní skóre?</h4>
+                            <span class="faq-icon">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Ne. Párování a prohlížení nabídek neovlivňuje váš kredit. Tvrdý dotaz do registrů nastane pouze tehdy, když se rozhodnete pokračovat s konkrétním poskytovatelem.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h4>Jaké typy financování jsou k dispozici?</h4>
+                            <span class="faq-icon">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Firemní úvěry, úvěrové linky, faktoring, financování vybavení a další. Naše síť poskytovatelů pokrývá většinu potřeb financování malých a středních podniků.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h4>Jak Lenduck prospívá poskytovatelům?</h4>
+                            <span class="faq-icon">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Poskytovatelé získávají předkvalifikované leady s ověřenými finančními daty, což dramaticky snižuje jejich náklady na akvizici a čas posuzování. Platí pouze při uzavření obchodu.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog Section -->
+        <section class="blog-section" id="blog">
+            <div class="container">
+                <div class="blog-header">
+                    <p class="section-label">Blog</p>
+                    <h2 class="section-title">Novinky a zdroje</h2>
+                    <p class="section-subtitle">Dozvězte se více o otevřených financích, úvěrech pro malé a střední podniky a jak Lenduck mění pravidla hry.</p>
+                </div>
+                <div class="blog-grid">
+                    <a href="/blog/who-we-are" class="blog-card">
+                        <div class="blog-card-image">
+                            <img src="https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Business team collaboration" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-card-category">O nás</span>
+                            <h3 class="blog-card-title">Kdo jsme a proč děláme to, co děláme</h3>
+                            <p class="blog-card-excerpt">Seznamte se s týmem Lenduck a objevte naši misi zpřístupnit firemní financování transparentním a férovým způsobem.</p>
+                            <span class="blog-card-link">
+                                Číst více
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </a>
+                    <a href="/blog/how-it-works" class="blog-card how-it-works">
+                        <div class="blog-card-image">
+                            <img src="https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Business workflow process" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-card-category">Průvodce</span>
+                            <h3 class="blog-card-title">Jak Lenduck funguje: Od připojení k financování</h3>
+                            <p class="blog-card-excerpt">Krok za krokem průvodce používáním Lenduck, od připojení účetního softwaru po získání konkurenčních nabídek během minut.</p>
+                            <span class="blog-card-link">
+                                Číst více
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </a>
+                    <a href="/blog/open-finance" class="blog-card open-finance">
+                        <div class="blog-card-image">
+                            <img src="https://images.pexels.com/photos/669615/pexels-photo-669615.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Technology and data analytics" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-card-category">Odvětví</span>
+                            <h3 class="blog-card-title">Co je otevřené financování a proč záleží na agregaci účetních dat</h3>
+                            <p class="blog-card-excerpt">Prozkoumejte revoluci otevřeného financování a jak agregace účetních dat mění rozhodování o úvěrech pro malé a střední podniky.</p>
+                            <span class="blog-card-link">
+                                Číst více
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </a>
+                    <a href="/blog/case-study-10x-faster" class="blog-card case-study">
+                        <div class="blog-card-image">
+                            <img src="https://images.pexels.com/photos/590041/pexels-photo-590041.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Business growth and success" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-card-category">Případová studie</span>
+                            <h3 class="blog-card-title">Jak jsme pomohli firmě získat financování 10x rychleji</h3>
+                            <p class="blog-card-excerpt">Skutečný příběh úspěchu, jak jedna malá firma získala lepší podmínky financování za dny místo měsíců pomocí platformy Lenduck.</p>
+                            <span class="blog-card-link">
+                                Číst více
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-inner">
+            <div class="footer-logo">
+                <img src="logo.png" alt="Lenduck" width="36" height="36" style="border-radius: 12px;">
+                <span class="footer-logo-text">Lenduck</span>
+            </div>
+            <div class="footer-links">
+                <a href="#">Zásady ochrany osobních údajů</a>
+                <a href="#">Obchodní podmínky</a>
+                <a href="mailto:hello@lenduck.com">Kontaktujte nás</a>
+            </div>
+            <p class="footer-copy">2026 Lenduck. Přirozená cesta k firemnímu financování.</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <path d="M22 4L12 14.01l-3-3"/>
+        </svg>
+        Děkujeme! Brzy se ozveme.
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            navLinks.classList.toggle('active');
+            menuBtn.classList.toggle('active');
+            document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+        }
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                const navLinks = document.getElementById('navLinks');
+                const menuBtn = document.querySelector('.mobile-menu-btn');
+                if (navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                    menuBtn.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    ${isError
+                        ? '<circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>'
+                        : '<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/>'}
+                </svg>
+                ${message}
+            `;
+            toast.style.background = isError ? '#c44536' : '#2d5a3d';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Business form submission (SME waiting list)
+        const businessForm = document.getElementById('business-form');
+        if (businessForm) {
+            businessForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const email = this.querySelector('input[name="email"]').value;
+
+                try {
+                    const response = await fetch('/api/waitlist/sme', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            company_name: 'Z webu',
+                            email: email
+                        })
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showToast('Děkujeme! Brzy se ozveme.');
+                        this.querySelector('input').value = '';
+                    } else {
+                        showToast(data.message || 'Něco se pokazilo.', true);
+                    }
+                } catch (error) {
+                    showToast('Chyba sítě. Zkuste to prosím znovu.', true);
+                }
+            });
+        }
+
+        // Lender form submission (Partner waiting list)
+        const lenderForm = document.getElementById('lender-form');
+        if (lenderForm) {
+            lenderForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const email = this.querySelector('input[name="email"]').value;
+
+                try {
+                    const response = await fetch('/api/waitlist/partner', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            company_name: 'Z webu',
+                            email: email,
+                            partner_type: 'lender'
+                        })
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showToast('Děkujeme! Ozveme se do 24 hodin.');
+                        this.querySelector('input').value = '';
+                    } else {
+                        showToast(data.message || 'Něco se pokazilo.', true);
+                    }
+                } catch (error) {
+                    showToast('Chyba sítě. Zkuste to prosím znovu.', true);
+                }
+            });
+        }
+
+        // Partner form submission (Pricing section)
+        const partnerForm = document.getElementById('partner-form');
+        if (partnerForm) {
+            partnerForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const company = this.querySelector('input[name="company_name"]').value;
+                const email = this.querySelector('input[name="email"]').value;
+
+                try {
+                    const response = await fetch('/api/waitlist/partner', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            company_name: company,
+                            email: email,
+                            partner_type: 'enterprise'
+                        })
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showToast('Děkujeme! Brzy se ozveme.');
+                        this.querySelectorAll('input').forEach(input => input.value = '');
+                    } else {
+                        showToast(data.message || 'Něco se pokazilo.', true);
+                    }
+                } catch (error) {
+                    showToast('Chyba sítě. Zkuste to prosím znovu.', true);
+                }
+            });
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Hide navigation on scroll
+        let lastScrollTop = 0;
+        const nav = document.querySelector('nav');
+
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Scrolling down
+                nav.classList.add('nav-hidden');
+            } else {
+                // Scrolling up
+                nav.classList.remove('nav-hidden');
+            }
+
+            lastScrollTop = scrollTop;
+        });
+
+        // FAQ Collapsible
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', function() {
+                const faqItem = this.parentElement;
+                const wasActive = faqItem.classList.contains('active');
+
+                // Close all FAQ items
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                // Open clicked item if it wasn't already open
+                if (!wasActive) {
+                    faqItem.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
