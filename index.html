@@ -123,6 +123,33 @@
             color: var(--color-text);
         }
 
+        .lang-switcher {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 6px 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+        }
+
+        .lang-switcher a {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .lang-switcher a.active {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .lang-switcher a:not(.active):hover {
+            background: var(--color-bg);
+        }
+
         .btn {
             display: inline-flex;
             align-items: center;
@@ -1342,6 +1369,10 @@
                 <a href="#for-business">For Businesses</a>
                 <a href="#for-lenders">For Lenders</a>
                 <a href="#faq">FAQ</a>
+                <div class="lang-switcher">
+                    <a href="/" class="active">EN</a>
+                    <a href="/cz/">CZ</a>
+                </div>
                 <a href="#cta" class="btn btn-primary">Get Started</a>
             </div>
         </div>
